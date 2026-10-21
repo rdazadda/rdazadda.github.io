@@ -62,6 +62,20 @@ export const entries = [
   {
     kind: 'presentations',
     year: '2026',
+    title: 'Recommendations to Reduce the Overrepresentation of Alaska Native people in Alaska’s Criminal Legal System',
+    authors: ['Rowles, F.', 'Cueva, K.', 'Kloster, K.', 'Thompson, L.', 'Azadda, R. D.', 'Kiker, L.', 'Chaliak, A. J.', 'Coble, A.'],
+    venue: 'Oral presentation, APHA 2026 Annual Meeting and Expo.',
+    image: '/images/publications/rowles2026recommendations.jpg',
+    links: [{ label: 'Abstract', href: 'https://apha.confex.com/apha/2026/meetingapp.cgi/Paper/597408' }],
+    reference: 'APHA 2026 Annual Meeting and Expo. https://apha.confex.com/apha/2026/meetingapp.cgi/Paper/597408',
+    bibtex: {
+      howpublished: 'Oral presentation, APHA 2026 Annual Meeting and Expo',
+      url: 'https://apha.confex.com/apha/2026/meetingapp.cgi/Paper/597408',
+    },
+  },
+  {
+    kind: 'presentations',
+    year: '2026',
     title: 'An adapted version of Q-methodology provides an in-depth understanding of the impact of climate change and health on rural Alaskan communities',
     authors: [
       'Robinson, H. D.', 'Hueffer, K.', 'Peter, T.', 'Brinkman, T.', 'Clinton, M.', 'Bersamin, A.', 'Charles, W.', 'Joseph, V.',
