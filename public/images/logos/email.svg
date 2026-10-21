@@ -1,0 +1,1 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><mask id="flap"><rect width="24" height="24" fill="#fff"/><path d="M4.5 8 12 13l7.5-5" fill="none" stroke="#000" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></mask><rect x="1" y="4" width="22" height="16" rx="2.5" fill="#1f2933" mask="url(#flap)"/></svg>

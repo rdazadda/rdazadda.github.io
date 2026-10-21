@@ -1,0 +1,15 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import PageTitle from '../components/PageTitle.astro';
+import Sections from '../components/Sections.astro';
+import { site } from '../data/site.js';
+import { intro, sections } from '../data/software.js';
+---
+
+<BaseLayout title={`Software by ${site.name}`}>
+  <PageTitle what="Software" />
+
+  <p set:html={intro} />
+
+  <Sections sections={sections} />
+</BaseLayout>

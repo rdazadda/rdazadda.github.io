@@ -1,0 +1,42 @@
+---
+import { site } from '../data/site.js';
+import { keepTogether, DOT } from '../lib/text.js';
+
+const built = new Date();
+const updated = built.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
+const year = built.getFullYear();
+---
+
+<footer class="site-footer">
+  <span>{keepTogether(`© ${year} ${site.name}`)}</span>
+  <span class="details">
+    <span>{keepTogether('64.84° N, 147.72° W')}</span><span class="dot" aria-hidden="true">{DOT}</span><span>{keepTogether(`Last updated ${updated}`)}</span>
+  </span>
+</footer>
+
+<style>
+  .site-footer {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 0.3em 2em;
+    padding-top: 1ex;
+    border-top: var(--line) solid var(--c-brand);
+    color: var(--c-muted);
+  }
+
+  @media (max-width: 700px) {
+    .site-footer,
+    .details {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+    }
+
+    .dot {
+      display: none;
+    }
+  }
+</style>

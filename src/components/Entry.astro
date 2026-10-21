@@ -1,0 +1,100 @@
+---
+interface Item {
+  title: string;
+  link: string;
+  description: string;
+}
+
+interface Props {
+  title: string;
+  link: string;
+  image?: string;
+  alt?: string;
+  description?: string;
+  items?: Item[];
+}
+
+const { title, link, image, alt, description, items } = Astro.props;
+---
+
+<div class="entry">
+  <a href={link} class="picture" aria-hidden={image ? undefined : 'true'} tabindex={image ? undefined : -1}>
+    <span class="print">{image ? <img src={image} alt={alt} /> : <span class="blank" />}</span>
+  </a>
+  <div>
+    <a href={link} class="heading">{title}</a>
+    {description && <p set:html={description} />}
+    {
+      items && (
+        <ul>
+          {items.map((item) => (
+            <li><b><a href={item.link}>{item.title}</a></b> <Fragment set:html={item.description} /></li>
+          ))}
+        </ul>
+      )
+    }
+  </div>
+</div>
+
+<style>
+  .entry {
+    display: flex;
+    align-items: center;
+    gap: 2em;
+    margin-bottom: 3ex;
+  }
+
+  .picture {
+    flex: none;
+    padding: 26px;
+    border: var(--line) solid var(--c-brand);
+    background-color: var(--c-mat);
+    transition:
+      border-color 0.3s ease,
+      box-shadow 0.3s ease;
+  }
+
+  .picture:hover,
+  .picture:focus-visible {
+    border-color: var(--c-frame-hover);
+    box-shadow: 0 0 0 var(--line) var(--c-frame-hover);
+  }
+
+  .print {
+    display: block;
+    padding: 7px;
+    background-color: #ffffff;
+    box-shadow: var(--shadow-print);
+    transition:
+      box-shadow 0.4s ease,
+      transform 0.4s ease;
+  }
+
+  .picture:hover .print {
+    box-shadow: var(--shadow-print-lifted);
+    transform: translateY(-2px);
+  }
+
+  .print img {
+    display: block;
+    width: 300px;
+    height: auto;
+  }
+
+  .blank {
+    display: block;
+    width: 300px;
+    aspect-ratio: 1;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .picture,
+    .print {
+      transition: none;
+    }
+
+    .picture:hover .print {
+      transform: none;
+    }
+  }
+</style>

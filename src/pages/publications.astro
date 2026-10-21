@@ -1,0 +1,201 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import PageTitle from '../components/PageTitle.astro';
+import Publication from '../components/Publication.astro';
+import { site } from '../data/site.js';
+import { kinds, entries } from '../data/publications.js';
+
+const count = (kind: string) => entries.filter((entry) => entry.kind === kind).length;
+---
+
+<BaseLayout title={`Publications by ${site.name}`}>
+  <div data-publications>
+    <header>
+      <PageTitle what="Publications" />
+      <div class="views">
+        <div class="show" role="group" aria-label="Show">
+          <button type="button" data-show="all" aria-pressed="true" data-text={`All ${entries.length}`}><span class="words">All</span> <span class="count">{entries.length}</span></button>
+          {
+            kinds.map((kind) => (
+              <button type="button" data-show={kind.id} aria-pressed="false" data-text={`${kind.short} ${count(kind.id)}`}>
+                <span class="words">{kind.short}</span> <span class="count">{count(kind.id)}</span>
+              </button>
+            ))
+          }
+        </div>
+        <div class="arrange" role="group" aria-label="Arrange">
+          <span class="label">Arranged</span>
+          <button type="button" data-arrange="type" aria-pressed="true" data-text="by type"><span class="words">by type</span></button>
+          <button type="button" data-arrange="year" aria-pressed="false" data-text="by year"><span class="words">by year</span></button>
+        </div>
+      </div>
+    </header>
+
+    <div class="groups" data-groups>
+      {
+        kinds.map((kind) => {
+          const items = entries.filter((entry) => entry.kind === kind.id);
+          return (
+            items.length > 0 && (
+              <section id={kind.id}>
+                <h2>{kind.heading}</h2>
+                <ol>
+                  {items.map((entry) => (
+                    <Publication id={`entry-${entries.indexOf(entry) + 1}`} {...entry} />
+                  ))}
+                </ol>
+              </section>
+            )
+          );
+        })
+      }
+    </div>
+    <p class="empty" data-empty hidden>Nothing here yet.</p>
+  </div>
+</BaseLayout>
+
+<style>
+  .views {
+    --band: clamp(12px, calc(1.47cqi - 1px), var(--size-lead));
+    container-type: inline-size;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    align-items: center;
+    gap: 8px 24px;
+    margin-top: 0.9em;
+    padding: 12px;
+    border-radius: 8px;
+    background-color: var(--c-name);
+    box-shadow: inset 0 0 0 5px var(--c-name), inset 0 0 0 calc(5px + var(--line)) rgb(255 205 0 / 0.8);
+    color: var(--c-on-brand);
+  }
+
+  .show,
+  .arrange {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 4px;
+  }
+
+  .show {
+    font-size: var(--band);
+  }
+
+  .arrange {
+    font-size: calc(var(--band) * 8 / 9);
+  }
+
+  .count,
+  .arrange .label {
+    color: rgb(255 255 255 / 0.78);
+  }
+
+  .arrange .label {
+    margin-right: 6px;
+    font-style: italic;
+  }
+
+  .views button {
+    min-height: 44px;
+    padding: 0 calc(1em * 7 / 9);
+    border: 0;
+    border-radius: 3px;
+    background: none;
+    color: inherit;
+    font: inherit;
+    cursor: pointer;
+    transition: background-color 0.25s ease;
+  }
+
+  .arrange button {
+    padding: 0 0.75em;
+  }
+
+  .views button[aria-pressed='false']:hover {
+    background-color: rgb(255 255 255 / 0.14);
+  }
+
+  .views button[aria-pressed='true'] {
+    color: #ffcd00;
+    cursor: default;
+  }
+
+  .views button[aria-pressed='true'] .count {
+    color: inherit;
+  }
+
+  .views button[aria-pressed='true'] .words {
+    font-weight: 700;
+  }
+
+  .views button::after {
+    content: attr(data-text);
+    display: block;
+    height: 0;
+    overflow: hidden;
+    visibility: hidden;
+    font-weight: 700;
+  }
+
+  .views button:focus-visible {
+    outline: 2px solid var(--c-on-brand);
+    outline-offset: 2px;
+  }
+
+  .count {
+    font-size: calc(1em * 8 / 9);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .views button {
+      transition: none;
+    }
+  }
+
+  .groups {
+    display: flex;
+    flex-direction: column;
+    gap: 44px;
+    padding-top: 36px;
+  }
+
+  section {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+  }
+
+  section[hidden] {
+    display: none;
+  }
+
+  h2 {
+    margin: 0;
+    padding-left: 50px;
+    font-size: var(--size-heading);
+    font-style: italic;
+    font-weight: 400;
+  }
+
+  ol {
+    display: flex;
+    flex-direction: column;
+    gap: 32px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    counter-reset: entry;
+  }
+
+  .empty {
+    margin: 40px 0 0;
+    padding-left: 50px;
+    color: var(--c-muted);
+  }
+</style>
+
+<script>
+  import '../scripts/publications.js';
+</script>

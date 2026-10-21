@@ -1,0 +1,38 @@
+---
+import type { ComponentProps } from 'astro/types';
+import Entry from './Entry.astro';
+
+interface Item {
+  title: string;
+  link: string;
+  description: string;
+}
+
+interface Section {
+  heading?: string;
+  entries?: ComponentProps<typeof Entry>[];
+  list?: Item[];
+}
+
+interface Props {
+  sections: Section[];
+}
+
+const { sections } = Astro.props;
+---
+
+{
+  sections.map((section) => (
+    <>
+      {section.heading && <h2 class="section">{section.heading}</h2>}
+      {section.entries?.map((entry) => <Entry {...entry} />)}
+      {section.list && (
+        <ul>
+          {section.list.map((item) => (
+            <li><b><a href={item.link}>{item.title}</a></b>: <Fragment set:html={item.description} /></li>
+          ))}
+        </ul>
+      )}
+    </>
+  ))
+}

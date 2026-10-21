@@ -1,0 +1,285 @@
+---
+import { keepTogether } from '../lib/text.js';
+import { bibtexEntry } from '../lib/bibtex.js';
+import { me, kinds } from '../data/publications.js';
+
+interface Link {
+  label: string;
+  href: string;
+}
+
+interface Props {
+  id: string;
+  kind: string;
+  year: string;
+  title: string;
+  authors: string[];
+  venue: string;
+  image?: string;
+  links?: Link[];
+  reference?: string;
+  bibtex?: Record<string, string>;
+}
+
+const { id, kind, year, title, authors, venue, image, links = [], reference, bibtex } = Astro.props;
+
+const between = (i: number) => (i === 0 ? '' : i === authors.length - 1 ? ', & ' : ', ');
+const titleEnd = /[.?!]$/.test(title) ? '' : '.';
+
+const bib = bibtex && bibtexEntry(kinds.find((k) => k.id === kind)?.bibtex, { title, authors, year, fields: bibtex });
+---
+
+<li data-kind={kind} data-year={year}>
+  <div class="lead">
+    {
+      image ? (
+        <a href={image} class="frame" aria-hidden="true" tabindex="-1">
+          <span class="print"><img src={image} alt="" width="200" height="150" loading="lazy" /></span>
+        </a>
+      ) : (
+        <span class="frame">
+          <span class="print"><span class="blank" /></span>
+        </span>
+      )
+    }
+  </div>
+  <div class="text">
+    <p class="title">{title}</p>
+    <p class="authors">{authors.map((name, i) => <>{between(i)}{name === me ? <strong>{keepTogether(name)}</strong> : keepTogether(name)}</>)}</p>
+    <p set:html={venue} />
+    {
+      (reference || bib || links.length > 0) && (
+        <p class="actions">
+          {reference && (
+            <button type="button" aria-expanded="false" aria-controls={`${id}-reference`} data-hide="Hide citation">
+              <span>Cite</span>
+            </button>
+          )}
+          {bib && (
+            <button type="button" aria-expanded="false" aria-controls={`${id}-bibtex`} data-hide="Hide BibTeX">
+              <span>BibTeX</span>
+            </button>
+          )}
+          {links.map((item) => (
+            <a href={item.href}>
+              <span>{item.label}</span>
+            </a>
+          ))}
+        </p>
+      )
+    }
+    {
+      reference && (
+        <div id={`${id}-reference`} hidden>
+          <p class="reference">{authors.map((name, i) => <>{between(i)}{keepTogether(name)}</>)} ({year}). {title}{titleEnd} <Fragment set:html={reference} /></p>
+          <button type="button" class="copy" data-copy>
+            <span>Copy</span>
+          </button>
+        </div>
+      )
+    }
+    {
+      bib && (
+        <div id={`${id}-bibtex`} hidden>
+          <code class="bibtex" style={`--indent: ${bib.indent}`}>{bib.lines.map((line) => <span>{line}</span>)}</code>
+          <button type="button" class="copy" data-copy>
+            <span>Copy BibTeX</span>
+          </button>
+        </div>
+      )
+    }
+  </div>
+</li>
+
+<style>
+  li {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-start;
+    gap: 14px 36px;
+    margin: 0;
+  }
+
+  li:not([hidden]) {
+    counter-increment: entry;
+  }
+
+  li[hidden] {
+    display: none;
+  }
+
+  .lead {
+    display: flex;
+    flex: none;
+    align-items: flex-start;
+    gap: 14px;
+  }
+
+  .lead::before {
+    flex: 0 0 36px;
+    color: var(--c-muted);
+    font-variant-numeric: tabular-nums;
+    text-align: right;
+    content: counter(entry) '.';
+  }
+
+  .frame {
+    display: block;
+    box-sizing: border-box;
+    width: 240px;
+    padding: 14px;
+    border: var(--line) solid var(--c-brand);
+    background-color: var(--c-mat);
+    transition:
+      border-color 0.3s ease,
+      box-shadow 0.3s ease;
+  }
+
+  .frame:hover {
+    border-color: var(--c-frame-hover);
+    box-shadow: 0 0 0 var(--line) var(--c-frame-hover);
+  }
+
+  .print {
+    display: block;
+    padding: 5px;
+    background-color: #ffffff;
+    box-shadow: var(--shadow-print);
+    transition:
+      box-shadow 0.4s ease,
+      transform 0.4s ease;
+  }
+
+  a.frame:hover .print {
+    box-shadow: var(--shadow-print-lifted);
+    transform: translateY(-2px);
+  }
+
+  .print img,
+  .blank {
+    display: block;
+    width: 100%;
+    height: auto;
+    aspect-ratio: 4 / 3;
+  }
+
+  .print img {
+    object-fit: cover;
+  }
+
+  .text {
+    display: flex;
+    flex: 999 1 420px;
+    flex-direction: column;
+    min-width: 0;
+    max-width: var(--measure);
+  }
+
+  .text p {
+    margin: 0;
+  }
+
+  .title {
+    font-weight: 700;
+    text-wrap: pretty;
+  }
+
+  .authors {
+    color: var(--c-muted);
+    text-wrap: pretty;
+  }
+
+  .authors strong {
+    color: var(--c-text);
+  }
+
+  .actions {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0 14px;
+    margin-left: -4px;
+  }
+
+  .actions a,
+  .actions button,
+  .copy {
+    display: inline-flex;
+    align-items: center;
+    min-height: 44px;
+  }
+
+  button {
+    padding: 0;
+    border: 0;
+    background: none;
+    color: var(--c-link);
+    font: inherit;
+    cursor: pointer;
+  }
+
+  .actions span,
+  .copy span {
+    padding: 0 4px;
+  }
+
+  .actions a:hover {
+    text-decoration: none;
+  }
+
+  .actions a:hover span,
+  .actions button:hover span,
+  .copy:hover span {
+    background-color: var(--c-link);
+    color: var(--c-bg);
+  }
+
+  button:focus-visible {
+    outline: 2px solid var(--c-link);
+    outline-offset: 2px;
+  }
+
+  .reference {
+    padding-left: 1.6em;
+    line-height: 1.45;
+    text-indent: -1.6em;
+  }
+
+  .copy {
+    padding-left: calc(1.6em - 4px);
+  }
+
+  .bibtex {
+    display: block;
+    padding: 12px 16px;
+    border: var(--line) solid var(--c-brand);
+    background-color: var(--c-mat);
+    font-family: var(--font-mono);
+    font-size: var(--size-small);
+    line-height: 1.6;
+  }
+
+  .bibtex span {
+    display: block;
+    padding-left: calc(var(--indent) * 1ch);
+    text-indent: calc(var(--indent) * -1ch);
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+  }
+
+  .bibtex + .copy {
+    margin-left: -4px;
+    padding-left: 0;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .frame,
+    .print {
+      transition: none;
+    }
+
+    a.frame:hover .print {
+      transform: none;
+    }
+  }
+</style>

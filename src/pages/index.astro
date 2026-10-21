@@ -1,0 +1,66 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Box from '../components/Box.astro';
+import DayStrip from '../components/DayStrip.astro';
+import { site } from '../data/site.js';
+import { boxes } from '../data/boxes.js';
+import { keepTogether, DOT } from '../lib/text.js';
+
+// The lines under the name; each logo is public/images/logos/<logo>.svg
+const titles = ['Biostatistician', 'Center for Alaska Native Health Research (CANHR)', 'University of Alaska Fairbanks'];
+const links = [
+  { label: 'Email', href: 'mailto:rdazadda@alaska.edu', logo: 'email' },
+  { label: 'Google Scholar', href: '#', logo: 'google-scholar' },
+  { label: 'GitHub', href: 'https://github.com/rdazadda', logo: 'github' },
+  { label: 'ORCID', href: 'https://orcid.org/0009-0002-4384-4556', logo: 'orcid' },
+];
+---
+
+<BaseLayout title={site.name}>
+  <h1>{site.name}</h1>
+
+  <p class="titles">{titles.map((title, i) => <>{i > 0 && DOT}{keepTogether(title)}</>)}</p>
+  <p class="links">{links.map((link) => <a href={link.href}><img src={`/images/logos/${link.logo}.svg`} alt="" width="20" height="20" /><span>{keepTogether(link.label)}</span></a>)}</p>
+
+  <DayStrip />
+
+  <div class="boxes">
+    {boxes.map((box) => <Box {...box} />)}
+  </div>
+</BaseLayout>
+
+<style>
+  .titles,
+  .boxes {
+    text-align: center;
+  }
+
+  .titles,
+  .links {
+    margin: 0.3ex 0 0;
+    font-size: var(--size-lead);
+  }
+
+  .links {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 0.2ex 1.4em;
+  }
+
+  .links img {
+    width: 1.1em;
+    height: 1.1em;
+    margin-right: 0.35em;
+    vertical-align: -0.2em;
+  }
+
+  .links a:hover {
+    text-decoration: none;
+  }
+
+  .links a:hover span {
+    background-color: var(--c-link);
+    color: var(--c-bg);
+  }
+</style>
