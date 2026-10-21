@@ -16,7 +16,7 @@ const count = (kind: string) => entries.filter((entry) => entry.kind === kind).l
         <div class="show" role="group" aria-label="Show">
           <button type="button" data-show="all" aria-pressed="true" data-text={`All ${entries.length}`}><span class="words">All</span> <span class="count">{entries.length}</span></button>
           {
-            kinds.map((kind) => (
+            kinds.filter((kind) => count(kind.id) > 0).map((kind) => (
               <button type="button" data-show={kind.id} aria-pressed="false" data-text={`${kind.short} ${count(kind.id)}`}>
                 <span class="words">{kind.short}</span> <span class="count">{count(kind.id)}</span>
               </button>

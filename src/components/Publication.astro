@@ -25,6 +25,7 @@ const { id, kind, year, title, authors, venue, image, links = [], reference, bib
 
 const between = (i: number) => (i === 0 ? '' : i === authors.length - 1 ? ', & ' : ', ');
 const titleEnd = /[.?!]$/.test(title) ? '' : '.';
+const authorsEnd = authors.at(-1).endsWith('.') ? '' : '.';
 
 const bib = bibtex && bibtexEntry(kinds.find((k) => k.id === kind)?.bibtex, { title, authors, year, fields: bibtex });
 ---
@@ -71,7 +72,7 @@ const bib = bibtex && bibtexEntry(kinds.find((k) => k.id === kind)?.bibtex, { ti
     {
       reference && (
         <div id={`${id}-reference`} hidden>
-          <p class="reference">{authors.map((name, i) => <>{between(i)}{keepTogether(name)}</>)} ({year}). {title}{titleEnd} <Fragment set:html={reference} /></p>
+          <p class="reference">{authors.map((name, i) => <>{between(i)}{keepTogether(name)}</>)}{authorsEnd} ({year}). {title}{titleEnd} <Fragment set:html={reference} /></p>
           <button type="button" class="copy" data-copy>
             <span>Copy</span>
           </button>
@@ -81,7 +82,7 @@ const bib = bibtex && bibtexEntry(kinds.find((k) => k.id === kind)?.bibtex, { ti
     {
       bib && (
         <div id={`${id}-bibtex`} hidden>
-          <code class="bibtex" style={`--indent: ${bib.indent}`}>{bib.lines.map((line) => <span>{line}</span>)}</code>
+          <code class="bibtex" style={`--indent: ${bib.indent}`}>{bib.lines.map((line) => <span class:list={{ unbroken: /= \{\S+\},$/.test(line) }}>{line}</span>)}</code>
           <button type="button" class="copy" data-copy>
             <span>Copy BibTeX</span>
           </button>
@@ -265,6 +266,10 @@ const bib = bibtex && bibtexEntry(kinds.find((k) => k.id === kind)?.bibtex, { ti
     text-indent: calc(var(--indent) * -1ch);
     white-space: pre-wrap;
     overflow-wrap: anywhere;
+  }
+
+  .bibtex .unbroken {
+    word-break: break-all;
   }
 
   .bibtex + .copy {
