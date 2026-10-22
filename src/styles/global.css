@@ -76,16 +76,6 @@ a:focus-visible {
   color: var(--c-bg);
 }
 
-.section {
-  padding: 0.5ex 0.5em;
-  border-radius: 8px;
-  background-color: var(--c-brand);
-  color: var(--c-on-brand);
-  font-size: var(--size-heading);
-  font-weight: 700;
-  text-transform: uppercase;
-}
-
 .heading {
   font-size: var(--size-heading);
   font-weight: 700;

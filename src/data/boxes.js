@@ -70,6 +70,9 @@ export const boxes = [
       { image: '/images/software/software-5.jpg', caption: 'Explore my software for accelerometry, Q-sort and circadian rhythm analysis, and more.' },
       { image: '/images/software/software-6.jpg', caption: 'Explore my software for accelerometry, Q-sort and circadian rhythm analysis, and more.' },
       { image: '/images/software/software-7.jpg', caption: 'Explore my software for accelerometry, Q-sort and circadian rhythm analysis, and more.' },
+      { image: '/images/software/software-8.jpg', caption: 'Explore my software for accelerometry, Q-sort and circadian rhythm analysis, and more.' },
+      { image: '/images/software/software-9.jpg', caption: 'Explore my software for accelerometry, Q-sort and circadian rhythm analysis, and more.' },
+      { image: '/images/software/software-10.jpg', caption: 'Explore my software for accelerometry, Q-sort and circadian rhythm analysis, and more.' },
     ],
   },
   {

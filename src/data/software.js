@@ -1,40 +1,142 @@
-// intro: the line at the top (HTML)
-// sections, in order: optional heading, then entries, a list, or both
-//   entry: title, link, description (HTML) or items, optional image (in public/images/) and alt
-//   list item: title, link, description (HTML)
-const description = 'One or two sentences describing this software, with a <a href="#">link</a>.';
+// kinds: the groups, in page order
+// entries, newest first in each group:
+//   kind, year, title (the software name), subtitle (its full title), about (HTML, what it does)
+//   images: optional pictures in public/images/ (4:3); more than one take turns
+//   links: optional [{ label, href }]
+//   reference: optional, the full citation the Cite button shows (HTML)
+//   bibtex: optional, the full BibTeX entry
+export const kinds = [
+  { id: 'apps', heading: 'Dashboards and desktop apps', short: 'Dashboards and desktop apps' },
+  { id: 'packages', heading: 'Packages', short: 'Packages' },
+];
 
-export const intro = 'One or two sentences introducing this page, with a <a href="#">link</a>.';
-
-export const sections = [
+export const entries = [
   {
-    entries: [
-      { title: 'Software name', link: '#', description },
-      { title: 'Software name', link: '#', description },
-      { title: 'Software name', link: '#', description },
+    kind: 'apps',
+    year: '2026',
+    title: 'CANHRActi',
+    subtitle: 'Analysis of accelerometer data for physical activity, sleep, sedentary behavior and circadian rhythm research',
+    about: 'A web and desktop app that does the work of GGIR and of count-based accelerometer software in one place: its raw pipeline implements GGIR’s methods, and it runs the wear-time, sleep-scoring, cut-point and energy-expenditure algorithms that count-based software uses on ActiGraph files. It then goes further, with advanced circadian rhythm and sedentary fragmentation analysis.',
+    images: ['/images/software/canhracti-logo.png', '/images/software/canhracti-dark.png', '/images/software/canhracti-light.png'],
+    links: [
+      { label: 'Open dashboard', href: 'https://rdazadda-canhracti.share.connect.posit.cloud/' },
+      { label: 'Windows', href: 'https://github.com/rdazadda/canhrActi/releases/latest/download/CANHRActi-Setup.exe' },
+      { label: 'macOS (Apple silicon)', href: 'https://github.com/rdazadda/canhrActi/releases/latest/download/CANHRActi-mac-arm64.dmg' },
+      { label: 'macOS (Intel)', href: 'https://github.com/rdazadda/canhrActi/releases/latest/download/CANHRActi-mac-x64.dmg' },
+      { label: 'Linux', href: 'https://github.com/rdazadda/canhrActi/releases/latest/download/CANHRActi.AppImage' },
+      { label: 'GitHub', href: 'https://github.com/rdazadda/canhrActi' },
     ],
+    reference: 'Azadda, R. D., AK CEAL Team, & Rasmus, S. (2026). canhrActi: Activity, sedentary behavior, sleep and circadian analysis of accelerometer data. Center for Alaska Native Health Research, University of Alaska Fairbanks. https://github.com/rdazadda/canhrActi',
+    bibtex: `@Manual{canhrActi,
+  title        = {canhrActi: Activity, Sedentary Behavior, Sleep and Circadian Analysis of Accelerometer Data},
+  author       = {Raymond Dacosta Azadda and {AK CEAL Team} and Stacy Rasmus},
+  organization = {Center for Alaska Native Health Research, University of Alaska Fairbanks},
+  year         = {2026},
+  url          = {https://github.com/rdazadda/canhrActi},
+}`,
   },
   {
-    heading: 'Section heading',
-    entries: [
-      {
-        title: 'Group name',
-        link: '#',
-        items: [
-          { title: 'Item name', link: '#', description: 'does one thing, in one sentence.' },
-          { title: 'Item name', link: '#', description: 'does another thing, in one sentence.' },
-          { title: 'Item name', link: '#', description: 'does a third thing, in one sentence.' },
-        ],
-      },
-      { title: 'Software name', link: '#', description },
+    kind: 'apps',
+    year: '2026',
+    title: 'canhrQsort',
+    subtitle: 'A dashboard for Q-sort analysis',
+    about: 'An online dashboard that ranks the statements of a Q-sort study by average placement, compares rankings across demographic groups, and identifies shared viewpoints with classical factor analysis. Its Bayesian factor analysis identifies them too and quantifies the uncertainty in each result.',
+    images: ['/images/software/canhrqsort-logo.png', '/images/software/canhrqsort-app.png'],
+    links: [
+      { label: 'Open dashboard', href: 'https://rdazadda-canhrqsort.share.connect.posit.cloud/' },
+      { label: 'GitHub', href: 'https://github.com/rdazadda/canhrQsort' },
     ],
+    reference: 'Azadda, R. D., AKE-ACE Team, Hueffer, K., Peter, T., & Stacy Rasmus. (2026). canhrQsort: A dashboard for Q-sort analysis. https://rdazadda-canhrqsort.share.connect.posit.cloud/',
   },
   {
-    heading: 'Section heading',
-    list: [
-      { title: 'Software name', link: '#', description: 'One sentence describing it.' },
-      { title: 'Software name', link: '#', description: 'One sentence describing it.' },
-      { title: 'Software name', link: '#', description: 'One sentence describing it.' },
+    kind: 'apps',
+    year: '2025',
+    title: 'Intertribal Healthy Data Dashboard',
+    subtitle: 'Native Transformation Project Intertribal Healthy Data Dashboard',
+    about: 'An online platform for displaying community level health information and community level protective factors.',
+    images: ['/images/software/intertribal-dashboard.png'],
+    links: [{ label: 'Open dashboard', href: 'https://rdazadda.github.io/Intertribal-Healthy-Data-Dashboard/dashboard.html' }],
+  },
+  {
+    kind: 'packages',
+    year: '2026',
+    title: 'bayesqm',
+    subtitle: 'Bayesian Q Methodology: Exact Rank-Order Likelihood for Forced Q Sorts',
+    about: 'An R package that models each forced Q sort exactly, as an ordered partition of the statements, and reports every Q-methodology result with its posterior uncertainty under one false-discovery rule. Its results are checked against planted truth in simulation and against the qmethod package where both compute the same result.',
+    images: ['/images/software/bayesqm.png'],
+    links: [
+      { label: 'CRAN', href: 'https://cran.r-project.org/web/packages/bayesqm/index.html' },
+      { label: 'GitHub', href: 'https://github.com/rdazadda/bayesqm' },
+      { label: 'Docs', href: 'https://rdazadda.github.io/bayesqm/' },
     ],
+    reference: 'Azadda, R. D., AK-ACE Team, Hueffer, K., Peter, T., & Rasmus, S. (2026). bayesqm: Bayesian Q methodology with an exact rank-order likelihood for forced Q sorts. R package version 0.2.0. https://github.com/rdazadda/bayesqm',
+    bibtex: `@Manual{azadda2026bayesqm,
+  title = {{bayesqm}: Bayesian {Q} Methodology with an Exact Rank-Order Likelihood for Forced {Q} Sorts},
+  author = {Raymond Dacosta Azadda and {AK-ACE Team} and Karsten Hueffer and Taa'aii Peter and Stacy Rasmus},
+  year = {2026},
+  note = {R package version 0.2.0},
+  url = {https://github.com/rdazadda/bayesqm},
+}`,
+  },
+  {
+    kind: 'packages',
+    year: '2026',
+    title: 'actiRhythm',
+    subtitle: 'Circadian Rest-Activity Rhythm Analysis',
+    about: 'An R package that brings circadian methods usually spread across several packages into one interface: nonparametric measures, cosinor, periodograms, fractal and wavelet analysis, sleep scoring, and a hidden Markov rest-activity model. It reads ActiGraph, Axivity and GENEActiv files, and its results are checked against GGIR, cosinor, nparACT and ActCR.',
+    images: ['/images/software/actirhythm.png'],
+    links: [
+      { label: 'CRAN', href: 'https://CRAN.R-project.org/package=actiRhythm' },
+      { label: 'GitHub', href: 'https://github.com/rdazadda/actiRhythm' },
+      { label: 'Docs', href: 'https://rdazadda.github.io/actiRhythm/' },
+    ],
+    reference: 'Azadda RD, CEAL Team, Rasmus S (2026). actiRhythm: Circadian Rest-Activity Rhythm Analysis. R package version 0.1.0, https://github.com/rdazadda/actiRhythm.',
+    bibtex: `@Manual{azadda2026actirhythm,
+  title = {actiRhythm: Circadian Rest-Activity Rhythm Analysis},
+  author = {Raymond Dacosta Azadda and {CEAL Team} and Stacy Rasmus},
+  year = {2026},
+  note = {R package version 0.1.0},
+  url = {https://github.com/rdazadda/actiRhythm},
+}`,
+  },
+  {
+    kind: 'packages',
+    year: '2025',
+    title: 'canhrcolors',
+    subtitle: 'CANHR Colors for R and Stata',
+    about: 'An R package and Stata scheme that bring the Center for Alaska Native Health Research’s 12-color palette into both programs: canhrcolors(), a ggplot2 color scale and a theme in R, and set scheme canhr in Stata, so figures from R and Stata share the same CANHR look.',
+    images: ['/images/software/canhrcolors.png'],
+    links: [
+      { label: 'GitHub', href: 'https://github.com/rdazadda/CANHR-color-schemes' },
+      { label: 'Docs', href: 'https://rdazadda.github.io/CANHR-color-schemes/' },
+    ],
+    reference: 'Azadda, R. D., Grogan-Kaylor, A., & Lee, K. (2025). canhrcolors: CANHR Colors for R and Stata. R package version 1.0. https://github.com/rdazadda/CANHR-color-schemes',
+    bibtex: `@Manual{azadda2025canhrcolors,
+  title = {{canhrcolors}: CANHR Colors for {R} and {Stata}},
+  author = {Raymond Dacosta Azadda and Andrew Grogan-Kaylor and KyungSook Lee},
+  year = {2025},
+  note = {R package version 1.0},
+  url = {https://github.com/rdazadda/CANHR-color-schemes},
+}`,
+  },
+  {
+    kind: 'packages',
+    year: '2025',
+    title: 'sleepwaker',
+    subtitle: 'Detect Sleep and Wake Periods from Accelerometry Data',
+    about: 'An R package that inverts the sleep periods ActiGraph ActiLife detects into the waking periods between them, using the end of one sleep as the start of the wake and the start of the next sleep as its end. This keeps sleep out of sedentary time estimates.',
+    images: ['/images/software/sleepwaker.png'],
+    links: [
+      { label: 'GitHub', href: 'https://github.com/rdazadda/sleepwaker' },
+      { label: 'Docs', href: 'https://rdazadda.github.io/sleepwaker/' },
+    ],
+    reference: 'Azadda R, Grogan-Kaylor A, Lee K (2025). sleepwaker: Detect Sleep and Wake Periods from Accelerometry Data. R package version 0.1.0, https://github.com/rdazadda/sleepwaker.',
+    bibtex: `@Manual{azadda2025sleepwaker,
+  title = {sleepwaker: Detect Sleep and Wake Periods from Accelerometry Data},
+  author = {Raymond Dacosta Azadda and Andrew Grogan-Kaylor and KyungSook Lee},
+  year = {2025},
+  note = {R package version 0.1.0},
+  url = {https://github.com/rdazadda/sleepwaker},
+}`,
   },
 ];

@@ -23,7 +23,7 @@ interface Props {
 
 const { id, kind, year, title, authors, venue, image, links = [], reference, bibtex } = Astro.props;
 
-const between = (i: number) => (i === 0 ? '' : i === authors.length - 1 ? ', & ' : ', ');
+const between = (i: number) => (i === 0 ? '' : i === authors.length - 1 ? ', &\u00a0' : ', ');
 const titleEnd = /[.?!]$/.test(title) ? '' : '.';
 const authorsEnd = authors.at(-1).endsWith('.') ? '' : '.';
 
