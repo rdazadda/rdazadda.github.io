@@ -49,17 +49,6 @@ export const boxes = [
     ],
   },
   {
-    title: 'Interactive Visualizations',
-    link: '#',
-    slides: [
-      { video: '/images/visualizations/visualization-1.mp4', image: '/images/visualizations/visualization-1.jpg', caption: 'Actigraphy/accelerometry analysis, statistics, biostatistics, psychometrics and qualitative analysis.' },
-      { video: '/images/visualizations/visualization-2.mp4', image: '/images/visualizations/visualization-2.jpg', caption: 'Actigraphy/accelerometry analysis, statistics, biostatistics, psychometrics and qualitative analysis.' },
-      { video: '/images/visualizations/visualization-3.mp4', image: '/images/visualizations/visualization-3.jpg', caption: 'Actigraphy/accelerometry analysis, statistics, biostatistics, psychometrics and qualitative analysis.' },
-      { video: '/images/visualizations/visualization-4.mp4', image: '/images/visualizations/visualization-4.jpg', caption: 'Actigraphy/accelerometry analysis, statistics, biostatistics, psychometrics and qualitative analysis.' },
-      { video: '/images/visualizations/visualization-5.mp4', image: '/images/visualizations/visualization-5.jpg', caption: 'Actigraphy/accelerometry analysis, statistics, biostatistics, psychometrics and qualitative analysis.' },
-    ],
-  },
-  {
     title: 'Software',
     link: '/software/',
     slides: [
@@ -73,6 +62,17 @@ export const boxes = [
       { image: '/images/software/software-8.jpg', caption: 'Explore my software for accelerometry, Q-sort and circadian rhythm analysis, and more.' },
       { image: '/images/software/software-9.jpg', caption: 'Explore my software for accelerometry, Q-sort and circadian rhythm analysis, and more.' },
       { image: '/images/software/software-10.jpg', caption: 'Explore my software for accelerometry, Q-sort and circadian rhythm analysis, and more.' },
+    ],
+  },
+  {
+    title: 'Interactive Visualizations',
+    link: '#',
+    slides: [
+      { video: '/images/visualizations/visualization-1.mp4', image: '/images/visualizations/visualization-1.jpg', caption: 'Actigraphy/accelerometry analysis, statistics, biostatistics, psychometrics and qualitative analysis.' },
+      { video: '/images/visualizations/visualization-2.mp4', image: '/images/visualizations/visualization-2.jpg', caption: 'Actigraphy/accelerometry analysis, statistics, biostatistics, psychometrics and qualitative analysis.' },
+      { video: '/images/visualizations/visualization-3.mp4', image: '/images/visualizations/visualization-3.jpg', caption: 'Actigraphy/accelerometry analysis, statistics, biostatistics, psychometrics and qualitative analysis.' },
+      { video: '/images/visualizations/visualization-4.mp4', image: '/images/visualizations/visualization-4.jpg', caption: 'Actigraphy/accelerometry analysis, statistics, biostatistics, psychometrics and qualitative analysis.' },
+      { video: '/images/visualizations/visualization-5.mp4', image: '/images/visualizations/visualization-5.jpg', caption: 'Actigraphy/accelerometry analysis, statistics, biostatistics, psychometrics and qualitative analysis.' },
     ],
   },
   {
