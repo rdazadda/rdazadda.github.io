@@ -76,11 +76,6 @@ export const boxes = [
     ],
   },
   {
-    title: 'CV',
-    link: '/cv.pdf',
-    slides: [{ image: '/images/cv/cv-1.png', caption: 'Last updated October 13, 2026.' }],
-  },
-  {
     title: 'Blog',
     link: '#',
     slides: [
@@ -100,5 +95,10 @@ export const boxes = [
       { video: '/images/memory/memory-3.mp4', image: '/images/memory/memory-3.png', caption: 'Learn quickly, recall more and get more done.' },
       { video: '/images/memory/memory-4.mp4', image: '/images/memory/memory-4.png', caption: 'Learn quickly, recall more and get more done.' },
     ],
+  },
+  {
+    title: 'CV',
+    link: '/cv.pdf',
+    slides: [{ image: '/images/cv/cv-1.png', caption: 'Last updated October 13, 2026.' }],
   },
 ];
