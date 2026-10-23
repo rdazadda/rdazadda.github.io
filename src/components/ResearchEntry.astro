@@ -8,6 +8,7 @@ interface Props {
   kind: string;
   year: string;
   title: string;
+  pis?: string[];
   funder?: string;
   role?: string;
   years?: string;
@@ -16,7 +17,7 @@ interface Props {
   links?: Link[];
 }
 
-const { kind, year, title, funder, role, years, about, images, links = [] } = Astro.props;
+const { kind, year, title, pis, funder, role, years, about, images, links = [] } = Astro.props;
 
 const rotates = (images?.length ?? 0) > 1;
 ---
@@ -41,6 +42,7 @@ const rotates = (images?.length ?? 0) > 1;
   </div>
   <div class="text">
     <p class="title"><span class="label">Project:</span> {title}</p>
+    {pis && <p class="detail"><span class="label">{pis.length > 1 ? 'PIs:' : 'PI:'}</span> {pis.join(', ')}</p>}
     {funder && <p class="detail"><span class="label">Funder:</span> {funder}</p>}
     {role && <p class="detail"><span class="label">Role:</span> {role}</p>}
     {years && <p class="detail"><span class="label">Years:</span> {years}</p>}
@@ -165,7 +167,6 @@ const rotates = (images?.length ?? 0) > 1;
   }
 
   .detail {
-    color: var(--c-muted);
     text-wrap: pretty;
   }
 
