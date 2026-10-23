@@ -20,7 +20,7 @@ export const boxes = [
   },
   {
     title: 'Research Projects',
-    link: '#',
+    link: '/research/',
     slides: [
       { image: '/images/research/research-1.jpg', caption: 'American Indian/Alaska Native research, actigraphy, multilevel, Bayesian, psychometric and qualitative analysis.' },
       { image: '/images/research/research-2.jpg', caption: 'American Indian/Alaska Native research, actigraphy, multilevel, Bayesian, psychometric and qualitative analysis.' },
@@ -33,8 +33,6 @@ export const boxes = [
       { image: '/images/research/research-9.jpg', caption: 'American Indian/Alaska Native research, actigraphy, multilevel, Bayesian, psychometric and qualitative analysis.' },
       { image: '/images/research/research-10.jpg', caption: 'American Indian/Alaska Native research, actigraphy, multilevel, Bayesian, psychometric and qualitative analysis.' },
       { image: '/images/research/research-11.jpg', caption: 'American Indian/Alaska Native research, actigraphy, multilevel, Bayesian, psychometric and qualitative analysis.' },
-      { image: '/images/research/research-12.jpg', caption: 'American Indian/Alaska Native research, actigraphy, multilevel, Bayesian, psychometric and qualitative analysis.' },
-      { image: '/images/research/research-13.jpg', caption: 'American Indian/Alaska Native research, actigraphy, multilevel, Bayesian, psychometric and qualitative analysis.' },
     ],
   },
   {
@@ -46,6 +44,8 @@ export const boxes = [
       { image: '/images/publications/publication-3.jpg', caption: 'Papers and reports.' },
       { image: '/images/publications/publication-4.jpg', caption: 'Papers and reports.' },
       { image: '/images/publications/publication-5.jpg', caption: 'Papers and reports.' },
+      { image: '/images/publications/publication-6.jpg', caption: 'Papers and reports.' },
+      { image: '/images/publications/publication-7.jpg', caption: 'Papers and reports.' },
     ],
   },
   {

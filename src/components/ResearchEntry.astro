@@ -1,0 +1,214 @@
+---
+interface Link {
+  label: string;
+  href: string;
+}
+
+interface Props {
+  kind: string;
+  year: string;
+  title: string;
+  funder?: string;
+  role?: string;
+  years?: string;
+  about: string;
+  images?: string[];
+  links?: Link[];
+}
+
+const { kind, year, title, funder, role, years, about, images, links = [] } = Astro.props;
+
+const rotates = (images?.length ?? 0) > 1;
+---
+
+<li data-kind={kind} data-year={year}>
+  <div class="lead">
+    {
+      images ? (
+        <a href={images[0]} class="frame" aria-hidden="true" tabindex="-1">
+          <span class:list={['print', { rotate: rotates }]} data-rotate={rotates ? '' : undefined}>
+            {images.map((src, i) => (
+              <img src={src} alt="" width="200" height="150" loading="lazy" class={rotates && i === 0 ? 'current' : undefined} />
+            ))}
+          </span>
+        </a>
+      ) : (
+        <span class="frame">
+          <span class="print"><span class="blank" /></span>
+        </span>
+      )
+    }
+  </div>
+  <div class="text">
+    <p class="title"><span class="label">Project:</span> {title}</p>
+    {funder && <p class="detail"><span class="label">Funder:</span> {funder}</p>}
+    {role && <p class="detail"><span class="label">Role:</span> {role}</p>}
+    {years && <p class="detail"><span class="label">Years:</span> {years}</p>}
+    <p><span class="label">About:</span> <Fragment set:html={about} /></p>
+    {
+      links.length > 0 && (
+        <p class="actions">
+          {links.map((item) => (
+            <a href={item.href}>
+              <span>{item.label}</span>
+            </a>
+          ))}
+        </p>
+      )
+    }
+  </div>
+</li>
+
+<style>
+  li {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-start;
+    gap: 14px 36px;
+    margin: 0;
+  }
+
+  li:not([hidden]) {
+    counter-increment: entry;
+  }
+
+  li[hidden] {
+    display: none;
+  }
+
+  .lead {
+    display: flex;
+    flex: none;
+    align-items: flex-start;
+    gap: 14px;
+  }
+
+  .lead::before {
+    flex: 0 0 36px;
+    color: var(--c-muted);
+    font-variant-numeric: tabular-nums;
+    text-align: right;
+    content: counter(entry) '.';
+  }
+
+  .frame {
+    display: block;
+    box-sizing: border-box;
+    width: 240px;
+    padding: 14px;
+    border: var(--line) solid var(--c-brand);
+    background-color: var(--c-mat);
+    transition:
+      border-color 0.3s ease,
+      box-shadow 0.3s ease;
+  }
+
+  .frame:hover {
+    border-color: var(--c-frame-hover);
+    box-shadow: 0 0 0 var(--line) var(--c-frame-hover);
+  }
+
+  .print {
+    display: grid;
+    padding: 5px;
+    background-color: #ffffff;
+    box-shadow: var(--shadow-print);
+    transition:
+      box-shadow 0.4s ease,
+      transform 0.4s ease;
+  }
+
+  .print > * {
+    grid-area: 1 / 1;
+  }
+
+  .rotate > img {
+    transition: opacity 0.9s ease-in-out;
+  }
+
+  .rotate > :not(.current) {
+    opacity: 0;
+  }
+
+  a.frame:hover .print {
+    box-shadow: var(--shadow-print-lifted);
+    transform: translateY(-2px);
+  }
+
+  .print img,
+  .blank {
+    display: block;
+    width: 100%;
+    height: auto;
+    aspect-ratio: 4 / 3;
+  }
+
+  .print img {
+    object-fit: cover;
+  }
+
+  .text {
+    display: flex;
+    flex: 999 1 420px;
+    flex-direction: column;
+    min-width: 0;
+    max-width: var(--measure);
+  }
+
+  .text p {
+    margin: 0;
+  }
+
+  .title {
+    font-weight: 700;
+    text-wrap: pretty;
+  }
+
+  .detail {
+    color: var(--c-muted);
+    text-wrap: pretty;
+  }
+
+  .label {
+    color: var(--c-muted);
+    font-weight: 400;
+  }
+
+  .actions {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0 14px;
+    margin-left: -4px;
+  }
+
+  .actions a {
+    display: inline-flex;
+    align-items: center;
+    min-height: 44px;
+  }
+
+  .actions span {
+    padding: 0 4px;
+  }
+
+  .actions a:hover {
+    text-decoration: none;
+  }
+
+  .actions a:hover span {
+    background-color: var(--c-link);
+    color: var(--c-bg);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .frame,
+    .print {
+      transition: none;
+    }
+
+    a.frame:hover .print {
+      transform: none;
+    }
+  }
+</style>
