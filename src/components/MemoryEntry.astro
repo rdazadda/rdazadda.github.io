@@ -1,5 +1,7 @@
 ---
 interface Props {
+  kind: string;
+  year: string;
   title: string;
   about: string;
   link: string;
@@ -7,10 +9,10 @@ interface Props {
   video?: string;
 }
 
-const { title, about, link, image, video } = Astro.props;
+const { kind, year, title, about, link, image, video } = Astro.props;
 ---
 
-<li>
+<li data-kind={kind} data-year={year}>
   <div class="lead">
     <a href={link} class="frame" aria-hidden="true" tabindex="-1">
       <span class="print">
@@ -25,11 +27,11 @@ const { title, about, link, image, video } = Astro.props;
     </a>
   </div>
   <div class="text">
-    <p class="title"><span class="label">Name:</span> {title}</p>
-    {about && <p><span class="label">About:</span> <Fragment set:html={about} /></p>}
+    <p class="title"><span class="label">Name:</span> <a href={link}>{title}</a></p>
+    <p><span class="label">What it is:</span> <Fragment set:html={about} /></p>
     <p class="actions">
       <a href={link}>
-        <span>Read more</span>
+        <span>Learn the strategy</span>
       </a>
     </p>
   </div>
@@ -42,7 +44,14 @@ const { title, about, link, image, video } = Astro.props;
     align-items: flex-start;
     gap: 14px 36px;
     margin: 0;
+  }
+
+  li:not([hidden]) {
     counter-increment: entry;
+  }
+
+  li[hidden] {
+    display: none;
   }
 
   .lead {
@@ -72,7 +81,8 @@ const { title, about, link, image, video } = Astro.props;
       box-shadow 0.3s ease;
   }
 
-  .frame:hover {
+  li:has(a:hover) .frame,
+  li:has(a:focus-visible) .frame {
     border-color: var(--c-frame-hover);
     box-shadow: 0 0 0 var(--line) var(--c-frame-hover);
   }
@@ -87,7 +97,8 @@ const { title, about, link, image, video } = Astro.props;
       transform 0.4s ease;
   }
 
-  .frame:hover .print {
+  li:has(a:hover) .print,
+  li:has(a:focus-visible) .print {
     box-shadow: var(--shadow-print-lifted);
     transform: translateY(-2px);
   }
@@ -121,6 +132,15 @@ const { title, about, link, image, video } = Astro.props;
   .title {
     font-weight: 700;
     text-wrap: pretty;
+  }
+
+  .title a:link,
+  .title a:visited {
+    color: var(--c-text);
+  }
+
+  .title a:hover {
+    text-decoration: none;
   }
 
   .label {
@@ -161,7 +181,8 @@ const { title, about, link, image, video } = Astro.props;
       transition: none;
     }
 
-    .frame:hover .print {
+    li:has(a:hover) .print,
+    li:has(a:focus-visible) .print {
       transform: none;
     }
   }

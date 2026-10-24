@@ -9,38 +9,46 @@ const count = (kind: string) => entries.filter((entry) => entry.kind === kind).l
 ---
 
 <BaseLayout title={`The Art of Training Memory by ${site.name}`}>
-  <header>
-    <PageTitle what="The Art of Training Memory" />
-    <div class="views">
-      <div class="show" role="group" aria-label="Show">
-        <button type="button" data-show="all" aria-pressed="true" data-text={`All ${entries.length}`}><span class="words">All</span> <span class="count">{entries.length}</span></button>
-        {
-          kinds.map((kind) => (
-            <button type="button" data-show={kind.id} aria-pressed="false" data-text={`${kind.heading} ${count(kind.id)}`}>
-              <span class="words">{kind.heading}</span> <span class="count">{count(kind.id)}</span>
-            </button>
-          ))
-        }
+  <div data-memory>
+    <header>
+      <PageTitle what="The Art of Training Memory" />
+      <div class="views">
+        <div class="show" role="group" aria-label="Show">
+          <button type="button" data-show="all" aria-pressed="true" data-text={`All ${entries.length}`}><span class="words">All</span> <span class="count">{entries.length}</span></button>
+          {
+            kinds.map((kind) => (
+              <button type="button" data-show={kind.id} aria-pressed="false" data-text={`${kind.heading} ${count(kind.id)}`}>
+                <span class="words">{kind.heading}</span> <span class="count">{count(kind.id)}</span>
+              </button>
+            ))
+          }
+        </div>
+        <div class="arrange" role="group" aria-label="Arrange">
+          <span class="label">Arranged</span>
+          <button type="button" data-arrange="type" aria-pressed="true" data-text="by type"><span class="words">by type</span></button>
+          <button type="button" data-arrange="year" aria-pressed="false" data-text="by year"><span class="words">by year</span></button>
+        </div>
       </div>
-    </div>
-  </header>
+    </header>
 
-  <div class="groups" data-groups>
-    {
-      kinds.map((kind) => {
-        const items = entries.filter((entry) => entry.kind === kind.id);
-        return (
-          <section id={kind.id}>
-            <h2>{kind.heading}</h2>
-            <ol>
-              {items.map((entry) => (
-                <MemoryEntry {...entry} />
-              ))}
-            </ol>
-          </section>
-        );
-      })
-    }
+    <div class="groups" data-groups>
+      {
+        kinds.map((kind) => {
+          const items = entries.filter((entry) => entry.kind === kind.id);
+          return (
+            <section id={kind.id}>
+              <h2>{kind.heading}</h2>
+              <ol>
+                {items.map((entry) => (
+                  <MemoryEntry {...entry} />
+                ))}
+              </ol>
+            </section>
+          );
+        })
+      }
+    </div>
+    <p class="empty" data-empty hidden>Nothing here yet.</p>
   </div>
 </BaseLayout>
 
@@ -50,6 +58,7 @@ const count = (kind: string) => entries.filter((entry) => entry.kind === kind).l
     container-type: inline-size;
     display: flex;
     flex-wrap: wrap;
+    justify-content: space-between;
     align-items: center;
     gap: 8px 24px;
     margin-top: 0.9em;
@@ -60,12 +69,25 @@ const count = (kind: string) => entries.filter((entry) => entry.kind === kind).l
     color: var(--c-on-brand);
   }
 
-  .show {
+  .show,
+  .arrange {
     display: flex;
     flex-wrap: wrap;
     align-items: center;
     gap: 4px;
+  }
+
+  .show {
     font-size: var(--band);
+  }
+
+  .arrange {
+    font-size: calc(var(--band) * 8 / 9);
+  }
+
+  .arrange .label {
+    margin-right: 6px;
+    font-style: italic;
   }
 
   .views button {
@@ -78,6 +100,10 @@ const count = (kind: string) => entries.filter((entry) => entry.kind === kind).l
     font: inherit;
     cursor: pointer;
     transition: background-color 0.25s ease;
+  }
+
+  .arrange button {
+    padding: 0 0.75em;
   }
 
   .views button[aria-pressed='false']:hover {
@@ -150,6 +176,12 @@ const count = (kind: string) => entries.filter((entry) => entry.kind === kind).l
     padding: 0;
     list-style: none;
     counter-reset: entry;
+  }
+
+  .empty {
+    margin: 40px 0 0;
+    padding-left: 50px;
+    color: var(--c-muted);
   }
 </style>
 

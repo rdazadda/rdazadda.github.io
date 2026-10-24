@@ -4,62 +4,411 @@ import PageTitle from '../components/PageTitle.astro';
 import { site } from '../data/site.js';
 import { entries } from '../data/memory.js';
 
-const here = Astro.url.pathname.replace(/\/?$/, '/');
-const { title, intro, body, image, video } = entries.find((entry) => entry.link === here);
+const path = Astro.url.pathname;
+const here = path.endsWith('/') ? path : `${path}/`;
+const { title, intro, pairs, steps, practice, references, citation, bibtex, image, video } = entries.find((entry) => entry.link === here);
+const live = Astro.slots.has('default');
+const practicing = Astro.slots.has('practice');
+const media = live || Boolean(video || image);
+
+const paragraphs = (text: string | string[]) => [text].flat().filter(Boolean);
+
+const parts = [
+  ['about', 'About'],
+  ['example', 'Example'],
+  ['how', 'How to use'],
+  ['practice', 'Practice'],
+  ['references', 'References'],
+  ['cite', 'Cite'],
+];
 ---
 
 <BaseLayout title={`${title} by ${site.name}`}>
-  <PageTitle what="The Art of Training Memory" />
-
-  <h2 class="heading name">{title}</h2>
-
-  {intro && <Fragment set:html={intro} />}
-
-  <div class="box">
-    <div class="print">
-      {video ? <video class="picture" src={video} poster={image} width="640" height="640" muted loop playsinline preload="auto" aria-label={`A clip of ${title}`} data-clip /> : image ? <img class="picture" src={image} alt={`A picture of ${title}`} width="640" height="640" /> : <span class="picture blank" />}
+  <header>
+    <PageTitle what="The Art of Training Memory" />
+    <p class="name">{title}</p>
+    <div class="views">
+      <div class="show" role="group" aria-label="Show">
+        <button type="button" data-show="all" aria-pressed="true" data-text="All">
+          <span class="words">All</span>
+        </button>
+        {parts.map(([id, label]) => (
+          <button type="button" data-show={id} aria-pressed="false" data-text={label}>
+            <span class="words">{label}</span>
+          </button>
+        ))}
+      </div>
     </div>
+  </header>
+
+  <div class="parts" data-parts>
+    <section id="about">
+      <h2>About</h2>
+      {paragraphs(intro).map((text) => (
+        <p class="text" set:html={text} />
+      ))}
+    </section>
+    <section id="example">
+      <h2>Example</h2>
+      {
+        (media || pairs.length > 0) && (
+          <div class="example">
+            {media && (
+              <div class="stage">
+                <slot>
+                  {video ? (
+                    <video class="clip" src={video} poster={image} width="640" height="640" muted loop playsinline preload="auto" aria-label={`A clip of ${title}`} data-clip />
+                  ) : (
+                    <img class="clip" src={image} alt={`A picture of ${title}`} width="640" height="640" />
+                  )}
+                </slot>
+              </div>
+            )}
+            {pairs.length > 0 && (
+              <ol class="pairs">
+                {pairs.map(([known, remembered]) => (
+                  <li>
+                    <span>
+                      {known} <span class="arrow">→</span> <i>{remembered}</i>
+                    </span>
+                  </li>
+                ))}
+              </ol>
+            )}
+          </div>
+        )
+      }
+    </section>
+    <section id="how">
+      <h2>How to use</h2>
+      {
+        steps.length > 0 && (
+          <ol class="steps">
+            {steps.map((step) => (
+              <li set:html={step} />
+            ))}
+          </ol>
+        )
+      }
+    </section>
+    <section id="practice">
+      <h2>Practice</h2>
+      {paragraphs(practice).map((text) => (
+        <p class="text" set:html={text} />
+      ))}
+      {
+        practicing && (
+          <div class="stage">
+            <slot name="practice" />
+          </div>
+        )
+      }
+    </section>
+    <section id="references">
+      <h2>References</h2>
+      {
+        references.length > 0 && (
+          <div class="references">
+            {references.map((reference) => (
+              <p class="text reference" set:html={reference} />
+            ))}
+          </div>
+        )
+      }
+    </section>
+    <section id="cite">
+      <h2>Cite</h2>
+      {
+        citation && (
+          <>
+            <div>
+              <p class="text reference" id="citation" set:html={citation} />
+              <p class="actions">
+                <button type="button" data-copy="citation">
+                  <span>Copy</span>
+                </button>
+                {bibtex && (
+                  <button type="button" aria-expanded="false" aria-controls="bibtex" data-hide="Hide BibTeX">
+                    <span>BibTeX</span>
+                  </button>
+                )}
+              </p>
+            </div>
+            {bibtex && (
+              <div id="bibtex" hidden>
+                <pre class="code"><code id="bibtex-text">{bibtex}</code></pre>
+                <p class="actions">
+                  <button type="button" data-copy="bibtex-text">
+                    <span>Copy BibTeX</span>
+                  </button>
+                </p>
+              </div>
+            )}
+          </>
+        )
+      }
+    </section>
   </div>
 
-  {body && <Fragment set:html={body} />}
-
-  <p>See also other topics in <a href="/memory/">The Art of Training Memory</a> by <a href="/">{site.name}</a>.</p>
+  <p class="more">See also other topics in <a href="/memory/">The Art of Training Memory</a> by <a href="/">{site.name}</a>.</p>
 </BaseLayout>
 
 <style>
   .name {
     margin: 0.5ex 0 0;
+    font-size: var(--size-heading);
+    font-weight: 700;
     text-align: center;
   }
 
-  .box {
-    box-sizing: border-box;
-    width: fit-content;
-    max-width: 100%;
-    margin: 1em auto;
-    padding: 14px;
-    border: var(--line) solid var(--c-brand);
-    background-color: var(--c-mat);
+  .views {
+    --band: clamp(12px, calc(1.47cqi - 1px), var(--size-lead));
+    container-type: inline-size;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    margin-top: 0.9em;
+    padding: 12px;
+    border-radius: 8px;
+    background-color: var(--c-name);
+    box-shadow: inset 0 0 0 5px var(--c-name), inset 0 0 0 calc(5px + var(--line)) rgb(255 205 0 / 0.8);
+    color: var(--c-on-brand);
   }
 
-  .print {
-    padding: 5px;
-    background-color: #ffffff;
-    box-shadow: var(--shadow-print);
+  .show {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 4px;
+    font-size: var(--band);
   }
 
-  .picture {
+  .views button {
+    min-height: 44px;
+    padding: 0 calc(1em * 7 / 9);
+    border: 0;
+    border-radius: 3px;
+    background: none;
+    color: inherit;
+    font: inherit;
+    cursor: pointer;
+    transition: background-color 0.25s ease;
+  }
+
+  .views button[aria-pressed='false']:hover {
+    background-color: rgb(255 255 255 / 0.14);
+  }
+
+  .views button[aria-pressed='true'] {
+    color: #ffcd00;
+    cursor: default;
+  }
+
+  .views button[aria-pressed='true'] .words {
+    font-weight: 700;
+  }
+
+  .views button::after {
+    content: attr(data-text);
+    display: block;
+    height: 0;
+    overflow: hidden;
+    visibility: hidden;
+    font-weight: 700;
+  }
+
+  .views button:focus-visible {
+    outline: 2px solid var(--c-on-brand);
+    outline-offset: 2px;
+  }
+
+  .parts {
+    display: flex;
+    flex-direction: column;
+    gap: 44px;
+    padding-top: 36px;
+  }
+
+  section {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  section[hidden] {
+    display: none;
+  }
+
+  section p {
+    margin: 0;
+  }
+
+  h2 {
+    margin: 0;
+    font-size: var(--size-heading);
+    font-style: italic;
+    font-weight: 400;
+  }
+
+  .text,
+  .steps {
+    max-width: var(--measure);
+  }
+
+  .example {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 14px;
+  }
+
+  .stage {
+    display: flex;
+    align-self: stretch;
+    justify-content: center;
+  }
+
+  .clip {
     display: block;
     width: 640px;
     max-width: 100%;
     height: auto;
   }
 
-  .blank {
-    aspect-ratio: 1 / 1;
+  .pairs {
+    box-sizing: border-box;
+    width: 640px;
+    max-width: 100%;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    columns: 2;
+    column-gap: 24px;
+    counter-reset: pair;
+  }
+
+  .pairs li {
+    display: flex;
+    gap: 10px;
+    margin: 0 0 4px;
+    break-inside: avoid;
+    counter-increment: pair;
+  }
+
+  .pairs li::before {
+    flex: 0 0 24px;
+    color: var(--c-muted);
+    text-align: right;
+    content: counter(pair) '.';
+  }
+
+  .arrow {
+    color: var(--c-brand);
+  }
+
+  .steps {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    counter-reset: step;
+  }
+
+  .steps li {
+    display: flex;
+    gap: 14px;
+    margin: 0;
+    counter-increment: step;
+  }
+
+  .steps li::before {
+    flex: 0 0 20px;
+    color: var(--c-muted);
+    text-align: right;
+    content: counter(step) '.';
+  }
+
+  .references {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+
+  .reference {
+    padding-left: 1.6em;
+    text-indent: -1.6em;
+    overflow-wrap: anywhere;
+  }
+
+  .code {
+    margin: 0;
+    overflow-x: auto;
+    padding: 12px 16px;
+    border: var(--line) solid var(--c-brand);
+    background-color: var(--c-mat);
+    font-family: var(--font-mono);
+    font-size: var(--size-small);
+    line-height: 1.6;
+  }
+
+  .actions {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0 14px;
+    margin-left: -4px;
+  }
+
+  .actions button {
+    display: inline-flex;
+    align-items: center;
+    min-height: 44px;
+    padding: 0;
+    border: 0;
+    background: none;
+    color: var(--c-link);
+    font: inherit;
+    cursor: pointer;
+  }
+
+  .actions span {
+    padding: 0 4px;
+  }
+
+  .actions button:hover span {
+    background-color: var(--c-link);
+    color: var(--c-bg);
+  }
+
+  .actions button:focus-visible {
+    outline: 2px solid var(--c-link);
+    outline-offset: 2px;
+  }
+
+  #bibtex {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  #bibtex[hidden] {
+    display: none;
+  }
+
+  .more {
+    margin: 44px 0 0;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .views button {
+      transition: none;
+    }
   }
 </style>
 
 <script>
+  import '../scripts/topic.js';
   import '../scripts/clips.js';
 </script>

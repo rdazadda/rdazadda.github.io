@@ -1,65 +1,462 @@
 ---
+import katex from 'katex';
+import 'katex/dist/katex.min.css';
 import BaseLayout from './BaseLayout.astro';
 import PageTitle from '../components/PageTitle.astro';
 import { site } from '../data/site.js';
-import { entries } from '../data/blog.js';
+import { kinds, entries } from '../data/blog.js';
 
-const here = Astro.url.pathname.replace(/\/?$/, '/');
-const { title, intro, body, image, video } = entries.find((entry) => entry.link === here);
+const path = Astro.url.pathname;
+const here = path.endsWith('/') ? path : `${path}/`;
+const { kind, title, date, intro, caption, sections, references, citation, bibtex, image, video } = entries.find((entry) => entry.link === here);
+const topic = kinds.find((group) => group.id === kind).heading;
+const live = Astro.slots.has('default');
+
+const math = (tex: string, displayMode = false) => katex.renderToString(tex, { displayMode, throwOnError: false });
+const dollars = new RegExp('[$]([^$]+)[$]', 'g');
+const withMath = (text: string) => text.replace(dollars, (all, tex) => math(tex));
+const paragraphs = (text: string | string[]) => [text].flat().filter(Boolean);
+
+let equations = 0;
+let snippets = 0;
+const parts = sections.map(({ heading, content = [] }) => ({
+  heading,
+  content: content
+    .map((item) => {
+      if (typeof item === 'string') return { text: withMath(item) };
+      if (item.formulas) return { formulas: item.formulas.map(({ tex, symbols = [] }) => ({ tex, symbols, number: (equations += 1) })) };
+      if (item.code) return { code: item.code, id: `code-${(snippets += 1)}` };
+      return null;
+    })
+    .filter(Boolean),
+}));
+
+const jumps = [
+  ['references', 'References'],
+  ['cite', 'Cite'],
+];
 ---
 
 <BaseLayout title={`${title} by ${site.name}`}>
-  <PageTitle what="Blog Post" />
+  <header>
+    <PageTitle what="Blog Post" />
+    <p class="name">{title}</p>
+    <p class="meta">{[date, topic].filter(Boolean).join(' • ')}</p>
+    <nav class="views" aria-label="Contents">
+      <div class="contents">
+        <span class="label">Contents</span>
+        {jumps.map(([id, label]) => (
+          <a href={`#${id}`} data-jump data-text={label}>
+            <span class="words">{label}</span>
+          </a>
+        ))}
+      </div>
+    </nav>
+  </header>
 
-  <h2 class="heading name">{title}</h2>
-
-  {intro && <Fragment set:html={intro} />}
-
-  <div class="box">
-    <div class="print">
-      {video ? <video class="picture" src={video} poster={image} width="640" height="640" muted loop playsinline preload="auto" aria-label={`A clip for the post ${title}`} data-clip /> : image ? <img class="picture" src={image} alt={`A picture for the post ${title}`} width="640" height="640" /> : <span class="picture blank" />}
-    </div>
+  <div class="parts">
+    {
+      paragraphs(intro).length > 0 && (
+        <div class="intro">
+          {paragraphs(intro).map((text) => (
+            <p class="text" set:html={withMath(text)} />
+          ))}
+        </div>
+      )
+    }
+    {
+      (live || video || image) && (
+        <figure>
+          <div class="stage">
+            <slot>
+              {video ? (
+                <video class="clip" src={video} poster={image} width="640" height="640" muted loop playsinline preload="auto" aria-label={`A clip for the post ${title}`} data-clip />
+              ) : (
+                <img class="clip" src={image} alt={`A picture for the post ${title}`} width="640" height="640" />
+              )}
+            </slot>
+          </div>
+          {caption && (
+            <figcaption>
+              <i>Figure 1.</i> <Fragment set:html={withMath(caption)} />
+            </figcaption>
+          )}
+        </figure>
+      )
+    }
+    {parts.map(({ heading, content }) => (
+      <section>
+        {heading && <h2 set:html={withMath(heading)} />}
+        {content.map((item) =>
+          item.text ? (
+            <p class="text" set:html={item.text} />
+          ) : item.formulas ? (
+            <div class="formulas">
+              {item.formulas.map(({ tex, symbols, number }) => (
+                <div class="row">
+                  <div class="formula">
+                    <div class="equation" set:html={math(tex, true)} />
+                    <span class="number">({number})</span>
+                  </div>
+                  {symbols.length > 0 && (
+                    <div class="symbols">
+                      {symbols.map(([symbol, meaning]) => (
+                        <p>
+                          <span class="symbol" set:html={math(symbol)} />
+                          <span set:html={withMath(meaning)} />
+                        </p>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div>
+              <pre class="code"><code id={item.id}>{item.code}</code></pre>
+              <p class="actions">
+                <button type="button" data-copy={item.id}>
+                  <span>Copy code</span>
+                </button>
+              </p>
+            </div>
+          ),
+        )}
+      </section>
+    ))}
+    <section id="references">
+      <h2>References</h2>
+      {
+        references.length > 0 && (
+          <div class="references">
+            {references.map((reference) => (
+              <p class="text reference" set:html={withMath(reference)} />
+            ))}
+          </div>
+        )
+      }
+    </section>
+    <section id="cite">
+      <h2>Cite</h2>
+      {
+        citation && (
+          <>
+            <div>
+              <p class="text reference" id="citation" set:html={citation} />
+              <p class="actions">
+                <button type="button" data-copy="citation">
+                  <span>Copy</span>
+                </button>
+                {bibtex && (
+                  <button type="button" aria-expanded="false" aria-controls="bibtex" data-hide="Hide BibTeX">
+                    <span>BibTeX</span>
+                  </button>
+                )}
+              </p>
+            </div>
+            {bibtex && (
+              <div id="bibtex" hidden>
+                <pre class="code"><code id="bibtex-text">{bibtex}</code></pre>
+                <p class="actions">
+                  <button type="button" data-copy="bibtex-text">
+                    <span>Copy BibTeX</span>
+                  </button>
+                </p>
+              </div>
+            )}
+          </>
+        )
+      }
+    </section>
   </div>
 
-  {body && <Fragment set:html={body} />}
-
-  <p>See also other <a href="/blog/">blog posts</a> by <a href="/">{site.name}</a>.</p>
+  <p class="more">See also other <a href="/blog/">blog posts</a> by <a href="/">{site.name}</a>.</p>
 </BaseLayout>
 
 <style>
   .name {
     margin: 0.5ex 0 0;
+    font-size: var(--size-heading);
+    font-weight: 700;
     text-align: center;
   }
 
-  .box {
-    box-sizing: border-box;
-    width: fit-content;
-    max-width: 100%;
-    margin: 1em auto;
-    padding: 14px;
-    border: var(--line) solid var(--c-brand);
-    background-color: var(--c-mat);
+  .meta {
+    margin: 0.5ex 0 0;
+    text-align: center;
   }
 
-  .print {
-    padding: 5px;
-    background-color: #ffffff;
-    box-shadow: var(--shadow-print);
+  .views {
+    --band: clamp(12px, calc(1.47cqi - 1px), var(--size-lead));
+    container-type: inline-size;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    margin-top: 0.9em;
+    padding: 12px;
+    border-radius: 8px;
+    background-color: var(--c-name);
+    box-shadow: inset 0 0 0 5px var(--c-name), inset 0 0 0 calc(5px + var(--line)) rgb(255 205 0 / 0.8);
+    color: var(--c-on-brand);
   }
 
-  .picture {
+  .contents {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 4px;
+    font-size: var(--band);
+  }
+
+  .label {
+    margin: 0 6px 0 calc(var(--band) * 7 / 9);
+    font-size: calc(1em * 8 / 9);
+    font-style: italic;
+  }
+
+  .contents a {
+    display: inline-flex;
+    flex-direction: column;
+    justify-content: center;
+    min-height: 44px;
+    padding: 0 calc(1em * 7 / 9);
+    border-radius: 3px;
+    transition: background-color 0.25s ease;
+  }
+
+  .contents a:link,
+  .contents a:visited {
+    color: inherit;
+  }
+
+  .contents a:hover {
+    background-color: rgb(255 255 255 / 0.14);
+    text-decoration: none;
+  }
+
+  .contents a[aria-current] {
+    color: #ffcd00;
+  }
+
+  .contents a[aria-current] .words {
+    font-weight: 700;
+  }
+
+  .contents a::after {
+    content: attr(data-text);
+    height: 0;
+    overflow: hidden;
+    visibility: hidden;
+    font-weight: 700;
+  }
+
+  .contents a:focus-visible {
+    outline: 2px solid var(--c-on-brand);
+    outline-offset: 2px;
+  }
+
+  .parts {
+    display: flex;
+    flex-direction: column;
+    gap: 44px;
+    padding-top: 36px;
+  }
+
+  .intro,
+  section {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .parts p {
+    margin: 0;
+  }
+
+  h2 {
+    margin: 0;
+    font-size: var(--size-heading);
+    font-style: italic;
+    font-weight: 400;
+  }
+
+  .text {
+    max-width: var(--measure);
+  }
+
+  figure {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin: 0;
+  }
+
+  .stage {
+    display: flex;
+    justify-content: center;
+  }
+
+  .clip {
     display: block;
     width: 640px;
     max-width: 100%;
     height: auto;
   }
 
-  .blank {
-    aspect-ratio: 1 / 1;
+  figcaption {
+    align-self: center;
+    max-width: var(--measure);
+    text-align: center;
+  }
+
+  .formulas {
+    display: flex;
+    flex-direction: column;
+    padding: 4px 22px;
+    border: var(--line) solid var(--c-brand);
+    background-color: var(--c-mat);
+  }
+
+  .row {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px 36px;
+    padding: 14px 0;
+  }
+
+  .row + .row {
+    border-top: 1px solid #d4cebf;
+  }
+
+  .formula {
+    display: flex;
+    flex: 1 1 460px;
+    align-items: center;
+    gap: 16px;
+    min-width: 0;
+  }
+
+  .equation {
+    flex: 1;
+    min-width: 0;
+    overflow-x: auto;
+  }
+
+  .number {
+    flex: none;
+    font-family: KaTeX_Main, var(--font);
+  }
+
+  .symbols {
+    display: flex;
+    flex: 1 1 380px;
+    flex-direction: column;
+    gap: 2px;
+    min-width: 0;
+  }
+
+  .symbols p {
+    display: flex;
+    align-items: baseline;
+    gap: 12px;
+  }
+
+  .symbol {
+    flex: 0 0 120px;
+  }
+
+  .formulas :global(.katex) {
+    font-size: 1.08em;
+  }
+
+  .formulas :global(.katex-display) {
+    margin: 0;
+  }
+
+  .symbols :global(.katex) {
+    font-size: 1em;
+  }
+
+  .references {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+
+  .reference {
+    padding-left: 1.6em;
+    text-indent: -1.6em;
+    overflow-wrap: anywhere;
+  }
+
+  .code {
+    margin: 0;
+    overflow-x: auto;
+    padding: 12px 16px;
+    border: var(--line) solid var(--c-brand);
+    background-color: var(--c-mat);
+    font-family: var(--font-mono);
+    font-size: var(--size-small);
+    line-height: 1.6;
+  }
+
+  .actions {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0 14px;
+    margin-left: -4px;
+  }
+
+  .actions button {
+    display: inline-flex;
+    align-items: center;
+    min-height: 44px;
+    padding: 0;
+    border: 0;
+    background: none;
+    color: var(--c-link);
+    font: inherit;
+    cursor: pointer;
+  }
+
+  .actions span {
+    padding: 0 4px;
+  }
+
+  .actions button:hover span {
+    background-color: var(--c-link);
+    color: var(--c-bg);
+  }
+
+  .actions button:focus-visible {
+    outline: 2px solid var(--c-link);
+    outline-offset: 2px;
+  }
+
+  #bibtex {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  #bibtex[hidden] {
+    display: none;
+  }
+
+  .more {
+    margin: 44px 0 0;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .contents a {
+      transition: none;
+    }
   }
 </style>
 
 <script>
+  import '../scripts/post.js';
   import '../scripts/clips.js';
 </script>
