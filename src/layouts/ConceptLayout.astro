@@ -1,0 +1,61 @@
+---
+import BaseLayout from './BaseLayout.astro';
+import PageTitle from '../components/PageTitle.astro';
+import { site } from '../data/site.js';
+import { entries } from '../data/visualizations.js';
+
+const here = Astro.url.pathname.replace(/\/?$/, '/');
+const { title, intro, body, image } = entries.find((entry) => entry.link === here);
+---
+
+<BaseLayout title={`${title} by ${site.name}`}>
+  <PageTitle what="Interactive Visualization" />
+
+  <h2 class="heading name">{title}</h2>
+
+  {intro && <Fragment set:html={intro} />}
+
+  <div class="box">
+    <div class="print">
+      <slot>{image ? <img class="picture" src={image} alt={`A picture of the ${title} visualization`} width="640" height="640" /> : <span class="picture blank" />}</slot>
+    </div>
+  </div>
+
+  {body && <Fragment set:html={body} />}
+
+  <p>See also other <a href="/visualizations/">interactive visualizations</a> by <a href="/">{site.name}</a>.</p>
+</BaseLayout>
+
+<style>
+  .name {
+    margin: 0.5ex 0 0;
+    text-align: center;
+  }
+
+  .box {
+    box-sizing: border-box;
+    width: fit-content;
+    max-width: 100%;
+    margin: 1em auto;
+    padding: 14px;
+    border: var(--line) solid var(--c-brand);
+    background-color: var(--c-mat);
+  }
+
+  .print {
+    padding: 5px;
+    background-color: #ffffff;
+    box-shadow: var(--shadow-print);
+  }
+
+  .picture {
+    display: block;
+    width: 640px;
+    max-width: 100%;
+    height: auto;
+  }
+
+  .blank {
+    aspect-ratio: 1 / 1;
+  }
+</style>

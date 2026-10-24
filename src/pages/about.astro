@@ -1,0 +1,235 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import { site } from '../data/site.js';
+import { sections } from '../data/about.js';
+---
+
+<BaseLayout title={`About ${site.name}`}>
+  <header>
+    <h1>About <a href="/">{site.name}</a></h1>
+    <div class="band" role="group" aria-label="Show">
+      <button type="button" data-show="all" aria-pressed="true" data-text="All"><span class="words">All</span></button>
+      {
+        sections.map((section) => (
+          <button type="button" data-show={section.id} aria-pressed="false" data-text={section.heading}>
+            <span class="words">{section.heading}</span>
+          </button>
+        ))
+      }
+    </div>
+  </header>
+
+  <div class="sections" data-sections>
+    {
+      sections.map((section) => {
+        const rotates = section.images.length > 1;
+        return (
+          <section id={section.id}>
+            <h2>{section.heading}</h2>
+            <div class="row">
+              <a href={section.images[0]} class="frame" aria-hidden="true" tabindex="-1">
+                <span class:list={['print', { rotate: rotates }]} data-rotate={rotates ? '' : undefined}>
+                  {section.images.map((src, i) => (
+                    <img src={src} alt="" width="200" height="200" loading="lazy" class={rotates && i === 0 ? 'current' : undefined} />
+                  ))}
+                </span>
+              </a>
+              <div class="text">
+                {section.text && <p set:html={section.text} />}
+                {section.interests && (
+                  <p>
+                    <span class="label">Research interests:</span> {section.interests}
+                  </p>
+                )}
+              </div>
+            </div>
+          </section>
+        );
+      })
+    }
+  </div>
+</BaseLayout>
+
+<style>
+  h1 {
+    color: var(--c-text);
+  }
+
+  h1 a:link,
+  h1 a:visited {
+    color: var(--c-name);
+  }
+
+  .band {
+    --band: clamp(12px, calc(1.47cqi - 1px), var(--size-lead));
+    container-type: inline-size;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 4px;
+    margin-top: 0.9em;
+    padding: 12px;
+    border-radius: 8px;
+    background-color: var(--c-name);
+    box-shadow: inset 0 0 0 5px var(--c-name), inset 0 0 0 calc(5px + var(--line)) rgb(255 205 0 / 0.8);
+    color: var(--c-on-brand);
+  }
+
+  .band button {
+    min-height: 44px;
+    padding: 0 calc(1em * 7 / 9);
+    border: 0;
+    border-radius: 3px;
+    background: none;
+    color: inherit;
+    font: inherit;
+    font-size: var(--band);
+    cursor: pointer;
+    transition: background-color 0.25s ease;
+  }
+
+  .band button[aria-pressed='false']:hover {
+    background-color: rgb(255 255 255 / 0.14);
+  }
+
+  .band button[aria-pressed='true'] {
+    color: #ffcd00;
+    cursor: default;
+  }
+
+  .band button[aria-pressed='true'] .words {
+    font-weight: 700;
+  }
+
+  .band button::after {
+    content: attr(data-text);
+    display: block;
+    height: 0;
+    overflow: hidden;
+    visibility: hidden;
+    font-weight: 700;
+  }
+
+  .band button:focus-visible {
+    outline: 2px solid var(--c-on-brand);
+    outline-offset: 2px;
+  }
+
+  .sections {
+    display: flex;
+    flex-direction: column;
+    gap: 44px;
+    padding-top: 36px;
+  }
+
+  section {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+  }
+
+  section[hidden] {
+    display: none;
+  }
+
+  h2 {
+    margin: 0;
+    padding-left: 50px;
+    font-size: var(--size-heading);
+    font-style: italic;
+    font-weight: 400;
+  }
+
+  .row {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-start;
+    gap: 14px 36px;
+    padding-left: 50px;
+  }
+
+  .frame {
+    display: block;
+    flex: none;
+    box-sizing: border-box;
+    width: 240px;
+    padding: 14px;
+    border: var(--line) solid var(--c-brand);
+    background-color: var(--c-mat);
+    transition:
+      border-color 0.3s ease,
+      box-shadow 0.3s ease;
+  }
+
+  .frame:hover {
+    border-color: var(--c-frame-hover);
+    box-shadow: 0 0 0 var(--line) var(--c-frame-hover);
+  }
+
+  .print {
+    display: grid;
+    padding: 5px;
+    background-color: #ffffff;
+    box-shadow: var(--shadow-print);
+    transition:
+      box-shadow 0.4s ease,
+      transform 0.4s ease;
+  }
+
+  .print > * {
+    grid-area: 1 / 1;
+  }
+
+  .rotate > img {
+    transition: opacity 0.9s ease-in-out;
+  }
+
+  .rotate > :not(.current) {
+    opacity: 0;
+  }
+
+  a.frame:hover .print {
+    box-shadow: var(--shadow-print-lifted);
+    transform: translateY(-2px);
+  }
+
+  .print img {
+    display: block;
+    width: 100%;
+    height: auto;
+    aspect-ratio: 1 / 1;
+    object-fit: cover;
+  }
+
+  .text {
+    display: flex;
+    flex: 999 1 420px;
+    flex-direction: column;
+    min-width: 0;
+    max-width: var(--measure);
+  }
+
+  .text p {
+    margin: 0;
+  }
+
+  .label {
+    color: var(--c-muted);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .band button,
+    .frame,
+    .print {
+      transition: none;
+    }
+
+    a.frame:hover .print {
+      transform: none;
+    }
+  }
+</style>
+
+<script>
+  import '../scripts/about.js';
+</script>

@@ -1,0 +1,62 @@
+export const kinds = [
+  { id: 'statistics', heading: 'Statistics/Biostatistics' },
+  { id: 'psychometrics', heading: 'Psychometrics' },
+  { id: 'qualitative', heading: 'Qualitative Analysis' },
+  { id: 'other', heading: 'Other' },
+];
+
+export const entries = [
+  {
+    kind: 'statistics',
+    title: 'Confidence Intervals',
+    about: '',
+    intro: '',
+    body: '',
+    image: '/images/blog/blog-1.png',
+    link: '/blog/confidence-intervals/',
+  },
+  {
+    kind: 'statistics',
+    title: 'Survival Analysis',
+    about: '',
+    intro: '',
+    body: '',
+    image: '/images/blog/blog-2.png',
+    link: '/blog/survival-analysis/',
+  },
+  {
+    kind: 'statistics',
+    title: 'Bayesian Updating',
+    about: '',
+    intro: '',
+    body: '',
+    image: '/images/blog/blog-5.png',
+    link: '/blog/bayesian-updating/',
+  },
+  {
+    kind: 'psychometrics',
+    title: 'Item Response Theory',
+    about: '',
+    intro: '',
+    body: '',
+    image: '/images/blog/blog-3.png',
+    link: '/blog/item-response-theory/',
+  },
+  {
+    kind: 'qualitative',
+    title: 'Thematic Analysis',
+    about: '',
+    intro: '',
+    body: '',
+    image: '/images/blog/blog-4.png',
+    link: '/blog/thematic-analysis/',
+  },
+  {
+    kind: 'other',
+    title: 'Untitled Post',
+    about: '',
+    intro: '',
+    body: '',
+    link: '/blog/untitled-post/',
+  },
+];

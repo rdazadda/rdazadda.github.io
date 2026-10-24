@@ -1,0 +1,62 @@
+export const kinds = [
+  { id: 'statistics', heading: 'Statistics/Biostatistics' },
+  { id: 'actigraphy', heading: 'Actigraphy' },
+  { id: 'psychometrics', heading: 'Psychometrics' },
+  { id: 'other', heading: 'Other' },
+];
+
+export const entries = [
+  {
+    kind: 'statistics',
+    title: 'Statistical Power and Significance Testing',
+    about: '',
+    intro: '',
+    body: '',
+    image: '/images/visualizations/visualization-2.jpg',
+    link: '/visualizations/statistical-power/',
+  },
+  {
+    kind: 'statistics',
+    title: 'Hypothesis Testing',
+    about: '',
+    intro: '',
+    body: '',
+    image: '/images/visualizations/visualization-3.jpg',
+    link: '/visualizations/hypothesis-testing/',
+  },
+  {
+    kind: 'actigraphy',
+    title: 'Circadian Rest-Activity Rhythm',
+    about: '',
+    intro: '',
+    body: '',
+    image: '/images/visualizations/visualization-5.jpg',
+    link: '/visualizations/rest-activity-rhythm/',
+  },
+  {
+    kind: 'psychometrics',
+    title: 'Q-Sort Pyramid',
+    about: '',
+    intro: '',
+    body: '',
+    image: '/images/visualizations/visualization-1.jpg',
+    link: '/visualizations/q-sort-pyramid/',
+  },
+  {
+    kind: 'psychometrics',
+    title: 'Confirmatory Factor Analysis',
+    about: '',
+    intro: '',
+    body: '',
+    image: '/images/visualizations/visualization-4.jpg',
+    link: '/visualizations/confirmatory-factor-analysis/',
+  },
+  {
+    kind: 'other',
+    title: 'Untitled Visualization',
+    about: '',
+    intro: '',
+    body: '',
+    link: '/visualizations/untitled-visualization/',
+  },
+];

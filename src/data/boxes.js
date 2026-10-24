@@ -7,7 +7,7 @@
 export const boxes = [
   {
     title: 'About',
-    link: '#',
+    link: '/about/',
     slides: [
       { image: '/images/about/about-1.jpg', caption: 'My work, my background and life in Alaska.' },
       { image: '/images/about/about-2.jpg', caption: 'My work, my background and life in Alaska.' },
@@ -66,7 +66,7 @@ export const boxes = [
   },
   {
     title: 'Interactive Visualizations',
-    link: '#',
+    link: '/visualizations/',
     slides: [
       { video: '/images/visualizations/visualization-1.mp4', image: '/images/visualizations/visualization-1.jpg', caption: 'Actigraphy/accelerometry analysis, statistics, biostatistics, psychometrics and qualitative analysis.' },
       { video: '/images/visualizations/visualization-2.mp4', image: '/images/visualizations/visualization-2.jpg', caption: 'Actigraphy/accelerometry analysis, statistics, biostatistics, psychometrics and qualitative analysis.' },
@@ -77,7 +77,7 @@ export const boxes = [
   },
   {
     title: 'Blog',
-    link: '#',
+    link: '/blog/',
     slides: [
       { video: '/images/blog/blog-1.mp4', image: '/images/blog/blog-1.png', caption: 'Statistics, biostatistics, psychometrics, qualitative analysis and others.' },
       { video: '/images/blog/blog-2.mp4', image: '/images/blog/blog-2.png', caption: 'Statistics, biostatistics, psychometrics, qualitative analysis and others.' },
@@ -88,7 +88,7 @@ export const boxes = [
   },
   {
     title: 'The Art of Training Memory',
-    link: '#',
+    link: '/memory/',
     slides: [
       { video: '/images/memory/memory-1.mp4', image: '/images/memory/memory-1.png', caption: 'Learn quickly, recall more and get more done.' },
       { video: '/images/memory/memory-2.mp4', image: '/images/memory/memory-2.png', caption: 'Learn quickly, recall more and get more done.' },

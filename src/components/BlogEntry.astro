@@ -1,0 +1,157 @@
+---
+interface Props {
+  title: string;
+  about: string;
+  link: string;
+  image?: string;
+}
+
+const { title, about, link, image } = Astro.props;
+---
+
+<li>
+  <div class="lead">
+    <a href={link} class="frame" aria-hidden="true" tabindex="-1">
+      <span class="print">{image ? <img src={image} alt="" width="200" height="200" loading="lazy" /> : <span class="blank" />}</span>
+    </a>
+  </div>
+  <div class="text">
+    <p class="title"><span class="label">Title:</span> {title}</p>
+    {about && <p><span class="label">About:</span> <Fragment set:html={about} /></p>}
+    <p class="actions">
+      <a href={link}>
+        <span>Read post</span>
+      </a>
+    </p>
+  </div>
+</li>
+
+<style>
+  li {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-start;
+    gap: 14px 36px;
+    margin: 0;
+    counter-increment: entry;
+  }
+
+  .lead {
+    display: flex;
+    flex: none;
+    align-items: flex-start;
+    gap: 14px;
+  }
+
+  .lead::before {
+    flex: 0 0 36px;
+    color: var(--c-muted);
+    font-variant-numeric: tabular-nums;
+    text-align: right;
+    content: counter(entry) '.';
+  }
+
+  .frame {
+    display: block;
+    box-sizing: border-box;
+    width: 240px;
+    padding: 14px;
+    border: var(--line) solid var(--c-brand);
+    background-color: var(--c-mat);
+    transition:
+      border-color 0.3s ease,
+      box-shadow 0.3s ease;
+  }
+
+  .frame:hover {
+    border-color: var(--c-frame-hover);
+    box-shadow: 0 0 0 var(--line) var(--c-frame-hover);
+  }
+
+  .print {
+    display: block;
+    padding: 5px;
+    background-color: #ffffff;
+    box-shadow: var(--shadow-print);
+    transition:
+      box-shadow 0.4s ease,
+      transform 0.4s ease;
+  }
+
+  .frame:hover .print {
+    box-shadow: var(--shadow-print-lifted);
+    transform: translateY(-2px);
+  }
+
+  .print img,
+  .blank {
+    display: block;
+    width: 100%;
+    height: auto;
+    aspect-ratio: 1 / 1;
+  }
+
+  .print img {
+    object-fit: cover;
+  }
+
+  .text {
+    display: flex;
+    flex: 999 1 420px;
+    flex-direction: column;
+    min-width: 0;
+    max-width: var(--measure);
+  }
+
+  .text p {
+    margin: 0;
+  }
+
+  .title {
+    font-weight: 700;
+    text-wrap: pretty;
+  }
+
+  .label {
+    color: var(--c-muted);
+    font-weight: 400;
+  }
+
+  .actions {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0 14px;
+    margin-left: -4px;
+  }
+
+  .actions a {
+    display: inline-flex;
+    align-items: center;
+    min-height: 44px;
+  }
+
+  .actions span {
+    padding: 0 4px;
+  }
+
+  .actions a:hover {
+    text-decoration: none;
+  }
+
+  .actions a:hover span {
+    background-color: var(--c-link);
+    color: var(--c-bg);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .frame,
+    .print {
+      transition: none;
+    }
+
+    .frame:hover .print {
+      transform: none;
+    }
+  }
+</style>
