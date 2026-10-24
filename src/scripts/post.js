@@ -1,14 +1,12 @@
-const jumps = [...document.querySelectorAll('[data-jump]')];
+const parts = [...document.querySelectorAll('[data-parts] > *')];
+const buttons = [...document.querySelectorAll('[data-show]')];
 
-const mark = () => {
-  for (const jump of jumps) {
-    if (jump.hash === location.hash) jump.setAttribute('aria-current', 'true');
-    else jump.removeAttribute('aria-current');
-  }
-};
-
-mark();
-addEventListener('hashchange', mark);
+for (const button of buttons) {
+  button.addEventListener('click', () => {
+    for (const other of buttons) other.setAttribute('aria-pressed', String(other === button));
+    for (const part of parts) part.hidden = button.dataset.show !== 'all' && part.id !== button.dataset.show;
+  });
+}
 
 for (const button of document.querySelectorAll('[data-hide]')) {
   const panel = document.getElementById(button.getAttribute('aria-controls'));
