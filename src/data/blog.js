@@ -13,6 +13,7 @@ export const entries = [
     intro: '',
     body: '',
     image: '/images/blog/blog-1.png',
+    video: '/images/blog/blog-1.mp4',
     link: '/blog/confidence-intervals/',
   },
   {
@@ -22,6 +23,7 @@ export const entries = [
     intro: '',
     body: '',
     image: '/images/blog/blog-2.png',
+    video: '/images/blog/blog-2.mp4',
     link: '/blog/survival-analysis/',
   },
   {
@@ -31,6 +33,7 @@ export const entries = [
     intro: '',
     body: '',
     image: '/images/blog/blog-5.png',
+    video: '/images/blog/blog-5.mp4',
     link: '/blog/bayesian-updating/',
   },
   {
@@ -40,6 +43,7 @@ export const entries = [
     intro: '',
     body: '',
     image: '/images/blog/blog-3.png',
+    video: '/images/blog/blog-3.mp4',
     link: '/blog/item-response-theory/',
   },
   {
@@ -49,6 +53,7 @@ export const entries = [
     intro: '',
     body: '',
     image: '/images/blog/blog-4.png',
+    video: '/images/blog/blog-4.mp4',
     link: '/blog/thematic-analysis/',
   },
   {

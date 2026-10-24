@@ -4,15 +4,24 @@ interface Props {
   about: string;
   link: string;
   image?: string;
+  video?: string;
 }
 
-const { title, about, link, image } = Astro.props;
+const { title, about, link, image, video } = Astro.props;
 ---
 
 <li>
   <div class="lead">
     <a href={link} class="frame" aria-hidden="true" tabindex="-1">
-      <span class="print">{image ? <img src={image} alt="" width="200" height="200" loading="lazy" /> : <span class="blank" />}</span>
+      <span class="print">
+        {video ? (
+          <video src={video} poster={image} width="200" height="200" muted loop playsinline preload="none" data-clip />
+        ) : image ? (
+          <img src={image} alt="" width="200" height="200" loading="lazy" />
+        ) : (
+          <span class="blank" />
+        )}
+      </span>
     </a>
   </div>
   <div class="text">
@@ -84,6 +93,7 @@ const { title, about, link, image } = Astro.props;
   }
 
   .print img,
+  .print video,
   .blank {
     display: block;
     width: 100%;
@@ -91,7 +101,8 @@ const { title, about, link, image } = Astro.props;
     aspect-ratio: 1 / 1;
   }
 
-  .print img {
+  .print img,
+  .print video {
     object-fit: cover;
   }
 

@@ -13,6 +13,7 @@ export const entries = [
     intro: '',
     body: '',
     image: '/images/visualizations/visualization-2.jpg',
+    video: '/images/visualizations/visualization-2.mp4',
     link: '/visualizations/statistical-power/',
   },
   {
@@ -22,6 +23,7 @@ export const entries = [
     intro: '',
     body: '',
     image: '/images/visualizations/visualization-3.jpg',
+    video: '/images/visualizations/visualization-3.mp4',
     link: '/visualizations/hypothesis-testing/',
   },
   {
@@ -31,6 +33,7 @@ export const entries = [
     intro: '',
     body: '',
     image: '/images/visualizations/visualization-5.jpg',
+    video: '/images/visualizations/visualization-5.mp4',
     link: '/visualizations/rest-activity-rhythm/',
   },
   {
@@ -40,6 +43,7 @@ export const entries = [
     intro: '',
     body: '',
     image: '/images/visualizations/visualization-1.jpg',
+    video: '/images/visualizations/visualization-1.mp4',
     link: '/visualizations/q-sort-pyramid/',
   },
   {
@@ -49,6 +53,7 @@ export const entries = [
     intro: '',
     body: '',
     image: '/images/visualizations/visualization-4.jpg',
+    video: '/images/visualizations/visualization-4.mp4',
     link: '/visualizations/confirmatory-factor-analysis/',
   },
   {

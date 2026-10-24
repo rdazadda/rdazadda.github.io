@@ -11,6 +11,7 @@ export const entries = [
     intro: '',
     body: '',
     image: '/images/memory/memory-1.png',
+    video: '/images/memory/memory-1.mp4',
     link: '/memory/memory-palace/',
   },
   {
@@ -20,6 +21,7 @@ export const entries = [
     intro: '',
     body: '',
     image: '/images/memory/memory-2.png',
+    video: '/images/memory/memory-2.mp4',
     link: '/memory/remembering-numbers/',
   },
   {
@@ -29,6 +31,7 @@ export const entries = [
     intro: '',
     body: '',
     image: '/images/memory/memory-3.png',
+    video: '/images/memory/memory-3.mp4',
     link: '/memory/linking-thoughts/',
   },
   {
@@ -38,6 +41,7 @@ export const entries = [
     intro: '',
     body: '',
     image: '/images/memory/memory-4.png',
+    video: '/images/memory/memory-4.mp4',
     link: '/memory/pegging-information/',
   },
   {

@@ -5,7 +5,7 @@ import { site } from '../data/site.js';
 import { entries } from '../data/memory.js';
 
 const here = Astro.url.pathname.replace(/\/?$/, '/');
-const { title, intro, body, image } = entries.find((entry) => entry.link === here);
+const { title, intro, body, image, video } = entries.find((entry) => entry.link === here);
 ---
 
 <BaseLayout title={`${title} by ${site.name}`}>
@@ -17,7 +17,7 @@ const { title, intro, body, image } = entries.find((entry) => entry.link === her
 
   <div class="box">
     <div class="print">
-      {image ? <img class="picture" src={image} alt={`A picture of ${title}`} width="640" height="640" /> : <span class="picture blank" />}
+      {video ? <video class="picture" src={video} poster={image} width="640" height="640" muted loop playsinline preload="auto" aria-label={`A clip of ${title}`} data-clip /> : image ? <img class="picture" src={image} alt={`A picture of ${title}`} width="640" height="640" /> : <span class="picture blank" />}
     </div>
   </div>
 
@@ -59,3 +59,7 @@ const { title, intro, body, image } = entries.find((entry) => entry.link === her
     aspect-ratio: 1 / 1;
   }
 </style>
+
+<script>
+  import '../scripts/clips.js';
+</script>
