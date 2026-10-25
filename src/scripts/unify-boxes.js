@@ -6,7 +6,5 @@ const unify = () => {
   for (const box of boxes) box.style.height = `${tallest}px`;
 };
 
-unify();
-document.fonts.ready.then(unify);
-window.addEventListener('load', unify);
-window.addEventListener('resize', unify);
+const watcher = new ResizeObserver(unify);
+for (const box of boxes) watcher.observe(box.querySelector('.slides'));
