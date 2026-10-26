@@ -128,9 +128,12 @@ const bib = bibtex && bibtexEntry(kinds.find((k) => k.id === kind)?.bibtex, { ti
     display: block;
     box-sizing: border-box;
     width: 240px;
-    padding: 14px;
+    padding: 10px;
     border: var(--line) solid var(--c-brand);
-    background-color: var(--c-mat);
+    background-color: var(--c-card);
+    box-shadow:
+      0 1px 1px rgb(0 0 0 / 0.1),
+      0 16px 30px -12px rgb(0 0 0 / 0.38);
     transition:
       border-color 0.3s ease,
       box-shadow 0.3s ease;
@@ -138,22 +141,13 @@ const bib = bibtex && bibtexEntry(kinds.find((k) => k.id === kind)?.bibtex, { ti
 
   .frame:hover {
     border-color: var(--c-frame-hover);
-    box-shadow: 0 0 0 var(--line) var(--c-frame-hover);
+    box-shadow:
+      0 0 0 calc(var(--line) * 2) var(--c-frame-hover),
+      0 22px 38px -14px rgb(0 0 0 / 0.42);
   }
 
   .print {
     display: block;
-    padding: 5px;
-    background-color: #ffffff;
-    box-shadow: var(--shadow-print);
-    transition:
-      box-shadow 0.4s ease,
-      transform 0.4s ease;
-  }
-
-  a.frame:hover .print {
-    box-shadow: var(--shadow-print-lifted);
-    transform: translateY(-2px);
   }
 
   .print img,
@@ -166,6 +160,10 @@ const bib = bibtex && bibtexEntry(kinds.find((k) => k.id === kind)?.bibtex, { ti
 
   .print img {
     object-fit: cover;
+  }
+
+  .blank {
+    background-color: #ffffff;
   }
 
   .text {
@@ -273,13 +271,8 @@ const bib = bibtex && bibtexEntry(kinds.find((k) => k.id === kind)?.bibtex, { ti
   }
 
   @media (prefers-reduced-motion: reduce) {
-    .frame,
-    .print {
+    .frame {
       transition: none;
-    }
-
-    a.frame:hover .print {
-      transform: none;
     }
   }
 </style>

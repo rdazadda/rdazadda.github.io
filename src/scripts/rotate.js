@@ -38,10 +38,6 @@ for (const container of document.querySelectorAll('[data-rotate]')) {
   };
 
   for (const video of container.querySelectorAll('video')) video.addEventListener('ended', next);
-  container.addEventListener('click', (event) => {
-    if (event.target.closest('a')) return;
-    next();
-  });
   container.addEventListener('mouseenter', stop);
   container.addEventListener('mouseleave', start);
   start();

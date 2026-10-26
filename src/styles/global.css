@@ -36,9 +36,8 @@
   --strip-aurora: #4ef0a0;
   --strip-now: #ffffff;
   --c-mat: #f3f1ec;
+  --c-card: #f7f2e8;
   --line: 1px;
-  --shadow-print: 0 1px 1px rgb(0 0 0 / 0.12), 0 8px 16px -8px rgb(0 0 0 / 0.4);
-  --shadow-print-lifted: 0 2px 2px rgb(0 0 0 / 0.1), 0 14px 22px -10px rgb(0 0 0 / 0.42);
   --font: Literata, Georgia, serif;
   --font-mono: "JetBrains Mono", ui-monospace, Menlo, Consolas, monospace;
   --measure: 52em;
@@ -98,11 +97,6 @@ a:focus-visible {
 ::selection {
   background-color: var(--c-link);
   color: var(--c-bg);
-}
-
-.heading {
-  font-size: var(--size-heading);
-  font-weight: 700;
 }
 
 li {
