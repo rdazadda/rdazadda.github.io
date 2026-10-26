@@ -159,10 +159,11 @@ if (network) {
       cancelAnimationFrame(tween);
       clearTimeout(held);
       const scale = network.getBoundingClientRect().width / network.offsetWidth;
-      grabbed = { index: i, id: event.pointerId, x: event.clientX, y: event.clientY, from: [...offsets[i]], scale, edges: bounds(), live: false };
+      const zoom = window.visualViewport ? window.visualViewport.scale : 1;
+      grabbed = { index: i, id: event.pointerId, x: event.clientX, y: event.clientY, from: [...offsets[i]], scale, zoom, edges: bounds(), live: false };
       moved = false;
       const grab = grabbed;
-      if (event.pointerType === 'touch') held = setTimeout(() => lift(grab), 350);
+      if (event.pointerType === 'touch') held = setTimeout(() => lift(grab), 300);
       else lift(grab);
     });
 
@@ -171,7 +172,7 @@ if (network) {
       const dx = (event.clientX - grabbed.x) / grabbed.scale;
       const dy = (event.clientY - grabbed.y) / grabbed.scale;
       if (!grabbed.live) {
-        if (Math.hypot(dx, dy) > 10) {
+        if (Math.hypot(dx, dy) * grabbed.zoom > 10) {
           clearTimeout(held);
           grabbed = null;
         }
