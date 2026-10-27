@@ -33,10 +33,10 @@ const cards = boxes.map((box, i) => ({
 
   <DayStrip />
 
-  <section class="cards" data-cards>
+  <section class="cards">
     {
-      cards.map((card, i) => (
-        <a class="card" href={card.link} data-card={i} style={`z-index: ${cards.length - i}`}>
+      cards.map((card) => (
+        <a class="card" href={card.link} data-card>
           <span class:list={['slides', { rotate: card.rotates }]} data-rotate={card.rotates ? '' : undefined}>
             {card.slides.map((slide, j) => (
               <span class={card.rotates && j === 0 ? 'current' : undefined} inert={j > 0 ? true : undefined}>
@@ -59,20 +59,6 @@ const cards = boxes.map((box, i) => ({
       ))
     }
   </section>
-  <script is:inline>
-    (() => {
-      let played = false;
-      try {
-        played = sessionStorage.getItem('cards-opened') === '1';
-      } catch {
-        played = false;
-      }
-      if (played || window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
-      const section = document.querySelector('[data-cards]');
-      section.classList.add('opening');
-      setTimeout(() => section.classList.remove('opening'), 12000);
-    })();
-  </script>
 </BaseLayout>
 
 <style>
@@ -110,14 +96,12 @@ const cards = boxes.map((box, i) => ({
   }
 
   .cards {
-    position: relative;
     display: flex;
     flex-wrap: wrap;
     justify-content: center;
   }
 
   .card {
-    position: relative;
     box-sizing: border-box;
     width: calc(320px + var(--line) * 2);
     margin: 3ex 1em;
@@ -127,10 +111,6 @@ const cards = boxes.map((box, i) => ({
     transition:
       border-color 0.25s ease,
       box-shadow 0.25s ease;
-  }
-
-  .opening .card {
-    visibility: hidden;
   }
 
   .card:hover {
