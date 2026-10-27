@@ -131,9 +131,6 @@ const bib = bibtex && bibtexEntry(kinds.find((k) => k.id === kind)?.bibtex, { ti
     padding: 10px;
     border: var(--line) solid var(--c-brand);
     background-color: var(--c-card);
-    box-shadow:
-      0 1px 1px rgb(0 0 0 / 0.1),
-      0 16px 30px -12px rgb(0 0 0 / 0.38);
     transition:
       border-color 0.3s ease,
       box-shadow 0.3s ease;
@@ -141,9 +138,7 @@ const bib = bibtex && bibtexEntry(kinds.find((k) => k.id === kind)?.bibtex, { ti
 
   .frame:hover {
     border-color: var(--c-frame-hover);
-    box-shadow:
-      0 0 0 calc(var(--line) * 2) var(--c-frame-hover),
-      0 22px 38px -14px rgb(0 0 0 / 0.42);
+    box-shadow: 0 0 0 calc(var(--line) * 2) var(--c-frame-hover);
   }
 
   .print {
