@@ -20,6 +20,7 @@ export const entries = [
     about: 'A culturally grounded, evidence-based intervention promoting traditional Yup’ik diet, physical activity, and social connection for Alaska Native Elders and youth. Part of the NIH Community Engagement Alliance (CEAL) network.',
     images: ['/images/research/ak-ceal.png'],
     links: [
+      { label: 'Qungasvik website', href: 'http://www.qungasvik.org/home/' },
       { label: 'AK CEAL project page', href: 'https://www.uaf.edu/canhr/research/akceal/index.php' },
       { label: 'NIH CEAL Network', href: 'https://nihceal.org/' },
     ],
