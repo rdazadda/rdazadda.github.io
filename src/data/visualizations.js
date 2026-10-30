@@ -11,7 +11,10 @@ export const entries = [
     year: '2026',
     title: 'Power and P Values',
     about: 'how often studies find a real effect, and what a study’s <i>p</i> value measures.',
-    intro: 'This page explains statistical power and <i>p</i> values with one interactive chart. Move the sliders to see what changes power, and drag the gold line to see where a study’s <i>p</i> value comes from.',
+    intro: [
+      'Most studies end with a <i>p</i> value and a verdict, significant or not. Both are simple to compute and simple to misread. The misreadings became so common that in 2016 the American Statistical Association issued its first statement ever on a statistical practice, and it was about <i>p</i> values (Wasserstein & Lazar, 2016). Power gets even less attention than <i>p</i> values do. A typical psychology study once had about a coin-toss chance of finding a medium-sized effect (Cohen, 1992), and in neuroscience the odds are worse still (Button et al., 2013).',
+      'Few readers stop to ask how often a study misses an effect that is really there, or what a <i>p</i> value actually measures. This page answers both questions with one chart that shows power and the <i>p</i> value side by side. Move the sliders to see what decides power, and drag the gold line to see where a study’s <i>p</i> value comes from.',
+    ],
     explanation: [
       'Each study on this page compares two groups, and its result is an effect size, <i>d</i>. This is the difference between the two group averages, measured in standard deviations (Cohen, 1992). If the same study were repeated with different people, the result would change a little each time, just by chance. The two curves show where the results of many such studies would fall.',
       'The top curve, No effect, shows where results would fall if there were no real difference between the groups. The bottom curve, Real effect, shows where they fall when there is a real difference, of the size set with the True effect size slider. A significance test uses only the top curve. It puts two cut-offs far enough out that, if there is no real effect, only 5 in 100 studies land beyond them. This 5% is α, the significance level. A study beyond a cut-off is called significant. When there is no real effect, a significant result is a false alarm. Those are the orange tails.',
