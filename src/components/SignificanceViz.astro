@@ -1,0 +1,569 @@
+---
+import { START, formatAlpha, narrate } from '../lib/narration.js';
+
+const ALPHAS = [0.001, 0.002, 0.005, 0.01, 0.02, 0.05, 0.1, 0.2];
+
+const sliders = [
+  {
+    name: 'n',
+    label: 'People in each group',
+    max: 1000,
+    ticks: [5, 10, 20, 50, 100, 200, 500, 1000].map((n) => ({ text: n.toLocaleString('en-US'), at: Math.log(n / 5) / Math.log(200) })),
+  },
+  {
+    name: 'd',
+    label: 'True effect size (<i>d</i>)',
+    max: 150,
+    ticks: [
+      { text: '0', at: 0 },
+      { text: '0.2', at: 0.2 / 1.5 },
+      { text: '0.5', at: 0.5 / 1.5 },
+      { text: '0.8', at: 0.8 / 1.5 },
+      { text: '1', at: 1 / 1.5 },
+      { text: '1.5', at: 1 },
+    ],
+  },
+  {
+    name: 'alpha',
+    label: 'Significance level (α)',
+    max: 7,
+    ticks: ALPHAS.map((a, i) => ({ text: formatAlpha(a), at: i / 7 })),
+  },
+];
+---
+
+<div class="significance">
+  <p class="narration" aria-live="polite" set:html={narrate(START, START)} />
+
+  <div class="sliders">
+    {
+      sliders.map(({ name, label, max, ticks }) => (
+        <div class:list={['ruler', name]}>
+          <div class="head">
+            <label for={`ruler-${name}`} set:html={label} />
+            <output class="value" for={`ruler-${name}`} />
+          </div>
+          <div class="track">
+            <input id={`ruler-${name}`} type="range" min="0" max={max} step="1" data-name={name} />
+            <div class="scale" aria-hidden="true">
+              {ticks.map(({ text, at }) => (
+                <span class="tick" style={`--at: ${at}`}>
+                  <span class="tick-text">{text}</span>
+                </span>
+              ))}
+            </div>
+          </div>
+        </div>
+      ))
+    }
+  </div>
+
+  <div class="readouts">
+    <p class="readout power">
+      <span class="name"><span class="swatch"></span>Power</span>
+      <span class="number"></span>
+      <span class="meaning"></span>
+    </p>
+    <p class="readout alarms">
+      <span class="name"><span class="swatch"></span>False alarms</span>
+      <span class="number"></span>
+      <span class="meaning">share of no-effect studies that are significant</span>
+    </p>
+    <p class="readout p">
+      <span class="name"><span class="swatch"></span><i>p</i> value</span>
+      <span class="number"></span>
+      <span class="meaning">share of no-effect studies at least as far from 0 as this study</span>
+    </p>
+  </div>
+
+  <div class="chart">
+    <svg viewBox="0 0 1000 530" role="img" aria-label="Two curves on one axis: above, what studies observe if there is no effect; below, if the effect is real; with the cut-offs and a study">
+      <defs>
+        <pattern id="significance-hatch" patternUnits="userSpaceOnUse" width="6" height="6" patternTransform="rotate(45)">
+          <line x1="0" y1="0" x2="0" y2="6"></line>
+        </pattern>
+      </defs>
+      <path class="null-middle"></path>
+      <path class="null-tail"></path>
+      <path class="p-tail"></path>
+      <path class="null-line"></path>
+      <path class="real-middle"></path>
+      <path class="real-tail"></path>
+      <path class="real-line"></path>
+      <line class="base" x1="0" x2="1000" y1="230.5" y2="230.5"></line>
+      <line class="base" x1="0" x2="1000" y1="470.5" y2="470.5"></line>
+      <line class="cut low" y1="44" y2="470"></line>
+      <line class="cut high" y1="44" y2="470"></line>
+      <text class="cut-label low" y="36">cut-off</text>
+      <text class="cut-label high" y="36">cut-off</text>
+      <text class="lane null" y="112">No effect</text>
+      <text class="lane real" y="352"></text>
+      <text class="alarm-label halo">false alarm</text>
+      <text class="area-label found">found</text>
+      <text class="area-label missed">missed</text>
+      <text class="wrong-label halo" text-anchor="end">wrong sign</text>
+      <text class="p-label halo" y="162"><tspan font-style="italic">p</tspan><tspan class="p-rest"></tspan></text>
+      <g class="axis"></g>
+      <line class="needle" y1="44" y2="470"></line>
+      <circle class="knob" cy="470" r="8"></circle>
+      <text class="needle-label halo" y="36">a study</text>
+      <text class="study-value" y="497"></text>
+      <text class="axis-title" x="500" y="524">Observed effect size (<tspan font-style="italic">d</tspan>)</text>
+    </svg>
+    <input class="result" type="range" min="-800" max="800" step="1" aria-label="A study: the effect size it observes" />
+  </div>
+
+  <p class="hint">Drag across the chart to move the study. <button type="button" class="restart"><span>Start over</span></button></p>
+</div>
+
+<style>
+  .significance {
+    --real: var(--c-brand);
+    --alarm: #d55e00;
+    --alarm-text: #b34f00;
+    --gold: #c99400;
+    --gold-text: #7d5c00;
+    --miss: #9dbcd6;
+    --ink: #30394f;
+    --null-fill: #e7ebef;
+    display: flex;
+    flex-direction: column;
+    gap: 26px;
+    width: 100%;
+    max-width: 1240px;
+  }
+
+  .narration {
+    max-width: var(--measure);
+    min-height: calc(4 * 1.35em);
+    margin: 0;
+  }
+
+  .sliders {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 12px 40px;
+  }
+
+  .ruler {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  .ruler.n {
+    --handle: var(--ink);
+  }
+
+  .ruler.d {
+    --handle: var(--real);
+  }
+
+  .ruler.alpha {
+    --handle: var(--alarm);
+  }
+
+  .head {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 12px;
+  }
+
+  .value {
+    font-size: 22px;
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .ruler.n .value {
+    color: var(--ink);
+  }
+
+  .ruler.d .value {
+    color: var(--real);
+  }
+
+  .ruler.alpha .value {
+    color: var(--alarm-text);
+  }
+
+  .track {
+    position: relative;
+    height: 46px;
+  }
+
+  .track input {
+    position: absolute;
+    top: 0;
+    left: 0;
+    z-index: 1;
+    width: 100%;
+    height: 28px;
+    margin: 0;
+    background: transparent;
+    cursor: pointer;
+    appearance: none;
+  }
+
+  .track input::-webkit-slider-runnable-track {
+    height: 28px;
+    background: linear-gradient(var(--ink), var(--ink)) center / 100% 1.5px no-repeat;
+  }
+
+  .track input::-webkit-slider-thumb {
+    box-sizing: border-box;
+    width: 10px;
+    height: 26px;
+    margin-top: 1px;
+    border: 2px solid var(--c-bg);
+    border-radius: 3px;
+    background: var(--handle);
+    appearance: none;
+  }
+
+  .track input::-moz-range-track {
+    height: 1.5px;
+    background: var(--ink);
+  }
+
+  .track input::-moz-range-thumb {
+    box-sizing: border-box;
+    width: 10px;
+    height: 26px;
+    border: 2px solid var(--c-bg);
+    border-radius: 3px;
+    background: var(--handle);
+  }
+
+  .track input:focus-visible {
+    outline: 2px solid var(--c-link);
+    outline-offset: 4px;
+  }
+
+  .scale {
+    position: absolute;
+    top: 14px;
+    right: 0;
+    left: 0;
+    pointer-events: none;
+  }
+
+  .tick {
+    position: absolute;
+    top: 0;
+    left: calc(5px + var(--at) * (100% - 10px));
+    height: 8px;
+    border-left: 1px solid rgb(48 57 79 / 0.6);
+  }
+
+  .tick-text {
+    position: absolute;
+    left: 0;
+    color: var(--c-muted);
+    white-space: nowrap;
+    transform: translateX(-50%);
+  }
+
+  .tick-text {
+    top: 11px;
+    font-size: 12px;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .tick:first-child .tick-text {
+    transform: translateX(-5px);
+  }
+
+  .tick:last-child .tick-text {
+    transform: translateX(calc(5px - 100%));
+  }
+
+  .chart {
+    position: relative;
+  }
+
+  svg {
+    display: block;
+    width: 100%;
+    height: auto;
+    overflow: visible;
+    touch-action: pan-y;
+    cursor: ew-resize;
+    user-select: none;
+  }
+
+  pattern line {
+    stroke: var(--c-text);
+    stroke-width: 1.6;
+  }
+
+  .null-middle {
+    fill: var(--null-fill);
+  }
+
+  .null-tail {
+    fill: var(--alarm);
+  }
+
+  .p-tail {
+    fill: url(#significance-hatch);
+    fill-opacity: 0.55;
+  }
+
+  .null-line {
+    fill: none;
+    stroke: var(--ink);
+    stroke-width: 1.6;
+  }
+
+  .real-middle {
+    fill: var(--miss);
+    fill-opacity: 0.75;
+  }
+
+  .real-tail {
+    fill: var(--real);
+  }
+
+  .real-line {
+    fill: none;
+    stroke: var(--real);
+    stroke-width: 2;
+  }
+
+  .no-effect .real-middle {
+    fill: var(--null-fill);
+    fill-opacity: 1;
+  }
+
+  .no-effect .real-tail {
+    fill: var(--alarm);
+  }
+
+  .no-effect .real-line {
+    stroke: var(--ink);
+  }
+
+  .base {
+    stroke: var(--ink);
+  }
+
+  .cut {
+    stroke: var(--ink);
+    stroke-width: 1.4;
+    stroke-dasharray: 6 4;
+  }
+
+  .cut-label {
+    fill: var(--c-muted);
+    font-size: 14px;
+    text-anchor: middle;
+  }
+
+  .needle {
+    stroke: var(--gold);
+    stroke-width: 2.6;
+  }
+
+  .knob {
+    fill: var(--gold);
+    stroke: var(--c-bg);
+    stroke-width: 2.5;
+  }
+
+  .result-focus .knob {
+    stroke: var(--c-link);
+    stroke-width: 3;
+  }
+
+  .needle-label {
+    fill: var(--gold-text);
+    font-size: 15px;
+    font-weight: 700;
+  }
+
+  .p-label {
+    fill: var(--gold-text);
+    font-size: 15px;
+  }
+
+  .lane {
+    font-size: 17px;
+    font-weight: 700;
+  }
+
+  .lane.null,
+  .no-effect .lane.real {
+    fill: var(--ink);
+  }
+
+  .lane.real {
+    fill: var(--real);
+  }
+
+  .alarm-label {
+    fill: var(--alarm-text);
+    font-size: 15px;
+  }
+
+  .wrong-label {
+    fill: var(--real);
+    font-size: 15px;
+  }
+
+  .area-label {
+    font-size: 15px;
+    text-anchor: middle;
+  }
+
+  .area-label.found {
+    fill: var(--c-on-brand);
+    font-weight: 700;
+  }
+
+  .area-label.missed {
+    fill: var(--c-text);
+  }
+
+  .axis :global(.axis-tick) {
+    stroke: var(--ink);
+  }
+
+  .axis :global(.axis-tick.minor) {
+    stroke-opacity: 0.55;
+  }
+
+  .axis :global(.axis-label) {
+    fill: var(--c-muted);
+    font-size: 14px;
+    font-variant-numeric: tabular-nums;
+    text-anchor: middle;
+  }
+
+  .study-value {
+    fill: var(--gold-text);
+    font-size: 14px;
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+    text-anchor: middle;
+  }
+
+  .axis-title {
+    fill: var(--c-text);
+    font-size: 15px;
+    text-anchor: middle;
+  }
+
+  .halo {
+    paint-order: stroke;
+    stroke: var(--c-bg);
+    stroke-width: 4px;
+    stroke-linejoin: round;
+  }
+
+  .result {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+  }
+
+  .hint {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0 14px;
+    margin: -23px 0 0;
+  }
+
+  .restart {
+    display: inline-flex;
+    align-items: center;
+    min-height: 44px;
+    padding: 0;
+    border: 0;
+    background: none;
+    color: var(--c-link);
+    font: inherit;
+    cursor: pointer;
+  }
+
+  .restart span {
+    padding: 0 4px;
+  }
+
+  .restart:hover span {
+    background-color: var(--c-link);
+    color: var(--c-bg);
+  }
+
+  .restart:focus-visible {
+    outline: 2px solid var(--c-link);
+    outline-offset: 2px;
+  }
+
+  .readouts {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 1ex 2.5em;
+  }
+
+  .readout {
+    display: flex;
+    flex-direction: column;
+    margin: 0;
+  }
+
+  .name {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-weight: 700;
+  }
+
+  .swatch {
+    flex: none;
+    width: 14px;
+    height: 14px;
+  }
+
+  .readout.power .swatch {
+    background: var(--real);
+  }
+
+  .readout.alarms .swatch {
+    background: var(--alarm);
+  }
+
+  .readout.p .swatch {
+    box-shadow: inset 0 0 0 1px var(--c-text);
+    background: repeating-linear-gradient(-45deg, var(--c-text) 0 1.2px, transparent 1.2px 4px);
+  }
+
+  .number {
+    font-size: 180%;
+    font-weight: 700;
+    line-height: 1.15;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .readout.power .number {
+    color: var(--real);
+  }
+
+  .readout.alarms .number {
+    color: var(--alarm-text);
+  }
+
+  .readout.p .number {
+    color: var(--gold-text);
+  }
+</style>
+
+<script>
+  import '../scripts/significance.js';
+</script>

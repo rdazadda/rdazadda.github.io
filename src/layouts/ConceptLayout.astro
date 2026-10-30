@@ -8,10 +8,10 @@ import { entries } from '../data/visualizations.js';
 
 const path = Astro.url.pathname;
 const here = path.endsWith('/') ? path : `${path}/`;
-const { title, intro, explanation, steps, formulas, references, code, citation, bibtex, image, video } = entries.find((entry) => entry.link === here);
+const { title, intro, explanation, misreadings, references, citation, bibtex, image, video } = entries.find((entry) => entry.link === here);
 const live = Astro.slots.has('default');
 
-const math = (tex: string, displayMode = false) => katex.renderToString(tex, { displayMode, throwOnError: false });
+const math = (tex: string) => katex.renderToString(tex, { throwOnError: false });
 const dollars = new RegExp('[$]([^$]+)[$]', 'g');
 const withMath = (text: string) => text.replace(dollars, (all, tex) => math(tex));
 const paragraphs = (text: string | string[]) => [text].flat().filter(Boolean);
@@ -20,9 +20,8 @@ const parts = [
   ['about', 'About'],
   ['visualization', 'Visualization'],
   ['explanation', 'Explanation'],
-  ['how', 'How to use'],
-  ['formulas', 'Formulas'],
-  ['code', 'Code'],
+  ['misreadings', 'Common misreadings'],
+  ['references', 'References'],
   ['cite', 'Cite'],
 ];
 ---
@@ -56,15 +55,13 @@ const parts = [
       <h2>Visualization</h2>
       {
         (live || video || image) && (
-          <div class="stage">
-            <slot>
-              {video ? (
-                <video class="clip" src={video} poster={image} width="640" height="640" muted loop playsinline preload="auto" aria-label={`A clip of the ${title} visualization`} data-clip />
-              ) : (
-                <img class="clip" src={image} alt={`A picture of the ${title} visualization`} width="640" height="640" />
-              )}
-            </slot>
-          </div>
+          <slot>
+            {video ? (
+              <video class="clip" src={video} poster={image} width="640" height="640" muted loop playsinline preload="auto" aria-label={`A clip of the ${title} visualization`} data-clip />
+            ) : (
+              <img class="clip" src={image} alt={`A picture of the ${title} visualization`} width="640" height="640" />
+            )}
+          </slot>
         )
       }
     </section>
@@ -74,67 +71,30 @@ const parts = [
         <p class="text" set:html={withMath(text)} />
       ))}
     </section>
-    <section id="how">
-      <h2>How to use</h2>
+    <section id="misreadings">
+      <h2>Common misreadings</h2>
       {
-        steps.length > 0 && (
-          <ol class="steps">
-            {steps.map((step) => (
-              <li set:html={withMath(step)} />
+        misreadings.length > 0 && (
+          <ul class="misreadings">
+            {misreadings.map(({ misreading, truth }) => (
+              <li>
+                <p class="misreading" set:html={withMath(misreading)} />
+                <p set:html={withMath(truth)} />
+              </li>
             ))}
-          </ol>
+          </ul>
         )
       }
     </section>
-    <section id="formulas">
-      <h2>Formulas</h2>
-      {
-        formulas.length > 0 && (
-          <div class="formulas">
-            {formulas.map(({ tex, symbols = [] }, i) => (
-              <div class="row">
-                <div class="formula">
-                  <div class="equation" set:html={math(tex, true)} />
-                  <span class="number">({i + 1})</span>
-                </div>
-                {symbols.length > 0 && (
-                  <div class="symbols">
-                    {symbols.map(([symbol, meaning]) => (
-                      <p>
-                        <span class="symbol" set:html={math(symbol)} />
-                        <span set:html={withMath(meaning)} />
-                      </p>
-                    ))}
-                  </div>
-                )}
-              </div>
-            ))}
-          </div>
-        )
-      }
+    <section id="references">
+      <h2>References</h2>
       {
         references.length > 0 && (
           <div class="references">
-            <p class="label">References</p>
             {references.map((reference) => (
               <p class="reference" set:html={withMath(reference)} />
             ))}
           </div>
-        )
-      }
-    </section>
-    <section id="code">
-      <h2>Code</h2>
-      {
-        code && (
-          <>
-            <pre class="code"><code id="code-text">{code}</code></pre>
-            <p class="actions">
-              <button type="button" data-copy="code-text">
-                <span>Copy code</span>
-              </button>
-            </p>
-          </>
         )
       }
     </section>
@@ -271,13 +231,9 @@ const parts = [
   }
 
   .text,
-  .steps {
+  .misreadings,
+  .references {
     max-width: var(--measure);
-  }
-
-  .stage {
-    display: flex;
-    justify-content: center;
   }
 
   .clip {
@@ -287,108 +243,35 @@ const parts = [
     height: auto;
   }
 
-  .steps {
+  .misreadings {
     display: flex;
     flex-direction: column;
-    gap: 8px;
+    gap: 12px;
     margin: 0;
     padding: 0;
     list-style: none;
-    counter-reset: step;
   }
 
-  .steps li {
-    display: flex;
-    gap: 14px;
-    margin: 0;
-    counter-increment: step;
-  }
-
-  .steps li::before {
-    flex: 0 0 20px;
-    color: var(--c-muted);
-    text-align: right;
-    content: counter(step) '.';
-  }
-
-  .formulas {
-    display: flex;
-    flex-direction: column;
-    padding: 4px 22px;
-    border: var(--line) solid var(--c-brand);
-    background-color: var(--c-mat);
-  }
-
-  .row {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    gap: 8px 36px;
-    padding: 14px 0;
-  }
-
-  .row + .row {
-    border-top: 1px solid #d4cebf;
-  }
-
-  .formula {
-    display: flex;
-    flex: 1 1 460px;
-    align-items: center;
-    gap: 16px;
-    min-width: 0;
-  }
-
-  .equation {
-    flex: 1;
-    min-width: 0;
-    overflow-x: auto;
-  }
-
-  .number {
-    flex: none;
-    font-family: KaTeX_Main, var(--font);
-  }
-
-  .symbols {
-    display: flex;
-    flex: 1 1 380px;
-    flex-direction: column;
-    gap: 2px;
-    min-width: 0;
-  }
-
-  .symbols p {
-    display: flex;
-    align-items: baseline;
-    gap: 12px;
-  }
-
-  .symbol {
-    flex: 0 0 120px;
-  }
-
-  .formulas :global(.katex) {
-    font-size: 1.08em;
-  }
-
-  .formulas :global(.katex-display) {
+  .misreadings li {
     margin: 0;
   }
 
-  .symbols :global(.katex) {
-    font-size: 1em;
+  .misreading {
+    font-style: italic;
+  }
+
+  .misreading::before {
+    content: '“';
+  }
+
+  .misreading::after {
+    content: '”';
   }
 
   .references {
     display: flex;
     flex-direction: column;
-    gap: 2px;
-    padding-top: 4px;
-  }
-
-  .label {
-    font-weight: 700;
+    gap: 8px;
   }
 
   .reference {
