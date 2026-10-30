@@ -10,7 +10,7 @@ export const entries = [
     kind: 'statistics',
     year: '2026',
     title: 'Power and P Values',
-    about: 'how often studies find a real effect, and what a study’s <i>p</i> value measures.',
+    about: 'how often studies find a real effect or raise a false alarm, and what a single study’s <i>p</i> value really measures.',
     intro: [
       'Most studies end with a <i>p</i> value and a verdict, significant or not. Both are simple to compute and simple to misread. The misreadings became so common that in 2016 the American Statistical Association issued its first statement ever on a statistical practice, and it was about <i>p</i> values (Wasserstein & Lazar, 2016). Power gets even less attention than <i>p</i> values do. A typical psychology study once had about a coin-toss chance of finding a medium-sized effect (Cohen, 1992), and in neuroscience the odds are worse still (Button et al., 2013).',
       'Few readers stop to ask how often a study misses an effect that is really there, or what a <i>p</i> value actually measures. This page answers both questions with one chart that shows power and the <i>p</i> value side by side. Move the sliders to see what decides power, and drag the gold line to see where a study’s <i>p</i> value comes from.',
