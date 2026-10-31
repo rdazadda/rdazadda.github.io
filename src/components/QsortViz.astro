@@ -1,0 +1,692 @@
+---
+import { cutoff } from '../lib/q-method.js';
+import { STATEMENTS } from '../data/lipset.js';
+
+const LOW = 0.2;
+const HIGH = 0.7;
+const views = [1, 2, 3];
+const ticks = [
+  { x: 30, label: '−1' },
+  { x: 155, label: '−.5' },
+  { x: 280, label: '0' },
+  { x: 405, label: '.5' },
+  { x: 530, label: '1' },
+];
+const marks = [1.96, 2.58].map((z, i) => ({
+  at: (cutoff(STATEMENTS.length, z) - LOW) / (HIGH - LOW),
+  label: i === 0 ? '.05' : '.01',
+}));
+const columns = [-4, -3, -2, -1, 0, 1, 2, 3, 4];
+---
+
+<div class="qsort">
+  <div class="views" role="group" aria-label="Viewpoint">
+    {
+      views.map((n) => (
+        <button type="button" data-view={n - 1} data-text={`Viewpoint ${n}`} aria-pressed={String(n === 1)}>
+          Viewpoint {n}
+        </button>
+      ))
+    }
+  </div>
+
+  <div class="stage">
+    <div class="people-side">
+      <svg viewBox="0 0 560 356" role="group" aria-label="Map of the nine people. Across is each person's loading on the chosen viewpoint, up is their loading on the other two combined. People in the shaded areas count for the viewpoint.">
+        <path class="wedge right"></path>
+        <path class="wedge left"></path>
+        <path class="edge" d="M 30 300 A 250 250 0 0 1 530 300"></path>
+        <line class="split" x1="280" y1="300" x2="103.2" y2="123.2"></line>
+        <line class="split" x1="280" y1="300" x2="456.8" y2="123.2"></line>
+        <line class="base" x1="30" y1="300" x2="530" y2="300"></line>
+        {
+          ticks.map(({ x, label }) => (
+            <g>
+              <line class="tick" x1={x} y1="300" x2={x} y2="306"></line>
+              <text class="tick-text" x={x} y="323" text-anchor="middle">
+                {label}
+              </text>
+            </g>
+          ))
+        }
+        <text class="title" x="280" y="351" text-anchor="middle">Loading on viewpoint <tspan class="view-number">1</tspan></text>
+        <text class="title" x="280" y="30" text-anchor="middle">Loading on the other two, combined</text>
+        <text class="reversed" x="34" y="290">reversed</text>
+        <g class="people"></g>
+      </svg>
+
+      <div class="legend">
+        <span><span class="swatch counts"></span><span>Counts for viewpoint <span class="view-number">1</span> (shaded area)</span></span>
+        <span><span class="swatch"></span><span>Does not count</span></span>
+      </div>
+
+      <div class="control">
+        <div class="head">
+          <label for="qsort-cut">Cut-off</label>
+          <output class="value" for="qsort-cut"></output>
+        </div>
+        <input id="qsort-cut" type="range" min={LOW} max={HIGH} step="0.01" />
+        <div class="marks" aria-hidden="true">
+          {
+            marks.map(({ at, label }) => (
+              <span class="mark" style={`left: calc(7px + ${at.toFixed(4)} * (100% - 14px))`}>
+                <i>p</i> &lt; {label}
+              </span>
+            ))
+          }
+        </div>
+      </div>
+
+      <div>
+        <p class="picked" aria-live="polite">
+          <span class="who">Pick a person on the map, or a statement in the sort.</span>
+          <span class="load" hidden>Loading <b></b></span>
+        </p>
+        <div class="alike" hidden>
+          <p class="alike-name">How alike each sort is to <span class="r-with"></span>’s (<i>r</i>), most alike first</p>
+          <ol class="alike-list"></ol>
+        </div>
+      </div>
+    </div>
+
+    <div class="sort-side">
+      <div>
+        <p class="sort-name">Viewpoint <span class="view-number">1</span>’s sort</p>
+        <p class="built"></p>
+      </div>
+
+      <div>
+        <div class="grid">
+          {columns.map((value) => <div class="column" data-column={value}></div>)}
+        </div>
+        <div class="grid axis" aria-hidden="true">
+          {columns.map((value) => <span>{value > 0 ? `+${value}` : value < 0 ? `−${-value}` : '0'}</span>)}
+        </div>
+        <div class="ends">
+          <span>Most disagree</span>
+          <span>Neutral</span>
+          <span>Most agree</span>
+        </div>
+        <p class="colors"></p>
+      </div>
+
+      <div class="statement" aria-live="polite">
+        <p class="statement-text"><b class="statement-number"></b> <span class="statement-words"></span></p>
+        <dl class="places">
+          {
+            views.map((n) => (
+              <div data-place={n - 1}>
+                <dt>Viewpoint {n}</dt>
+                <dd>
+                  <b class="spot"></b>
+                  <span class="z"></span>
+                </dd>
+              </div>
+            ))
+          }
+        </dl>
+        <p class="verdict"></p>
+        <p class="needed"></p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<style>
+  .qsort {
+    --deep: #143d5e;
+    --gold: #c99400;
+    --gold-text: #7d5c00;
+    --ink: #30394f;
+    --rule: #d3dae2;
+    --handle: var(--c-brand);
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+    width: 100%;
+    max-width: 1240px;
+  }
+
+  .views {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0 28px;
+    border-bottom: 1px solid var(--rule);
+  }
+
+  .views button {
+    min-height: 44px;
+    margin-bottom: -1px;
+    padding: 0;
+    border: 0;
+    border-bottom: 3px solid transparent;
+    background: none;
+    color: var(--c-text);
+    font: inherit;
+    font-size: 1.0625rem;
+    cursor: pointer;
+  }
+
+  .views button::after {
+    content: attr(data-text);
+    display: block;
+    height: 0;
+    overflow: hidden;
+    visibility: hidden;
+    font-weight: 700;
+  }
+
+  .views button:hover {
+    color: var(--c-link);
+  }
+
+  .views button[aria-pressed='true'] {
+    border-bottom-color: var(--deep);
+    color: var(--deep);
+    font-weight: 700;
+    cursor: default;
+  }
+
+  .views button:focus-visible {
+    outline: 2px solid var(--c-link);
+    outline-offset: 2px;
+  }
+
+  .stage {
+    display: grid;
+    grid-template-columns: minmax(0, 560fr) minmax(0, 624fr);
+    gap: 0 clamp(32px, 4.5vw, 56px);
+    align-items: start;
+  }
+
+  .people-side,
+  .sort-side {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    min-width: 0;
+  }
+
+  svg {
+    display: block;
+    width: 100%;
+    height: auto;
+    overflow: visible;
+  }
+
+  .wedge {
+    fill: #dfe8f1;
+  }
+
+  .edge {
+    fill: none;
+    stroke: #b8c1cc;
+  }
+
+  .split {
+    stroke: #b8c1cc;
+    stroke-dasharray: 4 4;
+  }
+
+  .base {
+    stroke: var(--ink);
+    stroke-width: 1.2;
+  }
+
+  .tick {
+    stroke: var(--ink);
+  }
+
+  .tick-text,
+  .reversed {
+    fill: var(--c-muted);
+    font-size: 15px;
+  }
+
+  .title {
+    fill: var(--c-text);
+    font-size: 17px;
+  }
+
+  .people :global(.person) {
+    cursor: pointer;
+    transition: transform 0.45s ease;
+  }
+
+  .people :global(.hit) {
+    fill: transparent;
+  }
+
+  .people :global(.dot) {
+    fill: #ffffff;
+    stroke: var(--ink);
+    stroke-width: 2;
+  }
+
+  .people :global(.person.counts .dot) {
+    fill: var(--c-brand);
+    stroke: #ffffff;
+  }
+
+  .people :global(.ring) {
+    fill: none;
+    stroke: var(--gold);
+    stroke-width: 3;
+    visibility: hidden;
+  }
+
+  .people :global(.person[aria-pressed='true'] .ring) {
+    visibility: visible;
+  }
+
+  .people :global(.id) {
+    fill: var(--c-text);
+    font-size: 18px;
+    font-weight: 700;
+  }
+
+  .people :global(.person[aria-pressed='true'] .id) {
+    fill: var(--gold-text);
+  }
+
+  @media (hover: hover) {
+    .people :global(.person:hover .id) {
+      text-decoration: underline;
+    }
+
+    .column :global(.tile:hover) {
+      outline: 2px solid var(--ink);
+      outline-offset: 2px;
+    }
+  }
+
+  .people :global(.person:focus) {
+    outline: none;
+  }
+
+  .people :global(.person:focus-visible .hit) {
+    stroke: var(--c-link);
+    stroke-width: 2;
+  }
+
+  .legend {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px 24px;
+  }
+
+  .legend > span {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .swatch {
+    box-sizing: border-box;
+    width: 14px;
+    height: 14px;
+    border: 2px solid var(--ink);
+    border-radius: 50%;
+    background: #ffffff;
+  }
+
+  .swatch.counts {
+    border: 0;
+    background: var(--c-brand);
+  }
+
+  .control {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .head {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 12px;
+  }
+
+  .value {
+    color: var(--c-brand);
+    font-size: 1.25rem;
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .control input {
+    width: 100%;
+    height: 28px;
+    margin: 0;
+    background: transparent;
+    cursor: pointer;
+    appearance: none;
+  }
+
+  .control input::-webkit-slider-runnable-track {
+    height: 3px;
+    border-radius: 3px;
+    background: linear-gradient(to right, var(--handle) var(--fill, 0%), #b8c1cc var(--fill, 0%));
+  }
+
+  .control input::-webkit-slider-thumb {
+    box-sizing: border-box;
+    width: 14px;
+    height: 14px;
+    margin-top: -5.5px;
+    border: 2px solid var(--c-bg);
+    border-radius: 50%;
+    background: var(--handle);
+    transition: transform 0.12s;
+    appearance: none;
+  }
+
+  .control input:hover::-webkit-slider-thumb,
+  .control input:active::-webkit-slider-thumb {
+    transform: scale(1.15);
+  }
+
+  .control input::-moz-range-track {
+    height: 3px;
+    border-radius: 3px;
+    background: #b8c1cc;
+  }
+
+  .control input::-moz-range-progress {
+    height: 3px;
+    border-radius: 3px;
+    background: var(--handle);
+  }
+
+  .control input::-moz-range-thumb {
+    box-sizing: border-box;
+    width: 14px;
+    height: 14px;
+    border: 2px solid var(--c-bg);
+    border-radius: 50%;
+    background: var(--handle);
+    transition: transform 0.12s;
+  }
+
+  .control input:hover::-moz-range-thumb,
+  .control input:active::-moz-range-thumb {
+    transform: scale(1.15);
+  }
+
+  .control input:focus-visible {
+    outline: 2px solid var(--c-link);
+    outline-offset: 2px;
+  }
+
+  @media (pointer: coarse) {
+    .control input::-webkit-slider-thumb {
+      width: 16px;
+      height: 16px;
+      margin-top: -6.5px;
+    }
+
+    .control input::-moz-range-thumb {
+      width: 16px;
+      height: 16px;
+    }
+  }
+
+  .marks {
+    position: relative;
+    height: 22px;
+  }
+
+  .mark {
+    position: absolute;
+    top: 0;
+    padding-top: 7px;
+    color: var(--c-muted);
+    font-size: 0.875rem;
+    white-space: nowrap;
+    transform: translateX(-50%);
+  }
+
+  .mark::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 50%;
+    height: 6px;
+    border-left: 1px solid var(--ink);
+  }
+
+  .picked {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 12px;
+    min-height: 1.6em;
+    margin: 0;
+    padding: 10px 0;
+    border-top: 1px solid var(--rule);
+    border-bottom: 1px solid var(--rule);
+  }
+
+  .load b {
+    font-size: 1.25rem;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .alike-name {
+    margin: 10px 0 0;
+  }
+
+  .alike-list {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 4px 16px;
+    margin: 6px 0 0;
+    padding: 0 0 10px;
+    border-bottom: 1px solid var(--rule);
+    list-style: none;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .sort-name {
+    margin: 0;
+    font-size: 1.125rem;
+    font-weight: 700;
+  }
+
+  .built,
+  .colors {
+    margin: 4px 0 0;
+  }
+
+  .colors {
+    margin-top: 8px;
+  }
+
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(9, minmax(0, 1fr));
+    gap: 6px;
+    align-items: end;
+  }
+
+  .column {
+    display: flex;
+    flex-direction: column-reverse;
+    gap: 6px;
+  }
+
+  .column :global(.tile) {
+    box-sizing: border-box;
+    display: block;
+    width: 100%;
+    aspect-ratio: 4 / 3;
+    margin: 0;
+    padding: 0;
+    border: 0;
+    border-radius: 6px;
+    font: inherit;
+    font-size: 0.9375rem;
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+    cursor: pointer;
+  }
+
+  .column :global(.tile[aria-pressed='true']) {
+    outline: 3px solid var(--gold);
+    outline-offset: 2px;
+  }
+
+  .column :global(.tile:focus-visible) {
+    outline: 2px solid var(--c-link);
+    outline-offset: 2px;
+  }
+
+  .column :global(.tile[data-tone='0']) {
+    background: #143d5e;
+    color: #ffffff;
+  }
+
+  .column :global(.tile[data-tone='1']) {
+    background: #2f6a99;
+    color: #ffffff;
+  }
+
+  .column :global(.tile[data-tone='2']) {
+    background: #8fb2d1;
+    color: var(--c-text);
+  }
+
+  .column :global(.tile[data-tone='3']) {
+    background: #cfdeeb;
+    color: var(--c-text);
+  }
+
+  .column :global(.tile[data-tone='4']) {
+    background: #eceff2;
+    color: var(--c-text);
+  }
+
+  .column :global(.tile[data-tone='5']) {
+    background: #f3e3b3;
+    color: var(--c-text);
+  }
+
+  .column :global(.tile[data-tone='6']) {
+    background: #e2c260;
+    color: var(--c-text);
+  }
+
+  .column :global(.tile[data-tone='7']) {
+    background: var(--gold);
+    color: var(--c-text);
+  }
+
+  .column :global(.tile[data-tone='8']) {
+    background: var(--gold-text);
+    color: #ffffff;
+  }
+
+  .axis {
+    margin-top: 8px;
+    color: var(--c-muted);
+    font-size: 0.875rem;
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+    text-align: center;
+  }
+
+  .ends {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+    gap: 12px;
+    margin-top: 2px;
+    color: var(--c-muted);
+    font-size: 0.875rem;
+  }
+
+  .ends span:last-child {
+    text-align: right;
+  }
+
+  .statement {
+    padding-top: 14px;
+    border-top: 1px solid var(--rule);
+  }
+
+  .statement-text {
+    margin: 0;
+    font-size: 1.125rem;
+  }
+
+  .statement-number {
+    color: var(--gold-text);
+  }
+
+  .places {
+    margin: 10px 0 0;
+    border-top: 1px solid var(--rule);
+  }
+
+  .places div {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 16px;
+    padding: 7px 0;
+    border-bottom: 1px solid var(--rule);
+  }
+
+  .places div.current dt {
+    font-weight: 700;
+  }
+
+  .places dd {
+    display: flex;
+    align-items: baseline;
+    gap: 16px;
+    margin: 0;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .spot {
+    min-width: 2em;
+    font-size: 1.125rem;
+    text-align: right;
+  }
+
+  .z {
+    min-width: 4.5em;
+    color: var(--c-muted);
+    font-size: 0.875rem;
+    text-align: right;
+  }
+
+  .verdict {
+    margin: 12px 0 0;
+    color: var(--deep);
+    font-size: 1.25rem;
+    font-weight: 700;
+  }
+
+  .needed {
+    margin: 4px 0 0;
+    font-size: 0.875rem;
+  }
+
+  @media (max-width: 760px) {
+    .stage {
+      grid-template-columns: minmax(0, 1fr);
+      gap: 32px;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .people :global(.person) {
+      transition: none;
+    }
+  }
+</style>
+
+<script>
+  import '../scripts/qsort.js';
+</script>

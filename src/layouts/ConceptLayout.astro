@@ -11,6 +11,7 @@ const here = path.endsWith('/') ? path : `${path}/`;
 const { title, intro, explanation, misreadings, report, references, citation, bibtex, image, video } = entries.find((entry) => entry.link === here);
 const live = Astro.slots.has('default');
 const reported = Boolean(report) || Astro.slots.has('report');
+const misread = Array.isArray(misreadings);
 
 const math = (tex: string) => katex.renderToString(tex, { throwOnError: false });
 const dollars = new RegExp('[$]([^$]+)[$]', 'g');
@@ -21,7 +22,7 @@ const parts = [
   ['about', 'About'],
   ['visualization', 'Visualization'],
   ['explanation', 'Explanation'],
-  ['misreadings', 'Common misreadings'],
+  ...(misread ? [['misreadings', 'Common misreadings']] : []),
   ...(reported ? [['report', 'What to report']] : []),
   ['references', 'References'],
   ['cite', 'Cite'],
@@ -73,21 +74,23 @@ const parts = [
         <p class="text" set:html={withMath(text)} />
       ))}
     </section>
-    <section id="misreadings">
-      <h2>Common misreadings</h2>
-      {
-        misreadings.length > 0 && (
-          <ul class="misreadings">
-            {misreadings.map(({ misreading, truth }) => (
-              <li>
-                <p class="misreading" set:html={withMath(misreading)} />
-                <p set:html={withMath(truth)} />
-              </li>
-            ))}
-          </ul>
-        )
-      }
-    </section>
+    {
+      misread && (
+        <section id="misreadings">
+          <h2>Common misreadings</h2>
+          {misreadings.length > 0 && (
+            <ul class="misreadings">
+              {misreadings.map(({ misreading, truth }) => (
+                <li>
+                  <p class="misreading" set:html={withMath(misreading)} />
+                  <p set:html={withMath(truth)} />
+                </li>
+              ))}
+            </ul>
+          )}
+        </section>
+      )
+    }
     {
       reported && (
         <section id="report">
