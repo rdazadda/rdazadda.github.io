@@ -59,5 +59,43 @@ export function tCritical(p, df) {
 
 export const tTail = (t, df) => incompleteBeta(df / (df + t * t), df / 2, 0.5) / 2;
 
+function lowerGamma(a, x) {
+  if (x <= 0) return 0;
+  const front = Math.exp(-x + a * Math.log(x) - lnGamma(a));
+  if (x < a + 1) {
+    let term = 1 / a;
+    let sum = term;
+    for (let k = 1; k < 1000 && Math.abs(term) > Math.abs(sum) * 1e-16; k++) {
+      term *= x / (a + k);
+      sum += term;
+    }
+    return sum * front;
+  }
+  let b = x + 1 - a;
+  let c = 1 / TINY;
+  let d = 1 / b;
+  let h = d;
+  for (let i = 1; i < 1000; i++) {
+    const an = -i * (i - a);
+    b += 2;
+    d = an * d + b;
+    if (Math.abs(d) < TINY) d = TINY;
+    c = b + an / c;
+    if (Math.abs(c) < TINY) c = TINY;
+    d = 1 / d;
+    h *= d * c;
+    if (Math.abs(d * c - 1) < 1e-16) break;
+  }
+  return 1 - front * h;
+}
+
+export const chiSquareCdf = (x, df) => lowerGamma(df / 2, x / 2);
+
+export function chiSquareQuantile(p, df) {
+  let hi = df + 10;
+  while (chiSquareCdf(hi, df) < p) hi *= 2;
+  return bisect((x) => chiSquareCdf(x, df), p, 0, hi, 200);
+}
+
 export const chiDensity = (x, df) =>
   x <= 0 ? 0 : Math.exp((1 - df / 2) * Math.LN2 + (df - 1) * Math.log(x) - (x * x) / 2 - lnGamma(df / 2));

@@ -1,0 +1,929 @@
+---
+import { FAMILIES, LOGICS, POPULATIONS, START, STUDIES, TAILS, evidence, facts, narrate, pValue, reading, studyText } from '../lib/testing.js';
+
+const first = reading(START);
+const rows = facts(START);
+const data = [
+  { name: 'observed', label: 'Observed effect size (d)', min: 0, max: 1200 },
+  { name: 'n', label: 'People in each group', min: 0, max: 1000, families: 'z t' },
+  { name: 'k', label: 'Degrees of freedom', min: 1, max: 30, families: 'chi' },
+  { name: 'df1', label: 'Degrees of freedom between groups', min: 1, max: 20, families: 'f' },
+  { name: 'df2', label: 'Degrees of freedom within groups', min: 2, max: 120, families: 'f' },
+];
+const rule = [
+  { name: 'alpha', label: 'Significance level (α)', min: 0, max: 7 },
+  { name: 'effect', label: 'Effect if H₁ is true (d)', min: 0, max: 150 },
+];
+const hidden = (families) => Boolean(families) && !families.split(' ').includes(START.family);
+const marks = [
+  { p: 0.1, label: '.10' },
+  { p: 0.05, label: '.05' },
+  { p: 0.01, label: '.01' },
+  { p: 0.001, label: '.001' },
+];
+---
+
+<div class="testing">
+  <p class="narration" aria-live="polite" set:html={narrate(START)} />
+
+  <div class="lenses" role="group" aria-label="Logic of the test">
+    {
+      LOGICS.map(({ id, label, question }) => (
+        <button type="button" class="lens" data-logic={id} aria-pressed={String(id === START.logic)}>
+          <span class="lens-name">{label}</span>
+          <span class="lens-question">{question}</span>
+        </button>
+      ))
+    }
+  </div>
+
+  <div class="designs families" role="group" aria-label="Test">
+    {
+      FAMILIES.map(({ id, label }) => (
+        <button type="button" data-family={id} data-text={label} aria-pressed={String(id === START.family)}>
+          {label}
+        </button>
+      ))
+    }
+  </div>
+
+  <div class="stage">
+    <div class="chart">
+      <svg viewBox="0 0 740 440" role="img" aria-label="The test statistic's distribution if H0 were true, with the observed value, the p value as a striped tail area, the confidence interval below the axis, simulated studies as stacked dots, and, for Neyman and Pearson, the rejection region, the critical value and the distribution under H1 with power and misses shaded">
+        <defs>
+          <clipPath id="testing-plot">
+            <rect x="40" y="34" width="684" height="296"></rect>
+          </clipPath>
+          <pattern id="testing-stripes" width="7" height="7" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
+            <line class="stripe" x1="0" y1="0" x2="0" y2="7"></line>
+          </pattern>
+        </defs>
+        <text class="chart-title" x="0" y="20"></text>
+        <g clip-path="url(#testing-plot)">
+          <path class="h0-area"></path>
+          <path class="beta-area"></path>
+          <path class="power-area low"></path>
+          <path class="power-area high"></path>
+          <path class="alpha-area low"></path>
+          <path class="alpha-area high"></path>
+          <path class="p-area low"></path>
+          <path class="p-area high"></path>
+          <path class="study-dots plain"></path>
+          <path class="study-dots beyond"></path>
+          <path class="study-dots extreme"></path>
+          <path class="h1-line"></path>
+          <path class="h0-line"></path>
+        </g>
+        <line class="critical low" y1="92" y2="330"></line>
+        <line class="critical high" y1="92" y2="330"></line>
+        <text class="curve-label h1" text-anchor="middle"></text>
+        <text class="area-label alpha" text-anchor="middle"></text>
+        <text class="area-label power" text-anchor="middle"></text>
+        <text class="area-label missed" text-anchor="middle"></text>
+        <text class="area-label p" text-anchor="middle"></text>
+        <line class="observed" y1="58" y2="330"></line>
+        <circle class="knob" r="8" cy="330"></circle>
+        <text class="observed-label" y="52" text-anchor="middle"></text>
+        <g class="axes"></g>
+        <g class="interval">
+          <line class="interval-zero" y1="362" y2="390"></line>
+          <line class="interval-line" y1="380" y2="380"></line>
+          <line class="interval-cap low" y1="372" y2="388"></line>
+          <line class="interval-cap high" y1="372" y2="388"></line>
+          <circle class="interval-dot" r="5" cy="380"></circle>
+          <text class="interval-label" y="406" text-anchor="middle"></text>
+        </g>
+        <text class="x-title" x="382" y="434"></text>
+      </svg>
+      <p class="hint">Drag across the chart to move the observed value. <button type="button" class="restart"><span>Start over</span></button></p>
+
+      <div class="simulate">
+        <p class="simulate-name">Check the curve</p>
+        <div class="population" role="group" aria-label="Data in each study">
+          <span class="population-name">Data</span>
+          {
+            POPULATIONS.map(({ id, label }) => (
+              <button type="button" data-population={id} data-text={label} aria-pressed={String(id === START.population)}>
+                {label}
+              </button>
+            ))
+          }
+        </div>
+        <p class="study-text">{studyText(START)}</p>
+        <p class="simulate-actions">
+          <button type="button" class="run"><span>Run {STUDIES.toLocaleString('en-US')} studies where H₀ is true</span></button>
+          <button type="button" class="clear" hidden><span>Clear</span></button>
+        </p>
+        <p class="simulate-result" hidden></p>
+      </div>
+    </div>
+
+    <div class="side">
+      <div class="steps" role="group" aria-label="Step" hidden>
+        <button type="button" data-step="plan" data-text="1. Plan, before the data" aria-pressed="true">1. Plan, before the data</button>
+        <button type="button" data-step="result" data-text="2. Result" aria-pressed="false">2. Result</button>
+      </div>
+
+      <div class="reading">
+        <p class="reading-name">{first.name}</p>
+        <p class="reading-number">{first.value}</p>
+        <p class="tag" hidden></p>
+        <p class="reading-line">{first.line}</p>
+      </div>
+
+      <div class="ruler" aria-hidden="true">
+        <div class="ruler-track">
+          {
+            marks.map(({ p, label }) => (
+              <span class="ruler-mark" style={`left: ${(100 * evidence(p)).toFixed(1)}%`}>{label}</span>
+            ))
+          }
+          <span class="ruler-dot" style={`left: ${(100 * evidence(pValue(START))).toFixed(1)}%`}></span>
+        </div>
+        <div class="ruler-ends">
+          <span>Weaker evidence</span>
+          <span>Stronger evidence</span>
+        </div>
+      </div>
+
+      <p class="long-run" hidden></p>
+
+      <div class="pieces" hidden>
+        <p class="pieces-name">Where each part comes from</p>
+        <dl class="pieces-list"></dl>
+        <p class="pieces-note"></p>
+      </div>
+
+      <dl class="facts">
+        {
+          rows.map(([name, value]) => (
+            <div>
+              <dt>{name}</dt>
+              <dd>{value}</dd>
+            </div>
+          ))
+        }
+      </dl>
+
+      <div class="controls">
+        {
+          data.map(({ name, label, min, max, families }) => (
+            <div class:list={['control', name]} data-families={families} hidden={hidden(families)}>
+              <div class="head">
+                <label for={`testing-${name}`}>{label}</label>
+                <output class="value" for={`testing-${name}`} />
+              </div>
+              <input id={`testing-${name}`} type="range" min={min} max={max} step="1" data-name={name} />
+            </div>
+          ))
+        }
+      </div>
+
+      <div class="controls rule">
+        <div class="tails" role="group" aria-label="Tails">
+          <span class="tails-name">Tails</span>
+          {
+            TAILS.map(({ id, label }) => (
+              <button type="button" data-tails={id} data-text={label} aria-pressed={String(id === START.tails)}>
+                {label}
+              </button>
+            ))
+          }
+        </div>
+        <p class="tail-note" hidden></p>
+        <p class="upper" hidden>These tests count only the upper tail, yet they pick up differences in any direction.</p>
+        {
+          rule.map(({ name, label, min, max }) => (
+            <div class:list={['control', name]}>
+              <div class="head">
+                <label for={`testing-${name}`}>{label}</label>
+                <output class="value" for={`testing-${name}`} />
+              </div>
+              <input id={`testing-${name}`} type="range" min={min} max={max} step="1" data-name={name} />
+            </div>
+          ))
+        }
+        <p class="locked" hidden>Fixed in step 1, before the data.</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<style>
+  .testing {
+    --real: var(--c-brand);
+    --deep: #143d5e;
+    --gold: #c99400;
+    --gold-text: #7d5c00;
+    --ink: #30394f;
+    --rule: #d3dae2;
+    --null: #e6eaef;
+    --missed: #c8d3de;
+    --alarm: #d55e00;
+    --alarm-text: #b34f00;
+    display: flex;
+    flex-direction: column;
+    gap: 22px;
+    width: 100%;
+    max-width: 1240px;
+  }
+
+  .narration {
+    max-width: var(--measure);
+    min-height: calc(3 * 1.35em);
+    margin: 0;
+  }
+
+  .lenses {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0 44px;
+    border-bottom: 1px solid var(--rule);
+  }
+
+  .lens {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    min-height: 44px;
+    margin-bottom: -1px;
+    padding: 0 0 10px;
+    border: 0;
+    border-bottom: 3px solid transparent;
+    background: none;
+    color: var(--c-text);
+    font: inherit;
+    text-align: left;
+    cursor: pointer;
+  }
+
+  .lens:hover .lens-name {
+    color: var(--c-link);
+  }
+
+  .lens[aria-pressed='true'] {
+    border-bottom-color: var(--real);
+    cursor: default;
+  }
+
+  .lens:focus-visible {
+    outline: 2px solid var(--c-link);
+    outline-offset: 2px;
+  }
+
+  .lens-name {
+    font-weight: 700;
+  }
+
+  .lens[aria-pressed='true'] .lens-name {
+    color: var(--real);
+  }
+
+  .families {
+    border-bottom: 1px solid var(--rule);
+  }
+
+  .designs {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0 28px;
+  }
+
+  .designs button {
+    min-height: 44px;
+    margin-bottom: -1px;
+    padding: 0;
+    border: 0;
+    border-bottom: 3px solid transparent;
+    background: none;
+    color: var(--c-text);
+    font: inherit;
+    cursor: pointer;
+  }
+
+  .designs button::after {
+    content: attr(data-text);
+    display: block;
+    height: 0;
+    overflow: hidden;
+    visibility: hidden;
+    font-weight: 700;
+  }
+
+  .designs button:hover {
+    color: var(--c-link);
+  }
+
+  .designs button[aria-pressed='true'] {
+    border-bottom-color: var(--real);
+    color: var(--real);
+    font-weight: 700;
+    cursor: default;
+  }
+
+  .designs button:focus-visible {
+    outline: 2px solid var(--c-link);
+    outline-offset: 2px;
+  }
+
+  .stage {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-start;
+    gap: 30px 56px;
+    padding-top: 10px;
+  }
+
+  .chart {
+    position: relative;
+    display: flex;
+    flex: 999 1 520px;
+    flex-direction: column;
+    gap: 4px;
+    min-width: 0;
+    max-width: 760px;
+  }
+
+  .side {
+    display: flex;
+    flex: 1 1 300px;
+    flex-direction: column;
+    gap: 26px;
+    max-width: 380px;
+  }
+
+  svg {
+    display: block;
+    width: 100%;
+    height: auto;
+    overflow: visible;
+    touch-action: pan-y;
+    user-select: none;
+    cursor: ew-resize;
+  }
+
+  .h0-area {
+    fill: var(--null);
+  }
+
+  .h0-line {
+    fill: none;
+    stroke: var(--ink);
+    stroke-width: 1.5;
+  }
+
+  .beta-area {
+    fill: var(--missed);
+  }
+
+  .power-area {
+    fill: var(--real);
+    fill-opacity: 0.55;
+  }
+
+  .h1-line {
+    fill: none;
+    stroke: var(--real);
+    stroke-width: 2;
+    stroke-dasharray: 7 4;
+  }
+
+  .alpha-area {
+    fill: var(--alarm);
+    fill-opacity: 0.85;
+  }
+
+  .p-area {
+    fill: url(#testing-stripes);
+  }
+
+  .stripe {
+    stroke: var(--gold-text);
+    stroke-width: 2.4;
+  }
+
+  .study-dots {
+    stroke: #ffffff;
+    stroke-width: 0.6;
+  }
+
+  .study-dots.plain {
+    fill: var(--ink);
+  }
+
+  .study-dots.beyond {
+    fill: var(--alarm-text);
+  }
+
+  .study-dots.extreme {
+    fill: var(--gold-text);
+  }
+
+  .critical {
+    stroke: var(--deep);
+    stroke-width: 1.5;
+    stroke-dasharray: 6 4;
+  }
+
+  .curve-label {
+    fill: var(--real);
+    font-size: 15px;
+    font-weight: 700;
+  }
+
+  .area-label {
+    font-size: 14px;
+    font-weight: 700;
+    paint-order: stroke;
+    stroke: #ffffff;
+    stroke-width: 4px;
+    stroke-linejoin: round;
+  }
+
+  .area-label.alpha {
+    fill: var(--alarm-text);
+  }
+
+  .area-label.power {
+    fill: var(--deep);
+  }
+
+  .area-label.p {
+    fill: var(--gold-text);
+  }
+
+  .area-label.missed {
+    fill: var(--ink);
+  }
+
+  .interval-line,
+  .interval-cap {
+    stroke: var(--ink);
+    stroke-width: 2.5;
+  }
+
+  .interval-zero {
+    stroke: var(--ink);
+    stroke-width: 1;
+    stroke-dasharray: 3 3;
+  }
+
+  .interval-dot {
+    fill: var(--gold);
+    stroke: #ffffff;
+    stroke-width: 2;
+  }
+
+  .interval-label {
+    fill: var(--c-text);
+    font-size: 14px;
+    paint-order: stroke;
+    stroke: #ffffff;
+    stroke-width: 4px;
+    stroke-linejoin: round;
+  }
+
+  .observed {
+    stroke: var(--gold);
+    stroke-width: 2.5;
+  }
+
+  .knob {
+    fill: var(--gold);
+    stroke: #ffffff;
+    stroke-width: 2.5;
+  }
+
+  .observed-label {
+    fill: var(--gold-text);
+    font-size: 15px;
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .chart-title,
+  .x-title {
+    fill: var(--c-text);
+    font-size: 15px;
+    font-weight: 700;
+  }
+
+  .x-title {
+    text-anchor: middle;
+  }
+
+  .axes :global(.axis-line),
+  .axes :global(.axis-tick) {
+    stroke: var(--ink);
+    stroke-width: 1;
+  }
+
+  .axes :global(.axis-label) {
+    fill: var(--c-muted);
+    font-size: 14px;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .axes :global(.axis-label.critical-mark) {
+    fill: var(--deep);
+    font-weight: 700;
+  }
+
+  .simulate {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-top: 14px;
+    padding-top: 18px;
+    border-top: 1px solid var(--rule);
+  }
+
+  .simulate p {
+    margin: 0;
+  }
+
+  .simulate-name {
+    font-weight: 700;
+  }
+
+  .population {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0 24px;
+    border-bottom: 1px solid var(--rule);
+  }
+
+  .tails[hidden],
+  .population[hidden],
+  .simulate-result[hidden],
+  .clear[hidden] {
+    display: none;
+  }
+
+  .simulate-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0 18px;
+  }
+
+  .hint {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0 14px;
+    margin: 0;
+  }
+
+  .restart,
+  .run,
+  .clear {
+    display: inline-flex;
+    align-items: center;
+    min-height: 44px;
+    padding: 0;
+    border: 0;
+    background: none;
+    color: var(--c-link);
+    font: inherit;
+    cursor: pointer;
+  }
+
+  .restart span,
+  .run span,
+  .clear span {
+    padding: 0 4px;
+  }
+
+  .restart:hover span,
+  .run:hover span,
+  .clear:hover span {
+    background-color: var(--c-link);
+    color: var(--c-bg);
+  }
+
+  .restart:focus-visible,
+  .run:focus-visible,
+  .clear:focus-visible,
+  .tails button:focus-visible,
+  .population button:focus-visible {
+    outline: 2px solid var(--c-link);
+    outline-offset: 2px;
+  }
+
+  .steps {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0 28px;
+    border-bottom: 1px solid var(--rule);
+  }
+
+  .steps button,
+  .tails button,
+  .population button {
+    min-height: 40px;
+    margin-bottom: -1px;
+    padding: 0;
+    border: 0;
+    border-bottom: 3px solid transparent;
+    background: none;
+    color: var(--c-text);
+    font: inherit;
+    cursor: pointer;
+  }
+
+  .steps button::after,
+  .tails button::after,
+  .population button::after {
+    content: attr(data-text);
+    display: block;
+    height: 0;
+    overflow: hidden;
+    visibility: hidden;
+    font-weight: 700;
+  }
+
+  .steps button:hover,
+  .tails button:hover,
+  .population button:hover {
+    color: var(--c-link);
+  }
+
+  .steps button[aria-pressed='true'],
+  .tails button[aria-pressed='true'],
+  .population button[aria-pressed='true'] {
+    border-bottom-color: var(--deep);
+    color: var(--deep);
+    font-weight: 700;
+    cursor: default;
+  }
+
+  .steps button:focus-visible {
+    outline: 2px solid var(--c-link);
+    outline-offset: 2px;
+  }
+
+  .steps[hidden],
+  .ruler[hidden],
+  .long-run[hidden],
+  .pieces[hidden],
+  .tag[hidden],
+  .reading-number[hidden] {
+    display: none;
+  }
+
+  .reading p {
+    margin: 0;
+  }
+
+  .reading-name {
+    font-weight: 700;
+  }
+
+  .reading-number {
+    color: var(--gold-text);
+    font-size: 48px;
+    font-weight: 700;
+    line-height: 1.1;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .tag {
+    margin: 2px 0 0 !important;
+    color: var(--ink);
+    font-size: 26px;
+    font-weight: 700;
+    line-height: 1.2;
+  }
+
+  .tag.reject {
+    color: var(--real);
+  }
+
+  .reading-line {
+    margin-top: 4px !important;
+  }
+
+  .ruler-track {
+    position: relative;
+    height: 34px;
+    margin: 0 14px;
+    border-bottom: 2px solid var(--ink);
+  }
+
+  .ruler-mark {
+    position: absolute;
+    bottom: 10px;
+    color: var(--c-muted);
+    font-size: 14px;
+    font-variant-numeric: tabular-nums;
+    transform: translateX(-50%);
+    line-height: 1;
+  }
+
+  .ruler-mark::after {
+    content: '';
+    position: absolute;
+    bottom: -10px;
+    left: 50%;
+    width: 1px;
+    height: 7px;
+    background: var(--ink);
+  }
+
+  .ruler-dot {
+    position: absolute;
+    bottom: -8px;
+    width: 14px;
+    height: 14px;
+    border: 2.5px solid #ffffff;
+    border-radius: 50%;
+    background: var(--gold);
+    transform: translateX(-50%);
+  }
+
+  .ruler-ends {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 10px;
+    font-size: 14px;
+  }
+
+  .long-run {
+    margin: 0;
+  }
+
+  .pieces-name {
+    margin: 0;
+    font-weight: 700;
+  }
+
+  .pieces-list {
+    margin: 6px 0 0;
+    border-top: 1px solid var(--rule);
+  }
+
+  .pieces-list :global(div) {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 16px;
+    padding: 8px 0;
+    border-bottom: 1px solid var(--rule);
+  }
+
+  .pieces-list :global(dt) {
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .pieces-list :global(dd) {
+    margin: 0;
+    text-align: right;
+  }
+
+  .pieces-note {
+    margin: 8px 0 0;
+  }
+
+  .facts {
+    margin: 0;
+    border-top: 1px solid var(--rule);
+  }
+
+  .facts :global(div) {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 16px;
+    padding: 8px 0;
+    border-bottom: 1px solid var(--rule);
+  }
+
+  .facts :global(dd) {
+    margin: 0;
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+  }
+
+  .controls {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .controls + .controls {
+    padding-top: 22px;
+    border-top: 1px solid var(--rule);
+  }
+
+  .controls[hidden] {
+    display: none;
+  }
+
+  .tails {
+    display: flex;
+    align-items: center;
+    gap: 0 24px;
+    border-bottom: 1px solid var(--rule);
+  }
+
+  .tails-name {
+    flex: 1;
+  }
+
+  .tails button:disabled,
+  .control input:disabled {
+    cursor: not-allowed;
+  }
+
+  .upper,
+  .tail-note,
+  .locked {
+    margin: 0;
+  }
+
+  .locked {
+    font-weight: 700;
+  }
+
+  .control {
+    --handle: var(--ink);
+    display: flex;
+    flex-direction: column;
+  }
+
+  .control[hidden] {
+    display: none;
+  }
+
+  .control.observed {
+    --handle: var(--gold);
+  }
+
+  .control.effect {
+    --handle: var(--real);
+  }
+
+  .head {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 12px;
+  }
+
+  .value {
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+  }
+
+  .control input {
+    width: 100%;
+    height: 28px;
+    margin: 0;
+    background: transparent;
+    cursor: pointer;
+    appearance: none;
+  }
+
+  .control input::-webkit-slider-runnable-track {
+    height: 28px;
+    background: linear-gradient(var(--ink), var(--ink)) center / 100% 1px no-repeat;
+  }
+
+  .control input::-webkit-slider-thumb {
+    box-sizing: border-box;
+    width: 10px;
+    height: 22px;
+    margin-top: 3px;
+    border: 2px solid var(--c-bg);
+    border-radius: 3px;
+    background: var(--handle);
+    appearance: none;
+  }
+
+  .control input::-moz-range-track {
+    height: 1px;
+    background: var(--ink);
+  }
+
+  .control input::-moz-range-thumb {
+    box-sizing: border-box;
+    width: 10px;
+    height: 22px;
+    border: 2px solid var(--c-bg);
+    border-radius: 3px;
+    background: var(--handle);
+  }
+
+  .control input:focus-visible {
+    outline: 2px solid var(--c-link);
+    outline-offset: 2px;
+  }
+</style>
+
+<script>
+  import '../scripts/hypothesis.js';
+</script>

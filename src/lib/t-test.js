@@ -4,7 +4,7 @@ import { chiDensity, tCritical, tTail } from './sampling.js';
 const STEPS = 240;
 const spreads = new Map();
 
-function spread(df) {
+export function spread(df) {
   if (spreads.has(df)) return spreads.get(df);
   const root = Math.sqrt(df);
   const lo = Math.max(0, root - 7.5);

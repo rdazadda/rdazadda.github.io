@@ -1,5 +1,13 @@
 ---
 import ConceptLayout from '../../layouts/ConceptLayout.astro';
+import HypothesisViz from '../../components/HypothesisViz.astro';
+import ReportExample from '../../components/ReportExample.astro';
+import { START, report } from '../../lib/testing.js';
+
+const lead = 'A full report names the test and says whether it was one- or two-tailed. It gives the statistic with its degrees of freedom, the exact <i>p</i> value, and the effect size with its confidence interval (du Prel et al., 2009; Wasserstein et al., 2019). Under Neyman and Pearson, the α and power set in advance belong in it too. The example below follows the chart above and changes with it. Replace the parts in brackets before using it.';
 ---
 
-<ConceptLayout />
+<ConceptLayout>
+  <HypothesisViz />
+  <ReportExample slot="report" lead={lead} text={report(START)} />
+</ConceptLayout>
