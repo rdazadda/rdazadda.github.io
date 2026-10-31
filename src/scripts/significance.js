@@ -122,10 +122,13 @@ function refit() {
   if (!shown || reduceMotion) shown = [...domain];
 }
 
+const fill = (input) => input.style.setProperty('--fill', `${(100 * (input.value - input.min)) / (input.max - input.min)}%`);
+
 function showControls() {
   for (const [name, { input, value }] of Object.entries(rulers)) {
     const text = SLIDERS[name].text(state[name]);
     input.value = SLIDERS[name].toValue(state[name]);
+    fill(input);
     value.textContent = text;
     input.setAttribute('aria-valuetext', text);
   }

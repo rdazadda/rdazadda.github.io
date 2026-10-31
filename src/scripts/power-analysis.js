@@ -171,6 +171,8 @@ for (const input of root.querySelectorAll('.controls input')) {
 
 const paired = () => state.design === 'paired';
 
+const fill = (input) => input.style.setProperty('--fill', `${(100 * (input.value - input.min)) / (input.max - input.min)}%`);
+
 function showControls() {
   const grains = Math.floor(topOf(state) / grainOf(state) + 1e-9);
   place(rulers.guess.input, { min: 1, max: grains });
@@ -180,6 +182,7 @@ function showControls() {
     control.hidden = Boolean(only) && !only.split(' ').includes(state.design);
     const { toValue, text, unit } = SLIDERS[name];
     input.value = toValue(state);
+    fill(input);
     value.textContent = text(state);
     input.setAttribute('aria-valuetext', unit ? `${text(state)}${unitOf(state)}` : text(state));
   }

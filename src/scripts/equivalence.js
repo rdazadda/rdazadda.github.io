@@ -107,12 +107,15 @@ const paired = () => state.design === 'paired';
 const reachable = () => Math.abs(state.truth) < state.bound;
 const who = (n) => (paired() ? `${count(n)} people` : `${count(n)} in each group`);
 
+const fill = (input) => input.style.setProperty('--fill', `${(100 * (input.value - input.min)) / (input.max - input.min)}%`);
+
 function showControls() {
   for (const [name, { input, control, value }] of Object.entries(rulers)) {
     const only = control.dataset.designs;
     control.hidden = Boolean(only) && !only.split(' ').includes(state.design);
     const { toValue, text } = SLIDERS[name];
     input.value = toValue(state);
+    fill(input);
     value.textContent = text(state);
     input.setAttribute('aria-valuetext', text(state));
   }

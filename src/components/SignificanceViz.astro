@@ -207,33 +207,66 @@ const sliders = [
   }
 
   .track input::-webkit-slider-runnable-track {
-    height: 28px;
-    background: linear-gradient(var(--ink), var(--ink)) center / 100% 1.5px no-repeat;
+    height: 3px;
+    border-radius: 3px;
+    background: linear-gradient(to right, var(--handle) var(--fill, 0%), #b8c1cc var(--fill, 0%));
   }
 
   .track input::-webkit-slider-thumb {
     box-sizing: border-box;
-    width: 10px;
-    height: 26px;
-    margin-top: 1px;
+    width: 14px;
+    height: 14px;
+    margin-top: -5.5px;
     border: 2px solid var(--c-bg);
-    border-radius: 3px;
+    border-radius: 50%;
     background: var(--handle);
+    transition: transform 0.12s;
     appearance: none;
   }
 
+  .track input:not(:disabled):hover::-webkit-slider-thumb,
+  .track input:not(:disabled):active::-webkit-slider-thumb {
+    transform: scale(1.15);
+  }
+
   .track input::-moz-range-track {
-    height: 1.5px;
-    background: var(--ink);
+    height: 3px;
+    border-radius: 3px;
+    background: #b8c1cc;
+  }
+
+  .track input::-moz-range-progress {
+    height: 3px;
+    border-radius: 3px;
+    background: var(--handle);
   }
 
   .track input::-moz-range-thumb {
     box-sizing: border-box;
-    width: 10px;
-    height: 26px;
+    width: 14px;
+    height: 14px;
     border: 2px solid var(--c-bg);
-    border-radius: 3px;
+    border-radius: 50%;
     background: var(--handle);
+    transition: transform 0.12s;
+  }
+
+  .track input:not(:disabled):hover::-moz-range-thumb,
+  .track input:not(:disabled):active::-moz-range-thumb {
+    transform: scale(1.15);
+  }
+
+  @media (pointer: coarse) {
+    .track input::-webkit-slider-thumb {
+      width: 16px;
+      height: 16px;
+      margin-top: -6.5px;
+    }
+
+    .track input::-moz-range-thumb {
+      width: 16px;
+      height: 16px;
+    }
   }
 
   .track input:focus-visible {
@@ -252,7 +285,7 @@ const sliders = [
   .tick {
     position: absolute;
     top: 0;
-    left: calc(5px + var(--at) * (100% - 10px));
+    left: calc(7px + var(--at) * (100% - 14px));
     height: 8px;
     border-left: 1px solid rgb(48 57 79 / 0.6);
   }
@@ -272,11 +305,17 @@ const sliders = [
   }
 
   .tick:first-child .tick-text {
-    transform: translateX(-5px);
+    transform: translateX(-7px);
   }
 
   .tick:last-child .tick-text {
-    transform: translateX(calc(5px - 100%));
+    transform: translateX(calc(7px - 100%));
+  }
+
+  @media (pointer: coarse) {
+    .tick {
+      left: calc(8px + var(--at) * (100% - 16px));
+    }
   }
 
   .chart {

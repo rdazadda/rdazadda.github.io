@@ -169,10 +169,13 @@ function setMean(i, value) {
   set({ means });
 }
 
+const fill = (input) => input.style.setProperty('--fill', `${(100 * (input.value - input.min)) / (input.max - input.min)}%`);
+
 function showControls() {
   for (const [name, { input, value }] of Object.entries(rulers)) {
     const { toValue, text } = SLIDERS[name];
     input.value = toValue(state);
+    fill(input);
     value.textContent = text(state);
     input.setAttribute('aria-valuetext', text(state));
   }

@@ -183,6 +183,8 @@ for (const input of root.querySelectorAll('.control input')) {
   rulers[input.dataset.name] = { input, control, value: control.querySelector('.value'), label: control.querySelector('label') };
 }
 
+const fill = (input) => input.style.setProperty('--fill', `${(100 * (input.value - input.min)) / (input.max - input.min)}%`);
+
 function showControls() {
   const fixed = state.logic === 'np' && state.step === 'result';
   for (const [name, { input, control, value, label }] of Object.entries(rulers)) {
@@ -195,6 +197,7 @@ function showControls() {
     const { top, toValue, text } = SLIDERS[name];
     if (top) input.max = String(top(state));
     input.value = toValue(state);
+    fill(input);
     input.disabled = fixed && name !== 'observed';
     value.textContent = text(state);
     input.setAttribute('aria-valuetext', text(state));
