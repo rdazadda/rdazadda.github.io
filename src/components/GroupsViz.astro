@@ -1,0 +1,544 @@
+---
+import { DESIGNS, START, narrate } from '../lib/groups.js';
+
+const groups = [
+  [
+    { name: 'n', label: 'People in each group', min: 0, max: 1000 },
+    { name: 'sd', label: 'Spread (SD)', min: 5, max: 50 },
+  ],
+  [
+    { name: 'target', label: 'Target power', min: 50, max: 99 },
+    { name: 'alpha', label: 'Significance level (α)', min: 0, max: 7 },
+    { name: 'dropout', label: 'Dropout', min: 0, max: 50 },
+  ],
+];
+---
+
+<div class="groups">
+  <p class="narration" aria-live="polite" set:html={narrate(START)} />
+
+  <div class="designs" role="group" aria-label="Design">
+    {
+      DESIGNS.map(({ id, label }) => (
+        <button type="button" data-design={id} data-text={label} aria-pressed={String(id === START.design)}>
+          {label}
+        </button>
+      ))
+    }
+  </div>
+
+  <div class="stage">
+    <div class="chart">
+      <svg viewBox="0 0 740 670" role="img" aria-label="Bell curves showing where each group's scores fall, which can be dragged left or right, and below them power for each test against the number of people in each group">
+        <text class="chart-title bells-title" x="0" y="20"></text>
+        <g class="legend"></g>
+        <g class="bells"></g>
+        <g class="axes"></g>
+        <g class="markers"></g>
+        <text class="x-title" x="399" y="344">Score</text>
+        <text class="chart-title" x="0" y="404">Power for each test</text>
+        <line class="target" x1="74" x2="724"></line>
+        <line class="plan" y1="426" y2="610"></line>
+        <text class="plan-label" y="420" text-anchor="middle"></text>
+        <g class="powers"></g>
+        <g class="crossings"></g>
+        <text class="x-title people-title" x="399" y="656"></text>
+      </svg>
+      <div class="mean-inputs"></div>
+      <div class="cover">
+        <span class="cover-title">The plan must cover</span>
+        <span class="cover-list"></span>
+        <label class="correct"><input type="checkbox" />Correct for several comparisons</label>
+      </div>
+
+      <p class="hint">Drag the numbered dots to move each group. <button type="button" class="restart"><span>Start over</span></button></p>
+    </div>
+
+    <div class="side">
+      <div class="answer">
+        <p class="answer-name">People in each group</p>
+        <p class="answer-number"></p>
+        <p class="answer-note"></p>
+        <label class="keep"><input type="checkbox" />Keep this number fixed</label>
+      </div>
+
+      <dl class="facts">
+        <div>
+          <dt class="reached-name"></dt>
+          <dd class="reached"></dd>
+        </div>
+        <div>
+          <dt>Weakest test</dt>
+          <dd class="weakest"></dd>
+        </div>
+        <div>
+          <dt>Needed for every test</dt>
+          <dd class="every"></dd>
+        </div>
+      </dl>
+
+      {
+        groups.map((rows) => (
+          <div class="controls">
+            {rows.map(({ name, label, min, max }) => (
+              <div class:list={['control', name]}>
+                <div class="head">
+                  <label for={`groups-${name}`}>{label}</label>
+                  <output class="value" for={`groups-${name}`} />
+                </div>
+                <input id={`groups-${name}`} type="range" min={min} max={max} step="1" data-name={name} />
+              </div>
+            ))}
+          </div>
+        ))
+      }
+    </div>
+  </div>
+</div>
+
+<style>
+  .groups {
+    --real: var(--c-brand);
+    --deep: #143d5e;
+    --alarm: #d55e00;
+    --alarm-text: #b34f00;
+    --gold: #c99400;
+    --gold-text: #7d5c00;
+    --ink: #30394f;
+    --rule: #d3dae2;
+    display: flex;
+    flex-direction: column;
+    gap: 22px;
+    width: 100%;
+    max-width: 1240px;
+  }
+
+  .narration {
+    max-width: var(--measure);
+    min-height: calc(3 * 1.35em);
+    margin: 0;
+  }
+
+  .designs {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0 32px;
+    border-bottom: 1px solid var(--rule);
+  }
+
+  .designs button {
+    min-height: 44px;
+    margin-bottom: -1px;
+    padding: 0;
+    border: 0;
+    border-bottom: 3px solid transparent;
+    background: none;
+    color: var(--c-text);
+    font: inherit;
+    cursor: pointer;
+  }
+
+  .designs button::after {
+    content: attr(data-text);
+    display: block;
+    height: 0;
+    overflow: hidden;
+    visibility: hidden;
+    font-weight: 700;
+  }
+
+  .designs button:hover {
+    color: var(--c-link);
+  }
+
+  .designs button[aria-pressed='true'] {
+    border-bottom-color: var(--real);
+    color: var(--real);
+    font-weight: 700;
+    cursor: default;
+  }
+
+  .designs button:focus-visible {
+    outline: 2px solid var(--c-link);
+    outline-offset: 2px;
+  }
+
+  .stage {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-start;
+    gap: 30px 56px;
+    padding-top: 10px;
+  }
+
+  .chart {
+    position: relative;
+    display: flex;
+    flex: 999 1 520px;
+    flex-direction: column;
+    gap: 18px;
+    min-width: 0;
+    max-width: 760px;
+  }
+
+  .side {
+    display: flex;
+    flex: 1 1 300px;
+    flex-direction: column;
+    gap: 26px;
+    max-width: 380px;
+  }
+
+  svg {
+    display: block;
+    width: 100%;
+    height: auto;
+    overflow: visible;
+    touch-action: pan-y;
+    user-select: none;
+  }
+
+  .chart-title,
+  .x-title {
+    fill: var(--c-text);
+    font-size: 15px;
+    font-weight: 700;
+  }
+
+  .x-title {
+    text-anchor: middle;
+  }
+
+  .axes :global(.axis-line),
+  .axes :global(.axis-tick) {
+    stroke: var(--ink);
+    stroke-width: 1;
+  }
+
+  .axes :global(.axis-label) {
+    fill: var(--c-muted);
+    font-size: 14px;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .axes :global(.axis-label.target-mark) {
+    fill: var(--deep);
+    font-weight: 700;
+  }
+
+  .legend :global(text) {
+    font-size: 14px;
+  }
+
+  .bells :global(.fill) {
+    fill-opacity: 0.07;
+    stroke: none;
+  }
+
+  .bells :global(.line) {
+    fill: none;
+    stroke-width: 2.5;
+  }
+
+  .markers :global(.guide) {
+    stroke: var(--ink);
+    stroke-width: 1;
+    stroke-dasharray: 3 3;
+  }
+
+  .markers :global(.knob) {
+    stroke: #ffffff;
+    stroke-width: 2;
+  }
+
+  .markers :global(.focus .knob) {
+    stroke: var(--c-link);
+    stroke-width: 3;
+  }
+
+  .markers :global(.number) {
+    fill: #ffffff;
+    font-size: 12px;
+    font-weight: 700;
+    text-anchor: middle;
+    pointer-events: none;
+  }
+
+  .markers :global(.grab) {
+    fill: transparent;
+    cursor: ew-resize;
+    touch-action: none;
+  }
+
+  .target {
+    stroke: var(--ink);
+    stroke-width: 1;
+    stroke-dasharray: 5 4;
+  }
+
+  .plan {
+    stroke: var(--gold);
+    stroke-width: 2;
+  }
+
+  .plan-label {
+    fill: var(--gold-text);
+    font-size: 14px;
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .powers :global(path) {
+    fill: none;
+    stroke-width: 2;
+  }
+
+  .powers :global(.planned) {
+    stroke-width: 3;
+  }
+
+  .powers :global(.enough),
+  .crossings :global(circle.enough) {
+    stroke: var(--real);
+  }
+
+  .powers :global(.short),
+  .crossings :global(circle.short) {
+    stroke: var(--alarm);
+  }
+
+  .crossings :global(circle) {
+    fill: #ffffff;
+    stroke-width: 2.5;
+  }
+
+  .crossings :global(text) {
+    font-size: 14px;
+    font-weight: 700;
+    paint-order: stroke;
+    stroke: #ffffff;
+    stroke-width: 4px;
+    stroke-linejoin: round;
+  }
+
+  .crossings :global(text.enough) {
+    fill: var(--real);
+  }
+
+  .crossings :global(text.short) {
+    fill: var(--alarm-text);
+  }
+
+  .mean-inputs :global(input) {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+  }
+
+  .cover {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0 22px;
+  }
+
+  .cover-title {
+    font-weight: 700;
+  }
+
+  .cover-list {
+    display: contents;
+  }
+
+  .correct,
+  .keep,
+  .cover-list :global(label) {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    min-height: 44px;
+    cursor: pointer;
+  }
+
+  .correct input,
+  .keep input,
+  .cover-list :global(input) {
+    width: 18px;
+    height: 18px;
+    margin: 0;
+    accent-color: var(--real);
+    cursor: pointer;
+  }
+
+  .correct input:focus-visible,
+  .keep input:focus-visible,
+  .cover-list :global(input:focus-visible) {
+    outline: 2px solid var(--c-link);
+    outline-offset: 2px;
+  }
+
+  .hint {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0 14px;
+    margin: 0;
+  }
+
+  .restart {
+    display: inline-flex;
+    align-items: center;
+    min-height: 44px;
+    padding: 0;
+    border: 0;
+    background: none;
+    color: var(--c-link);
+    font: inherit;
+    cursor: pointer;
+  }
+
+  .restart span {
+    padding: 0 4px;
+  }
+
+  .restart:hover span {
+    background-color: var(--c-link);
+    color: var(--c-bg);
+  }
+
+  .restart:focus-visible {
+    outline: 2px solid var(--c-link);
+    outline-offset: 2px;
+  }
+
+  .answer p {
+    margin: 0;
+  }
+
+  .answer-name {
+    font-weight: 700;
+  }
+
+  .answer-number {
+    color: var(--gold-text);
+    font-size: 52px;
+    font-weight: 700;
+    line-height: 1.1;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .facts {
+    margin: 0;
+    border-top: 1px solid var(--rule);
+  }
+
+  .facts div {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 16px;
+    padding: 8px 0;
+    border-bottom: 1px solid var(--rule);
+  }
+
+  .facts dd {
+    margin: 0;
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+    text-align: right;
+  }
+
+  .facts .short {
+    color: var(--alarm-text);
+  }
+
+  .controls {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .controls + .controls {
+    padding-top: 22px;
+    border-top: 1px solid var(--rule);
+  }
+
+  .control {
+    --handle: var(--ink);
+    display: flex;
+    flex-direction: column;
+  }
+
+  .control.n {
+    --handle: var(--gold);
+  }
+
+  .control.target {
+    --handle: var(--deep);
+  }
+
+  .head {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 12px;
+  }
+
+  .value {
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+  }
+
+  .control input {
+    width: 100%;
+    height: 28px;
+    margin: 0;
+    background: transparent;
+    cursor: pointer;
+    appearance: none;
+  }
+
+  .control input::-webkit-slider-runnable-track {
+    height: 28px;
+    background: linear-gradient(var(--ink), var(--ink)) center / 100% 1px no-repeat;
+  }
+
+  .control input::-webkit-slider-thumb {
+    box-sizing: border-box;
+    width: 10px;
+    height: 22px;
+    margin-top: 3px;
+    border: 2px solid var(--c-bg);
+    border-radius: 3px;
+    background: var(--handle);
+    appearance: none;
+  }
+
+  .control input::-moz-range-track {
+    height: 1px;
+    background: var(--ink);
+  }
+
+  .control input::-moz-range-thumb {
+    box-sizing: border-box;
+    width: 10px;
+    height: 22px;
+    border: 2px solid var(--c-bg);
+    border-radius: 3px;
+    background: var(--handle);
+  }
+
+  .control input:focus-visible {
+    outline: 2px solid var(--c-link);
+    outline-offset: 2px;
+  }
+</style>
+
+<script>
+  import '../scripts/groups.js';
+</script>

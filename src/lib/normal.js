@@ -33,3 +33,14 @@ export function cdf(z) {
   }
   return z > 0 ? 1 - tail : tail;
 }
+
+export function quantile(p) {
+  let lo = -12;
+  let hi = 12;
+  for (let i = 0; i < 64; i++) {
+    const mid = (lo + hi) / 2;
+    if (cdf(mid) < p) lo = mid;
+    else hi = mid;
+  }
+  return (lo + hi) / 2;
+}

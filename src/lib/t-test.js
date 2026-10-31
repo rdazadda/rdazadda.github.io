@@ -39,6 +39,13 @@ export function power({ df, t, shift }) {
   return sum;
 }
 
+export function above({ df, t, shift }) {
+  const { s, w } = spread(df);
+  let sum = 0;
+  for (let j = 0; j < s.length; j++) sum += w[j] * (1 - cdf(t * s[j] - shift));
+  return sum;
+}
+
 export function density({ df, se, shift }, x) {
   const { s, w } = spread(df);
   const tValue = x / se;

@@ -1,0 +1,13 @@
+---
+import ConceptLayout from '../../layouts/ConceptLayout.astro';
+import PowerAnalysisViz from '../../components/PowerAnalysisViz.astro';
+import ReportExample from '../../components/ReportExample.astro';
+import { START, fit, report } from '../../lib/planning.js';
+
+const lead = 'A good power analysis names the test, the α and power, the effect and where it came from, the spread, and how many people will be recruited (Cook et al., 2018; Giner-Sorolla et al., 2024). The example below follows the plan above and changes with it. Replace the parts in brackets before using it.';
+---
+
+<ConceptLayout>
+  <PowerAnalysisViz />
+  <ReportExample slot="report" lead={lead} text={report({ ...START, n: fit(START) })} />
+</ConceptLayout>

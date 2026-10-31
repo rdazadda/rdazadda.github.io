@@ -8,8 +8,9 @@ import { entries } from '../data/visualizations.js';
 
 const path = Astro.url.pathname;
 const here = path.endsWith('/') ? path : `${path}/`;
-const { title, intro, explanation, misreadings, references, citation, bibtex, image, video } = entries.find((entry) => entry.link === here);
+const { title, intro, explanation, misreadings, report, references, citation, bibtex, image, video } = entries.find((entry) => entry.link === here);
 const live = Astro.slots.has('default');
+const reported = Boolean(report) || Astro.slots.has('report');
 
 const math = (tex: string) => katex.renderToString(tex, { throwOnError: false });
 const dollars = new RegExp('[$]([^$]+)[$]', 'g');
@@ -21,6 +22,7 @@ const parts = [
   ['visualization', 'Visualization'],
   ['explanation', 'Explanation'],
   ['misreadings', 'Common misreadings'],
+  ...(reported ? [['report', 'What to report']] : []),
   ['references', 'References'],
   ['cite', 'Cite'],
 ];
@@ -86,6 +88,22 @@ const parts = [
         )
       }
     </section>
+    {
+      reported && (
+        <section id="report">
+          <h2>What to report</h2>
+          <slot name="report">
+            {report?.length > 0 && (
+              <ul class="report">
+                {report.map((item) => (
+                  <li set:html={withMath(item)} />
+                ))}
+              </ul>
+            )}
+          </slot>
+        </section>
+      )
+    }
     <section id="references">
       <h2>References</h2>
       {
@@ -232,6 +250,7 @@ const parts = [
 
   .text,
   .misreadings,
+  .report,
   .references {
     max-width: var(--measure);
   }
@@ -258,6 +277,14 @@ const parts = [
 
   .misreading {
     font-style: italic;
+  }
+
+  .report {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    margin: 0;
+    padding-left: 1.2em;
   }
 
   .misreading::before {

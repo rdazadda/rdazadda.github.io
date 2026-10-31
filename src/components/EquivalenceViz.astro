@@ -1,0 +1,575 @@
+---
+import { DESIGNS, START, narrate } from '../lib/equivalence.js';
+
+const hidden = (designs) => Boolean(designs) && !designs.split(' ').includes(START.design);
+
+const groups = [
+  [
+    { name: 'bound', label: 'Equivalence bounds', min: 1, max: 60 },
+    { name: 'truth', label: 'True effect', min: -30, max: 30 },
+    { name: 'sd', label: 'Spread (SD)', min: 5, max: 40 },
+    { name: 'rho', label: 'Correlation of the two measures', min: 0, max: 19, designs: 'paired' },
+  ],
+  [
+    { name: 'target', label: 'Target power', min: 50, max: 99 },
+    { name: 'alpha', label: 'Significance level (α)', min: 0, max: 6 },
+    { name: 'dropout', label: 'Dropout', min: 0, max: 50 },
+  ],
+];
+---
+
+<div class="equivalence">
+  <p class="narration" aria-live="polite" set:html={narrate(START)} />
+
+  <div class="designs" role="group" aria-label="Design">
+    {
+      DESIGNS.map(({ id, label }) => (
+        <button type="button" data-design={id} data-text={label} aria-pressed={String(id === START.design)}>
+          {label}
+        </button>
+      ))
+    }
+  </div>
+
+  <div class="stage">
+    <div class="chart">
+      <svg viewBox="0 0 740 704" role="img" aria-label="Where one study's estimate can land: a bell curve shaded by what the study would conclude, with the equivalence bounds as dashed lines, a bar of the four possible conclusions, and power to show equivalence for each sample size">
+        <text class="chart-title curve-title" x="0" y="20"></text>
+        <path class="region equivalent"></path>
+        <path class="region overlap low"></path>
+        <path class="region overlap high"></path>
+        <path class="region unclear low"></path>
+        <path class="region unclear high"></path>
+        <path class="region different low"></path>
+        <path class="region different high"></path>
+        <path class="curve-line"></path>
+        <line class="truth" y2="330"></line>
+        <line class="bound low" y1="70" y2="330"></line>
+        <line class="bound high" y1="70" y2="330"></line>
+        <path class="bracket low"></path>
+        <path class="bracket high"></path>
+        <text class="bracket-label low" y="52" text-anchor="middle"></text>
+        <text class="bracket-label high" y="52" text-anchor="middle"></text>
+        <text class="zone-label" y="40" text-anchor="middle"></text>
+        <text class="share-label" text-anchor="middle"></text>
+        <circle class="truth-dot" r="7"></circle>
+        <g class="axes"></g>
+        <text class="x-title" x="399" y="376">Effect a study estimates</text>
+        <text class="chart-title outcome-title" x="0" y="420"></text>
+        <rect class="bar equivalent" y="432" height="26"></rect>
+        <rect class="bar overlap" y="432" height="26"></rect>
+        <rect class="bar unclear" y="432" height="26"></rect>
+        <rect class="bar different" y="432" height="26"></rect>
+        <g class="legend"></g>
+        <text class="chart-title" x="0" y="536">Power to show equivalence</text>
+        <line class="strip-target" x1="74" x2="724"></line>
+        <path class="strip-curve"></path>
+        <line class="plan" y1="546" y2="646"></line>
+        <circle class="plan-dot" r="7"></circle>
+        <text class="plan-label" y="540" text-anchor="middle"></text>
+        <text class="x-title" x="399" y="692">People in each group</text>
+      </svg>
+      <input class="people" type="range" min="2" max="1000" step="1" aria-label="People in each group" />
+      <p class="hint">Drag the bounds, the curve, or across the power chart. <button type="button" class="restart"><span>Start over</span></button></p>
+    </div>
+
+    <div class="side">
+      <div class="answer">
+        <p class="answer-name">People in each group</p>
+        <p class="answer-number"></p>
+        <p class="answer-note"></p>
+        <label class="keep"><input type="checkbox" />Keep this number fixed</label>
+      </div>
+
+      <dl class="facts">
+        <div>
+          <dt>Power to show equivalence</dt>
+          <dd class="power"></dd>
+        </div>
+        <div>
+          <dt>Narrowest bounds it can show</dt>
+          <dd class="narrowest"></dd>
+        </div>
+        <div>
+          <dt class="reach-name"></dt>
+          <dd class="reach"></dd>
+        </div>
+      </dl>
+
+      {
+        groups.map((rows) => (
+          <div class="controls">
+            {rows.map(({ name, label, min, max, designs }) => (
+              <div class:list={['control', name]} data-designs={designs} hidden={hidden(designs)}>
+                <div class="head">
+                  <label for={`same-${name}`}>{label}</label>
+                  <output class="value" for={`same-${name}`} />
+                </div>
+                <input id={`same-${name}`} type="range" min={min} max={max} step="1" data-name={name} />
+              </div>
+            ))}
+          </div>
+        ))
+      }
+    </div>
+  </div>
+</div>
+
+<style>
+  .equivalence {
+    --real: var(--c-brand);
+    --deep: #143d5e;
+    --gold: #c99400;
+    --gold-text: #7d5c00;
+    --ink: #30394f;
+    --rule: #d3dae2;
+    --unclear: #c8d3de;
+    --alarm: #d55e00;
+    --alarm-text: #b34f00;
+    display: flex;
+    flex-direction: column;
+    gap: 22px;
+    width: 100%;
+    max-width: 1240px;
+  }
+
+  .narration {
+    max-width: var(--measure);
+    min-height: calc(3 * 1.35em);
+    margin: 0;
+  }
+
+  .designs {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0 32px;
+    border-bottom: 1px solid var(--rule);
+  }
+
+  .designs button {
+    min-height: 44px;
+    margin-bottom: -1px;
+    padding: 0;
+    border: 0;
+    border-bottom: 3px solid transparent;
+    background: none;
+    color: var(--c-text);
+    font: inherit;
+    cursor: pointer;
+  }
+
+  .designs button::after {
+    content: attr(data-text);
+    display: block;
+    height: 0;
+    overflow: hidden;
+    visibility: hidden;
+    font-weight: 700;
+  }
+
+  .designs button:hover {
+    color: var(--c-link);
+  }
+
+  .designs button[aria-pressed='true'] {
+    border-bottom-color: var(--real);
+    color: var(--real);
+    font-weight: 700;
+    cursor: default;
+  }
+
+  .designs button:focus-visible {
+    outline: 2px solid var(--c-link);
+    outline-offset: 2px;
+  }
+
+  .stage {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-start;
+    gap: 30px 56px;
+    padding-top: 10px;
+  }
+
+  .chart {
+    position: relative;
+    display: flex;
+    flex: 999 1 520px;
+    flex-direction: column;
+    gap: 4px;
+    min-width: 0;
+    max-width: 760px;
+  }
+
+  .side {
+    display: flex;
+    flex: 1 1 300px;
+    flex-direction: column;
+    gap: 26px;
+    max-width: 380px;
+  }
+
+  svg {
+    display: block;
+    width: 100%;
+    height: auto;
+    overflow: visible;
+    touch-action: pan-y;
+    user-select: none;
+    cursor: ew-resize;
+  }
+
+  .region.equivalent,
+  .bar.equivalent {
+    fill: var(--real);
+  }
+
+  .region.overlap,
+  .bar.overlap {
+    fill: var(--gold-text);
+  }
+
+  .region.unclear,
+  .bar.unclear {
+    fill: var(--unclear);
+  }
+
+  .region.different,
+  .bar.different {
+    fill: var(--alarm);
+  }
+
+  .curve-line {
+    fill: none;
+    stroke: var(--deep);
+    stroke-width: 1.5;
+  }
+
+  .bound {
+    stroke: var(--deep);
+    stroke-width: 1.5;
+    stroke-dasharray: 6 4;
+  }
+
+  .bracket {
+    fill: none;
+    stroke: var(--ink);
+    stroke-width: 1.2;
+  }
+
+  .bracket-label {
+    fill: var(--c-muted);
+    font-size: 14px;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .zone-label {
+    fill: var(--real);
+    font-size: 15px;
+    font-weight: 700;
+  }
+
+  .share-label {
+    fill: #ffffff;
+    font-size: 18px;
+    font-weight: 700;
+  }
+
+  .truth {
+    stroke: var(--gold);
+    stroke-width: 1.5;
+    stroke-dasharray: 4 3;
+  }
+
+  .truth-dot {
+    fill: var(--gold);
+    stroke: #ffffff;
+    stroke-width: 2.5;
+    cursor: ew-resize;
+  }
+
+  .legend :global(text) {
+    font-size: 14px;
+  }
+
+  .legend :global(.equivalent) {
+    fill: var(--real);
+  }
+
+  .legend :global(.overlap) {
+    fill: var(--gold-text);
+  }
+
+  .legend :global(.unclear) {
+    fill: var(--c-text);
+  }
+
+  .legend :global(.different) {
+    fill: var(--alarm-text);
+  }
+
+  .legend :global(rect.unclear) {
+    fill: var(--unclear);
+  }
+
+  .legend :global(rect.different) {
+    fill: var(--alarm);
+  }
+
+  .legend :global(text.equivalent) {
+    font-weight: 700;
+  }
+
+  .strip-target {
+    stroke: var(--ink);
+    stroke-width: 1;
+    stroke-dasharray: 5 4;
+  }
+
+  .strip-curve {
+    fill: none;
+    stroke: var(--real);
+    stroke-width: 2.5;
+  }
+
+  .plan {
+    stroke: var(--gold);
+    stroke-width: 2;
+  }
+
+  .plan-dot {
+    fill: var(--gold);
+    stroke: #ffffff;
+    stroke-width: 2.5;
+  }
+
+  .people-focus .plan-dot {
+    stroke: var(--c-link);
+  }
+
+  .plan-label {
+    fill: var(--gold-text);
+    font-size: 14px;
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .chart-title,
+  .x-title {
+    fill: var(--c-text);
+    font-size: 15px;
+    font-weight: 700;
+  }
+
+  .x-title {
+    text-anchor: middle;
+  }
+
+  .axes :global(.axis-line),
+  .axes :global(.axis-tick) {
+    stroke: var(--ink);
+    stroke-width: 1;
+  }
+
+  .axes :global(.axis-label) {
+    fill: var(--c-muted);
+    font-size: 14px;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .axes :global(.axis-label.bound-mark) {
+    fill: var(--deep);
+    font-weight: 700;
+  }
+
+  .people {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+  }
+
+  .hint {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0 14px;
+    margin: 0;
+  }
+
+  .restart {
+    display: inline-flex;
+    align-items: center;
+    min-height: 44px;
+    padding: 0;
+    border: 0;
+    background: none;
+    color: var(--c-link);
+    font: inherit;
+    cursor: pointer;
+  }
+
+  .restart span {
+    padding: 0 4px;
+  }
+
+  .restart:hover span {
+    background-color: var(--c-link);
+    color: var(--c-bg);
+  }
+
+  .restart:focus-visible {
+    outline: 2px solid var(--c-link);
+    outline-offset: 2px;
+  }
+
+  .answer p {
+    margin: 0;
+  }
+
+  .answer-name {
+    font-weight: 700;
+  }
+
+  .answer-number {
+    color: var(--gold-text);
+    font-size: 52px;
+    font-weight: 700;
+    line-height: 1.1;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .keep {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    min-height: 44px;
+    cursor: pointer;
+  }
+
+  .keep input {
+    width: 18px;
+    height: 18px;
+    margin: 0;
+    accent-color: var(--real);
+    cursor: pointer;
+  }
+
+  .keep input:focus-visible {
+    outline: 2px solid var(--c-link);
+    outline-offset: 2px;
+  }
+
+  .facts {
+    margin: 0;
+    border-top: 1px solid var(--rule);
+  }
+
+  .facts div {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 16px;
+    padding: 8px 0;
+    border-bottom: 1px solid var(--rule);
+  }
+
+  .facts dd {
+    margin: 0;
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .controls {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .controls + .controls {
+    padding-top: 22px;
+    border-top: 1px solid var(--rule);
+  }
+
+  .control {
+    --handle: var(--ink);
+    display: flex;
+    flex-direction: column;
+  }
+
+  .control[hidden] {
+    display: none;
+  }
+
+  .control.bound {
+    --handle: var(--deep);
+  }
+
+  .control.truth {
+    --handle: var(--gold);
+  }
+
+  .head {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 12px;
+  }
+
+  .value {
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+  }
+
+  .control input {
+    width: 100%;
+    height: 28px;
+    margin: 0;
+    background: transparent;
+    cursor: pointer;
+    appearance: none;
+  }
+
+  .control input::-webkit-slider-runnable-track {
+    height: 28px;
+    background: linear-gradient(var(--ink), var(--ink)) center / 100% 1px no-repeat;
+  }
+
+  .control input::-webkit-slider-thumb {
+    box-sizing: border-box;
+    width: 10px;
+    height: 22px;
+    margin-top: 3px;
+    border: 2px solid var(--c-bg);
+    border-radius: 3px;
+    background: var(--handle);
+    appearance: none;
+  }
+
+  .control input::-moz-range-track {
+    height: 1px;
+    background: var(--ink);
+  }
+
+  .control input::-moz-range-thumb {
+    box-sizing: border-box;
+    width: 10px;
+    height: 22px;
+    border: 2px solid var(--c-bg);
+    border-radius: 3px;
+    background: var(--handle);
+  }
+
+  .control input:focus-visible {
+    outline: 2px solid var(--c-link);
+    outline-offset: 2px;
+  }
+</style>
+
+<script>
+  import '../scripts/equivalence.js';
+</script>

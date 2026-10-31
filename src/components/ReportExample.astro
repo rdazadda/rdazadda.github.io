@@ -1,0 +1,68 @@
+---
+interface Props {
+  lead: string;
+  text: string;
+}
+
+const { lead, text } = Astro.props;
+---
+
+<div class="example">
+  <p class="lead" set:html={lead} />
+  <p class="template" id="report-text" set:html={text} />
+  <p class="actions">
+    <button type="button" data-copy="report-text">
+      <span>Copy</span>
+    </button>
+  </p>
+</div>
+
+<style>
+  .example {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    max-width: var(--measure);
+  }
+
+  .example p {
+    margin: 0;
+  }
+
+  .template {
+    padding: 14px 18px;
+    border: var(--line) solid var(--c-brand);
+    background-color: var(--c-mat);
+  }
+
+  .actions {
+    display: flex;
+    margin-left: -4px;
+  }
+
+  .actions button {
+    display: inline-flex;
+    align-items: center;
+    min-height: 44px;
+    padding: 0;
+    border: 0;
+    background: none;
+    color: var(--c-link);
+    font: inherit;
+    cursor: pointer;
+  }
+
+  .actions span {
+    padding: 0 4px;
+  }
+
+  .actions button:hover span {
+    background-color: var(--c-link);
+    color: var(--c-bg);
+  }
+
+  .actions button:focus-visible {
+    outline: 2px solid var(--c-link);
+    outline-offset: 2px;
+  }
+</style>

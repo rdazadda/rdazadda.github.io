@@ -1,0 +1,645 @@
+---
+import { DESIGNS, START, narrate } from '../lib/planning.js';
+
+const T_DESIGNS = 'two paired clusters';
+const hidden = (designs) => Boolean(designs) && !designs.split(' ').includes(START.design);
+
+const groups = [
+  [
+    { name: 'guess', label: 'Best guess', min: 1, max: 60 },
+    { name: 'half', label: 'Likely range', min: 0, max: 30 },
+    { name: 'sd', label: 'Spread (SD)', min: 5, max: 40, designs: T_DESIGNS },
+    { name: 'rate', label: 'Control group rate', min: 1, max: 95, designs: 'proportions' },
+    { name: 'rho', label: 'Correlation of the two measures', min: 0, max: 19, designs: 'paired' },
+    { name: 'size', label: 'People in each cluster', min: 2, max: 50, designs: 'clusters' },
+    { name: 'icc', label: 'Similarity in clusters (ICC)', min: 0, max: 30, designs: 'clusters' },
+  ],
+  [
+    { name: 'target', label: 'Target power', min: 50, max: 99 },
+    { name: 'alpha', label: 'Significance level (α)', min: 0, max: 7 },
+    { name: 'dropout', label: 'Dropout', min: 0, max: 50 },
+  ],
+];
+---
+
+<div class="planning">
+  <p class="narration" aria-live="polite" set:html={narrate(START)} />
+
+  <div class="designs" role="group" aria-label="Design">
+    {
+      DESIGNS.map(({ id, label }) => (
+        <button type="button" data-design={id} data-text={label} aria-pressed={String(id === START.design)}>
+          {label}
+        </button>
+      ))
+    }
+  </div>
+
+  <div class="stage">
+    <div class="chart">
+      <svg viewBox="0 0 740 720" role="img" aria-label="Planning map: people in each group against the true effect, shaded by power, with the plan as a gold line across the likely range, and below it power across effects for the plan">
+        <defs>
+          <clipPath id="planning-map">
+            <rect x="74" y="34" width="650" height="440"></rect>
+          </clipPath>
+        </defs>
+        <text class="chart-title y-title" x="0" y="20"></text>
+        <g clip-path="url(#planning-map)">
+          <rect class="band b4" x="74" y="34" width="650" height="440"></rect>
+          <path class="band b3"></path>
+          <path class="band b2"></path>
+          <path class="band b1"></path>
+          <path class="band b0"></path>
+          <path class="contour" data-level="0.5"></path>
+          <path class="contour" data-level="0.8"></path>
+          <path class="contour" data-level="0.9"></path>
+          <path class="contour" data-level="0.95"></path>
+          <path class="contour target"></path>
+        </g>
+        <text class="chart-title strip-title" x="0" y="504"></text>
+        <rect class="range-band" y="518" height="120"></rect>
+        <line class="strip-target" x1="74" x2="724"></line>
+        <path class="strip-curve"></path>
+        <g class="axes"></g>
+        <line class="halo bar-halo"></line>
+        <path class="halo ends-halo"></path>
+        <line class="plan-short"></line>
+        <line class="plan-long"></line>
+        <line class="plan-end low"></line>
+        <line class="plan-end high"></line>
+        <circle class="dot" r="8"></circle>
+        <circle class="strip-mark low" r="5"></circle>
+        <circle class="strip-mark high" r="5"></circle>
+        <circle class="strip-guess" r="6"></circle>
+        <g class="labels">
+          <text class="contour-label" data-level="0.5"></text>
+          <text class="contour-label" data-level="0.8"></text>
+          <text class="contour-label" data-level="0.9"></text>
+          <text class="contour-label" data-level="0.95"></text>
+          <text class="contour-label target"></text>
+          <text class="people-label" x="64" text-anchor="end"></text>
+          <text class="strip-label low"></text>
+          <text class="strip-label high"></text>
+        </g>
+        <text class="x-title" x="399" y="712"></text>
+        <rect class="grab bar-grab"></rect>
+        <rect class="grab end-grab low"></rect>
+        <rect class="grab end-grab high"></rect>
+        <circle class="grab dot-grab" r="20"></circle>
+      </svg>
+      <input class="people" type="range" min="2" max="1000" step="1" aria-label="People in each group, the gold line" />
+      <p class="hint">Drag the gold line up or down, the dot sideways, and the ends to set the likely range. <button type="button" class="restart"><span>Start over</span></button></p>
+    </div>
+
+    <div class="side">
+      <div class="answer">
+        <p class="answer-name">People in each group</p>
+        <p class="answer-number"></p>
+        <p class="answer-note"></p>
+        <label class="keep"><input type="checkbox" />Keep this number fixed</label>
+      </div>
+
+      <dl class="facts">
+        <div>
+          <dt class="covered-name"></dt>
+          <dd class="covered"></dd>
+        </div>
+        <div>
+          <dt>Power at the low end</dt>
+          <dd class="low-end"></dd>
+        </div>
+        <div>
+          <dt>Needed for the whole range</dt>
+          <dd class="whole"></dd>
+        </div>
+      </dl>
+
+      {
+        groups.map((rows) => (
+          <div class="controls">
+            {rows.map(({ name, label, min, max, designs }) => (
+              <div class:list={['control', name]} data-designs={designs} hidden={hidden(designs)}>
+                <div class="head">
+                  <label for={`plan-${name}`}>{label}</label>
+                  <output class="value" for={`plan-${name}`} />
+                </div>
+                <input id={`plan-${name}`} type="range" min={min} max={max} step="1" data-name={name} />
+              </div>
+            ))}
+          </div>
+        ))
+      }
+    </div>
+  </div>
+</div>
+
+<style>
+  .planning {
+    --real: var(--c-brand);
+    --deep: #143d5e;
+    --alarm-text: #b34f00;
+    --alarm: #d55e00;
+    --gold: #c99400;
+    --gold-text: #7d5c00;
+    --gold-light: #f8f0dc;
+    --ink: #30394f;
+    --rule: #d3dae2;
+    --b0: #f5f7fa;
+    --b1: #e2ebf3;
+    --b2: #c8daea;
+    --b3: #a9c5de;
+    --b4: #88afd0;
+    display: flex;
+    flex-direction: column;
+    gap: 22px;
+    width: 100%;
+    max-width: 1240px;
+  }
+
+  .narration {
+    max-width: var(--measure);
+    min-height: calc(3 * 1.35em);
+    margin: 0;
+  }
+
+  .designs {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0 32px;
+    border-bottom: 1px solid var(--rule);
+  }
+
+  .designs button {
+    min-height: 44px;
+    margin-bottom: -1px;
+    padding: 0;
+    border: 0;
+    border-bottom: 3px solid transparent;
+    background: none;
+    color: var(--c-text);
+    font: inherit;
+    cursor: pointer;
+  }
+
+  .designs button::after {
+    content: attr(data-text);
+    display: block;
+    height: 0;
+    overflow: hidden;
+    visibility: hidden;
+    font-weight: 700;
+  }
+
+  .designs button:hover {
+    color: var(--c-link);
+  }
+
+  .designs button[aria-pressed='true'] {
+    border-bottom-color: var(--real);
+    color: var(--real);
+    font-weight: 700;
+    cursor: default;
+  }
+
+  .designs button:focus-visible {
+    outline: 2px solid var(--c-link);
+    outline-offset: 2px;
+  }
+
+  .stage {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-start;
+    gap: 30px 56px;
+    padding-top: 10px;
+  }
+
+  .chart {
+    position: relative;
+    display: flex;
+    flex: 999 1 520px;
+    flex-direction: column;
+    gap: 4px;
+    min-width: 0;
+    max-width: 760px;
+  }
+
+  .side {
+    display: flex;
+    flex: 1 1 300px;
+    flex-direction: column;
+    gap: 26px;
+    max-width: 380px;
+  }
+
+  svg {
+    display: block;
+    width: 100%;
+    height: auto;
+    overflow: visible;
+    touch-action: pan-y;
+    user-select: none;
+  }
+
+  .grab {
+    fill: transparent;
+    touch-action: none;
+  }
+
+  .bar-grab {
+    cursor: ns-resize;
+  }
+
+  .end-grab {
+    cursor: ew-resize;
+  }
+
+  .dot-grab {
+    cursor: move;
+  }
+
+  .b0 {
+    fill: var(--b0);
+  }
+
+  .b1 {
+    fill: var(--b1);
+  }
+
+  .b2 {
+    fill: var(--b2);
+  }
+
+  .b3 {
+    fill: var(--b3);
+  }
+
+  .b4 {
+    fill: var(--b4);
+  }
+
+  .contour {
+    fill: none;
+    stroke: var(--real);
+    stroke-width: 1;
+  }
+
+  .contour.target {
+    stroke: var(--deep);
+    stroke-width: 2.5;
+  }
+
+  .contour-label {
+    fill: var(--c-text);
+    font-size: 14px;
+    text-anchor: middle;
+    dominant-baseline: central;
+    paint-order: stroke;
+    stroke-width: 5px;
+    stroke-linejoin: round;
+  }
+
+  .contour-label.target {
+    fill: var(--deep);
+    font-weight: 700;
+  }
+
+  .contour-label.tone-1 {
+    stroke: var(--b1);
+  }
+
+  .contour-label.tone-2 {
+    stroke: var(--b2);
+  }
+
+  .contour-label.tone-3 {
+    stroke: var(--b3);
+  }
+
+  .contour-label.tone-4 {
+    stroke: var(--b4);
+  }
+
+  .halo {
+    fill: none;
+    stroke: #ffffff;
+  }
+
+  .bar-halo {
+    stroke-width: 10;
+  }
+
+  .ends-halo {
+    stroke-width: 6.5;
+  }
+
+  .plan-long {
+    stroke: var(--gold);
+    stroke-width: 6;
+  }
+
+  .plan-short {
+    stroke: var(--gold);
+    stroke-width: 3;
+    stroke-dasharray: 6 4;
+  }
+
+  .plan-end {
+    stroke: var(--gold);
+    stroke-width: 2.5;
+  }
+
+  .people-focus .plan-end,
+  .people-focus .plan-long {
+    stroke: var(--c-link);
+  }
+
+  .dot,
+  .strip-guess {
+    fill: var(--gold);
+    stroke: #ffffff;
+    stroke-width: 2.5;
+  }
+
+  .range-band {
+    fill: var(--gold-light);
+  }
+
+  .strip-target {
+    stroke: var(--ink);
+    stroke-width: 1;
+    stroke-dasharray: 5 4;
+  }
+
+  .strip-curve {
+    fill: none;
+    stroke: var(--real);
+    stroke-width: 2.5;
+  }
+
+  .strip-mark {
+    fill: #ffffff;
+    stroke-width: 2;
+  }
+
+  .strip-mark.short {
+    stroke: var(--alarm);
+  }
+
+  .strip-mark.enough {
+    stroke: var(--real);
+  }
+
+  .chart-title,
+  .x-title {
+    fill: var(--c-text);
+    font-size: 15px;
+    font-weight: 700;
+  }
+
+  .x-title {
+    text-anchor: middle;
+  }
+
+  .people-label {
+    fill: var(--gold-text);
+    font-size: 14px;
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .strip-label {
+    font-size: 14px;
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+    paint-order: stroke;
+    stroke: #ffffff;
+    stroke-width: 4px;
+    stroke-linejoin: round;
+  }
+
+  .strip-label.short {
+    fill: var(--alarm-text);
+  }
+
+  .strip-label.enough {
+    fill: var(--real);
+  }
+
+  .axes :global(.axis-line) {
+    stroke: var(--ink);
+    stroke-width: 1;
+  }
+
+  .axes :global(.axis-tick) {
+    stroke: var(--ink);
+    stroke-width: 1;
+  }
+
+  .axes :global(.axis-label) {
+    fill: var(--c-muted);
+    font-size: 14px;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .axes :global(.axis-label.target-mark) {
+    fill: var(--deep);
+    font-weight: 700;
+  }
+
+  .people {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+  }
+
+  .hint {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0 14px;
+    margin: 0;
+  }
+
+  .restart {
+    display: inline-flex;
+    align-items: center;
+    min-height: 44px;
+    padding: 0;
+    border: 0;
+    background: none;
+    color: var(--c-link);
+    font: inherit;
+    cursor: pointer;
+  }
+
+  .restart span {
+    padding: 0 4px;
+  }
+
+  .restart:hover span {
+    background-color: var(--c-link);
+    color: var(--c-bg);
+  }
+
+  .restart:focus-visible {
+    outline: 2px solid var(--c-link);
+    outline-offset: 2px;
+  }
+
+  .answer p {
+    margin: 0;
+  }
+
+  .answer-name {
+    font-weight: 700;
+  }
+
+  .answer-number {
+    color: var(--gold-text);
+    font-size: 52px;
+    font-weight: 700;
+    line-height: 1.1;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .keep {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    min-height: 44px;
+    cursor: pointer;
+  }
+
+  .keep input {
+    width: 18px;
+    height: 18px;
+    margin: 0;
+    accent-color: var(--real);
+    cursor: pointer;
+  }
+
+  .keep input:focus-visible {
+    outline: 2px solid var(--c-link);
+    outline-offset: 2px;
+  }
+
+  .facts {
+    margin: 0;
+    border-top: 1px solid var(--rule);
+  }
+
+  .facts div {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 16px;
+    padding: 8px 0;
+    border-bottom: 1px solid var(--rule);
+  }
+
+  .facts dd {
+    margin: 0;
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .facts .short {
+    color: var(--alarm-text);
+  }
+
+  .controls {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .controls + .controls {
+    padding-top: 22px;
+    border-top: 1px solid var(--rule);
+  }
+
+  .control {
+    --handle: var(--ink);
+    display: flex;
+    flex-direction: column;
+  }
+
+  .control[hidden] {
+    display: none;
+  }
+
+  .control.guess,
+  .control.half {
+    --handle: var(--gold);
+  }
+
+  .control.target {
+    --handle: var(--deep);
+  }
+
+  .head {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 12px;
+  }
+
+  .value {
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+  }
+
+  .control input {
+    width: 100%;
+    height: 28px;
+    margin: 0;
+    background: transparent;
+    cursor: pointer;
+    appearance: none;
+  }
+
+  .control input::-webkit-slider-runnable-track {
+    height: 28px;
+    background: linear-gradient(var(--ink), var(--ink)) center / 100% 1px no-repeat;
+  }
+
+  .control input::-webkit-slider-thumb {
+    box-sizing: border-box;
+    width: 10px;
+    height: 22px;
+    margin-top: 3px;
+    border: 2px solid var(--c-bg);
+    border-radius: 3px;
+    background: var(--handle);
+    appearance: none;
+  }
+
+  .control input::-moz-range-track {
+    height: 1px;
+    background: var(--ink);
+  }
+
+  .control input::-moz-range-thumb {
+    box-sizing: border-box;
+    width: 10px;
+    height: 22px;
+    border: 2px solid var(--c-bg);
+    border-radius: 3px;
+    background: var(--handle);
+  }
+
+  .control input:focus-visible {
+    outline: 2px solid var(--c-link);
+    outline-offset: 2px;
+  }
+</style>
+
+<script>
+  import '../scripts/power-analysis.js';
+</script>

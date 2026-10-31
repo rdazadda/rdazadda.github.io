@@ -1,0 +1,13 @@
+---
+import ConceptLayout from '../../layouts/ConceptLayout.astro';
+import GroupsViz from '../../components/GroupsViz.astro';
+import ReportExample from '../../components/ReportExample.astro';
+import { START, report } from '../../lib/groups.js';
+
+const lead = 'A good power analysis names the test the sample size is based on. It gives the expected means and SD and where they came from, along with the effect size, α, power and software. When a study has several key tests, report the power of each (Giner-Sorolla et al., 2024). The example below follows the plan above and changes with it. Replace the parts in brackets before using it.';
+---
+
+<ConceptLayout>
+  <GroupsViz />
+  <ReportExample slot="report" lead={lead} text={report(START)} />
+</ConceptLayout>

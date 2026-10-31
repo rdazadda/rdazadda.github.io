@@ -3,7 +3,7 @@ const LANCZOS = [
   12.507343278686905, -0.13857109526572012, 9.9843695780195716e-6, 1.5056327351493116e-7,
 ];
 
-function lnGamma(x) {
+export function lnGamma(x) {
   if (x < 0.5) return Math.log(Math.PI / Math.sin(Math.PI * x)) - lnGamma(1 - x);
   const z = x - 1;
   let sum = LANCZOS[0];
@@ -36,7 +36,7 @@ function betaFraction(a, b, x) {
   return h;
 }
 
-function incompleteBeta(x, a, b) {
+export function incompleteBeta(x, a, b) {
   if (x <= 0) return 0;
   if (x >= 1) return 1;
   const front = Math.exp(lnGamma(a + b) - lnGamma(a) - lnGamma(b) + a * Math.log(x) + b * Math.log(1 - x));

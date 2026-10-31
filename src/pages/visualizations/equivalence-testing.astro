@@ -1,0 +1,13 @@
+---
+import ConceptLayout from '../../layouts/ConceptLayout.astro';
+import EquivalenceViz from '../../components/EquivalenceViz.astro';
+import ReportExample from '../../components/ReportExample.astro';
+import { START, report } from '../../lib/equivalence.js';
+
+const lead = 'A good equivalence plan explains how the bounds were chosen, names the test and its error rates, and gives the sample size with dropout (Lakens et al., 2018). The example below follows the plan above and changes with it. Replace the parts in brackets before using it.';
+---
+
+<ConceptLayout>
+  <EquivalenceViz />
+  <ReportExample slot="report" lead={lead} text={report(START)} />
+</ConceptLayout>

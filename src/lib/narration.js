@@ -8,6 +8,7 @@ export const formatAlpha = (a) => (a >= 0.01 ? a.toFixed(2) : a.toFixed(3)).repl
 export const pNumber = (p) => (p < 0.001 ? '< .001' : p.toFixed(3).replace(/^0/, ''));
 export const formatP = (p) => (p < 0.001 ? pNumber(p) : `= ${pNumber(p)}`);
 export const formatPercent = (p) => (p >= 0.995 ? '>99%' : p < 0.01 ? `${(100 * p).toFixed(1)}%` : `${Math.round(100 * p)}%`);
+export const formatPower = (p, target) => (p < target && Math.round(100 * p) >= Math.round(100 * target) ? `${(Math.floor(1000 * p) / 10).toFixed(1)}%` : formatPercent(p));
 
 const percent = (p) => (p >= 0.995 ? 'over 99%' : formatPercent(p));
 const pWords = (p) => (p < 0.001 ? 'less than .001' : pNumber(p));
