@@ -1,3 +1,7 @@
+import { formatEffect } from './narration.js';
+
+export const START = { tab: 'items', item: { masc: 2, arsq: 0 }, subscale: 0 };
+
 const total = (xs) => xs.reduce((a, b) => a + b, 0);
 const average = (xs) => total(xs) / xs.length;
 const keysOf = (items) => [...new Set(items.map((d) => d.subscale))];
@@ -130,4 +134,87 @@ export function analyze(items) {
     puc: uncontaminated(items),
     factors: determinacy(items),
   };
+}
+
+const near = (x) => Math.round(100 * x) / 100;
+const decimal = (x) => formatEffect(x).replace('0.', '.');
+const percent = (x) => (x >= 0.995 ? 'over 99%' : x < 0.005 ? 'under 1%' : `${Math.round(100 * x)}%`);
+const capital = (text) => text[0].toUpperCase() + text.slice(1);
+const list = (names) => (names.length < 2 ? names.join('') : `${names.slice(0, -1).join(', ')} and ${names.at(-1)}`);
+
+export const passes = ({ fd, h }) => near(fd) >= 0.9 && near(h) >= 0.7;
+
+function itemStory(scale, result, item) {
+  const general = scale.general.toLowerCase();
+  const d = scale.items[item];
+  const p = result.items[item];
+  const own = scale.subscales.find(({ key }) => key === d.subscale).name.toLowerCase();
+  return [
+    `${d.number ? `The item “${d.label}”` : d.label} loads ${decimal(d.general)} on ${general} and ${decimal(d.group)} on ${own}.`,
+    `${capital(general)} explains ${percent(p.general)} of its variance and ${own} ${percent(p.group)}, leaving ${percent(p.unique)} unique.`,
+    `Of what it shares with the other items, ${percent(p.iecv)} is ${general}.`,
+  ];
+}
+
+function totalStory(scale, result) {
+  const general = scale.general.toLowerCase();
+  const t = result.total;
+  const lines = [
+    `${capital(general)} accounts for ${t.general.toFixed(2)} of the total score’s variance of ${t.variance.toFixed(2)}, so ω<sub>H</sub> is ${decimal(t.omegaH)}.`,
+    `Counting the subscales as well, omega is ${decimal(t.omega)}.`,
+  ];
+  if (t.omegaH >= 0.8) lines.push('With ω<sub>H</sub> above .80, the total score can be read as one trait.');
+  else lines.push(`With ω<sub>H</sub> below .80, the subscales supply ${percent(1 - t.omegaH / t.omega)} of the reliable variance, so the total score mixes ${general} with them.`);
+  return lines;
+}
+
+function subscaleStory(scale, result, k) {
+  const general = scale.general.toLowerCase();
+  const sub = result.subscales[k];
+  const own = scale.subscales[k].name.toLowerCase();
+  const part = sub.group / (sub.general + sub.group);
+  const first = `The ${own} factor accounts for ${decimal(sub.omegaHS)} of the subscale score’s variance, and ${general} for ${decimal(sub.general / sub.variance)}.`;
+  if (part < 0.4) return [first, `So the score mostly tracks ${general}, and its omega of ${decimal(sub.omega)} says little about ${own} itself.`];
+  return [first, `${part < 0.5 ? 'Nearly half' : 'Most'} of its reliable variance belongs to ${own} itself, and its ω<sub>HS</sub> ${sub.omegaHS >= 0.5 ? 'passes' : 'falls below'} the suggested .50.`];
+}
+
+function oneStory(scale, result, drift) {
+  const general = scale.general.toLowerCase();
+  const { ecv, puc } = result;
+  const short = [ecv.value < 0.7 && 'ECV', puc.value < 0.7 && 'PUC'].filter(Boolean);
+  return [
+    `${capital(general)} explains ${percent(ecv.value)} of the common variance, so ECV is ${decimal(ecv.value)}.`,
+    `Of the ${puc.pairs} item pairs, ${percent(puc.value)} cross subscales and share only ${general}, so PUC is ${decimal(puc.value)}.`,
+    short.length === 0
+      ? `Both pass .70, so a one-factor model raises the loadings by only about ${percent(drift)}.`
+      : `${short.length === 2 ? 'Both fall' : `${short[0]} falls`} below .70, and a one-factor model raises the loadings by about ${percent(drift)}.`,
+  ];
+}
+
+function scoresStory(scale, result) {
+  const named = ({ key }) => (key === 'G' ? scale.general : scale.subscales.find((s) => s.key === key).name).toLowerCase();
+  const failing = result.factors.filter((f) => !passes(f));
+  const groups = [
+    [failing.filter((f) => near(f.fd) < 0.9 && near(f.h) < 0.7), 'falls short on both', 'fall short on both'],
+    [failing.filter((f) => near(f.fd) < 0.9 && near(f.h) >= 0.7), 'reaches the H line but not the FD line', 'reach the H line but not the FD line'],
+    [failing.filter((f) => near(f.fd) >= 0.9 && near(f.h) < 0.7), 'reaches the FD line but not the H line', 'reach the FD line but not the H line'],
+  ];
+  const trusted = result.factors.filter(passes).map(named);
+  const lowest = result.factors.reduce((a, b) => (b.fd < a.fd ? b : a));
+  return [
+    trusted.length ? `Factor scores can be trusted for ${list(trusted)}, with FD of .90 or more and H of .70 or more.` : 'No factor reaches both FD .90 and H .70.',
+    ...groups.filter(([fs]) => fs.length).map(([fs, one, many]) => `${capital(list(fs.map(named)))} ${fs.length === 1 ? one : many}.`),
+    `At FD ${decimal(lowest.fd)}, two equally valid sets of ${named(lowest)} scores could correlate as little as ${decimal(2 * lowest.fd ** 2 - 1)}.`,
+  ];
+}
+
+export function narrate(scale, result, drift, { tab, item, subscale }) {
+  const stories = {
+    items: () => itemStory(scale, result, item),
+    total: () => totalStory(scale, result),
+    subscales: () => subscaleStory(scale, result, subscale),
+    one: () => oneStory(scale, result, drift),
+    scores: () => scoresStory(scale, result),
+  };
+  return stories[tab]().join(' ');
 }

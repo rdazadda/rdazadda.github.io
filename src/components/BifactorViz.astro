@@ -1,13 +1,11 @@
 ---
 import { SCALES } from '../data/bifactor-scales.js';
-import { analyze, bias } from '../lib/bifactor.js';
+import { START, analyze, bias, narrate, passes } from '../lib/bifactor.js';
 import { formatEffect } from '../lib/narration.js';
 
 const bounded = (x) => formatEffect(x).replace('0.', '.');
 const two = (x) => x.toFixed(2);
 const width = (x) => `${(100 * x).toFixed(2)}%`;
-const near = (x) => Math.round(100 * x) / 100;
-const passes = ({ fd, h }) => near(fd) >= 0.9 && near(h) >= 0.7;
 const counts = ['None', 'One', 'Two', 'Three', 'Four', 'Five'];
 const tabs = [
   ['items', 'Items'],
@@ -40,6 +38,8 @@ const views = SCALES.map((scale) => {
 ---
 
 <div class="bifactor">
+  <p class="narration" aria-live="polite" set:html={narrate(views[0], views[0].result, views[0].drift, { tab: START.tab, item: START.item[views[0].key], subscale: START.subscale })} />
+
   <div class="scales" role="group" aria-label="Scale">
     <span class="scales-label">Scale</span>
     {
@@ -65,7 +65,7 @@ const views = SCALES.map((scale) => {
 
   {
     views.map((view, v) => (
-      <div class="stage" data-view={view.key} hidden={v > 0}>
+      <div class="stage" data-view={view.key} data-drift={view.drift} hidden={v > 0}>
         <div class="table" role="group" aria-label={`Loadings of the ${view.items.length} ${view.short} items on the general factor and on their own group factor`}>
           <div class="top" aria-hidden="true">
             <span class="title general">General loading</span>
@@ -117,7 +117,7 @@ const views = SCALES.map((scale) => {
 
         <div class="readout">
           <div class="panel" data-panel="items">
-            <div aria-live="polite">
+            <div>
               <p class="name item-name"></p>
               <p class="where"></p>
             </div>
@@ -189,7 +189,7 @@ const views = SCALES.map((scale) => {
                 </button>
               ))}
             </div>
-            <div aria-live="polite">
+            <div>
               <p class="name sub-title"></p>
               <div class="ledger two">
                 <div><b class="group-text sub-name"></b><span class="sub-s"></span></div>
@@ -308,6 +308,11 @@ const views = SCALES.map((scale) => {
 
   p {
     margin: 0;
+  }
+
+  .narration {
+    max-width: var(--measure);
+    min-height: calc(3 * 1.35em);
   }
 
   sub {

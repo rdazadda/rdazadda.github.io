@@ -1,5 +1,5 @@
 import { SCALES } from '../data/bifactor-scales.js';
-import { analyze } from '../lib/bifactor.js';
+import { START, analyze, narrate, passes } from '../lib/bifactor.js';
 import { formatEffect } from '../lib/narration.js';
 
 const HINTS = {
@@ -9,19 +9,18 @@ const HINTS = {
   one: 'Here the bars show squared loadings.',
   scores: 'Faded bars mark the group factors that fall short.',
 };
-const START = { masc: 2, arsq: 0 };
 const COUNTS = ['None', 'One', 'Two', 'Three', 'Four', 'Five'];
 
 const root = document.querySelector('.bifactor');
-const state = { scale: 0, tab: 'items' };
+const state = { scale: 0, tab: START.tab };
 const scaleButtons = [...root.querySelectorAll('[data-scale]')];
 const tabButtons = [...root.querySelectorAll('[data-tab]')];
 const hint = root.querySelector('.hint');
+const narration = root.querySelector('.narration');
 
 const bounded = (x) => formatEffect(x).replace('0.', '.');
 const two = (x) => x.toFixed(2);
 const width = (x) => `${(100 * x).toFixed(2)}%`;
-const near = (x) => Math.round(100 * x) / 100;
 
 function share(x) {
   if (x > 0 && x < 0.005) return '<.01';
@@ -43,10 +42,11 @@ function setup(scale) {
     find(selector).textContent = value;
   };
   const result = analyze(scale.items);
-  const local = { item: START[scale.key], subscale: 0 };
+  const local = { item: START.item[scale.key], subscale: START.subscale };
+  const drift = Number(view.dataset.drift);
   const names = Object.fromEntries(scale.subscales.map(({ key, name }) => [key, name]));
   const place = (item) => scale.subscales.findIndex(({ key }) => key === item.subscale);
-  const short = new Set(result.factors.filter(({ key, fd, h }) => key !== 'G' && !(near(fd) >= 0.9 && near(h) >= 0.7)).map(({ key }) => key));
+  const short = new Set(result.factors.filter((f) => f.key !== 'G' && !passes(f)).map(({ key }) => key));
   const groupsSquared = Object.values(result.ecv.groups).reduce((a, b) => a + b, 0);
   const groups = `${COUNTS[scale.subscales.length]} groups`;
   const titles = [find('.title.general'), find('.title.group')];
@@ -128,6 +128,7 @@ function setup(scale) {
     drawTable(state.tab);
     drawItem();
     drawSubscale();
+    narration.innerHTML = narrate(scale, result, drift, { tab: state.tab, ...local });
   }
 
   const change = (changes) => {
