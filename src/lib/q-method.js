@@ -23,7 +23,7 @@ function correlation(x, y) {
   return total(dx.map((v, i) => v * dy[i])) / Math.sqrt(total(dx.map((v) => v * v)) * total(dy.map((v) => v * v)));
 }
 
-function eigen(matrix) {
+export function eigen(matrix) {
   const n = matrix.length;
   const a = matrix.map((row) => [...row]);
   const v = a.map((_, i) => a.map((__, j) => (i === j ? 1 : 0)));
@@ -86,7 +86,7 @@ function polar(b) {
   };
 }
 
-function varimax(loadings, eps = 1e-5) {
+export function varimax(loadings, eps = 1e-5) {
   const lengths = loadings.map((row) => Math.sqrt(total(row.map((x) => x * x))));
   const x = loadings.map((row, i) => row.map((v) => v / lengths[i]));
   const p = x.length;

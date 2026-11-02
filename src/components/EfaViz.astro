@@ -1,0 +1,715 @@
+---
+import { CORRELATIONS, GROUPS, PEOPLE, TESTS } from '../data/twenty-four-tests.js';
+import { MOST, START, analyze, bounded, centerAt, explained, headings, hint, leftOver, loadTitle, narrate, pick, place, scree, shrink, zeroAt } from '../lib/efa.js';
+
+const result = shrink(analyze(CORRELATIONS, PEOPLE));
+const labels = TESTS.map((test) => test.label);
+const names = GROUPS.slice(0, 4).map((group) => group.name);
+const { loadings, set } = pick(START, result);
+const heads = headings(START, names);
+const plot = scree(START, result);
+const slots = Array.from({ length: MOST }, (_, j) => j);
+const blocks = GROUPS.map((group) => ({ ...group, rows: TESTS.map((test, i) => ({ ...test, i })).filter((test) => test.group === group.key) }));
+const models = [
+  ['components', 'Principal components'],
+  ['factors', 'Common factors'],
+];
+const rotations = [
+  ['none', 'None'],
+  ['varimax', 'Varimax'],
+  ['oblimin', 'Oblimin'],
+];
+const chi2 = result.bartlett.chi2.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+const kmoLine = `KMO ${bounded(result.kmo)}, from ${bounded(Math.min(...result.each))} to ${bounded(Math.max(...result.each))} per test`;
+const width = (v) => `calc(${Math.round(v * 10000) / 10000} * var(--unit))`;
+const aria = (i) => `${labels[i]}, communality ${bounded(set.h2[i])}, ${loadings[i].map((v, j) => `${heads[j]} ${bounded(v)}`).join(', ')}`;
+---
+
+<div class="efa">
+  <p class="narration" aria-live="polite">{narrate(START, result, labels, names)}</p>
+
+  <div class="top">
+    <div class="choices">
+      <div class="choice-row">
+        <span class="choice-label">Factorability</span>
+        <div class="facts">
+          <span>Bartlett’s <i>χ</i>²({result.bartlett.df}) = {chi2}, <i>p</i> {result.bartlett.p < 0.001 ? '<' : '='} .001</span>
+          <span>{kmoLine}</span>
+        </div>
+      </div>
+      <div class="choice-row" role="group" aria-label="Model">
+        <span class="choice-label">Model</span>
+        <div class="tabs">
+          {
+            models.map(([id, label]) => (
+              <button type="button" data-model={id} data-text={label} aria-pressed={String(id === START.model)}>
+                {label}
+              </button>
+            ))
+          }
+        </div>
+      </div>
+      <div class="choice-row" role="group" aria-label="How many factors">
+        <span class="choice-label">How many</span>
+        <div class="tabs counts">
+          {
+            slots.map((j) => (
+              <button type="button" data-m={j + 1} data-text={String(j + 1)} aria-pressed={String(j + 1 === START.m)}>
+                {j + 1}
+              </button>
+            ))
+          }
+        </div>
+      </div>
+      <div class="choice-row" role="group" aria-label="Rotation">
+        <span class="choice-label">Rotation</span>
+        <div class="tabs">
+          {
+            rotations.map(([id, label]) => (
+              <button type="button" data-rotation={id} data-text={label} aria-pressed={String(id === START.rotation)}>
+                {label}
+              </button>
+            ))
+          }
+        </div>
+      </div>
+    </div>
+
+    <div class="scree">
+      <p class="scree-title">{plot.title}</p>
+      <svg viewBox="0 0 440 190" role="img" aria-label={plot.aria}>
+        <g class="axis-text">
+          <text x="28" y="162" text-anchor="end">0</text>
+          <text x="28" y="114" text-anchor="end">1</text>
+          <text x="28" y="66" text-anchor="end">2</text>
+          {slots.concat([6, 7, 8, 9]).map((k) => <text x={54 + 38 * k} y="176" text-anchor="middle">{k + 1}</text>)}
+        </g>
+        <path class="axis" d="M36 158 H412 M36 158 V36 M36 24 V8 M33 110 H36 M33 62 H36 M31 38 L41 34 M31 26 L41 22" />
+        <path class="reference" d={plot.reference} />
+        <path class="real" d={plot.real} />
+        <path class="dropped" d={plot.dropped} />
+        <path class="kept" d={plot.kept} />
+        <g class="scree-text">
+          <text class="first" x={plot.firstX} y={plot.firstY}>{plot.first}</text>
+          <text class="real-label" x={plot.realX} y={plot.realY}>{plot.realLabel}</text>
+          <text class="reference-label" x={plot.referenceX} y={plot.referenceY} text-anchor={plot.referenceAnchor}>{plot.referenceLabel}</text>
+        </g>
+      </svg>
+      <p class="verdict">{plot.verdict}</p>
+      <div class="readout">
+        <div><span>Residual correlations over .10</span><b class="leftover">{leftOver(START, result)}</b></div>
+        <div><span>Velicer’s MAP keeps</span><b>{result.keep.map}</b></div>
+      </div>
+    </div>
+  </div>
+
+  <p class="hint">{hint(START.test)}</p>
+
+  <div class="table" role="group" aria-label={`Communalities and loadings of the ${TESTS.length} tests`}>
+    <div class="head" aria-hidden="true">
+      <span class="head-title" style="left: var(--h2)">Communality</span>
+      <span class="head-title load-title" style={`left: ${zeroAt(0)}`}>{loadTitle(START)}</span>
+      {
+        slots.map((j) => (
+          <>
+            <span class="column-name" data-j={j} hidden={j >= START.m} style={`left: ${centerAt(j)}`}>
+              {heads[j] ?? ''}
+            </span>
+            <span class="tick" data-j={j} hidden={j >= START.m} style={`left: ${zeroAt(j)}`}>
+              0
+            </span>
+            <span class="tick" data-j={j} hidden={j >= START.m} style={`left: ${zeroAt(j, 0.3)}`}>
+              .30
+            </span>
+          </>
+        ))
+      }
+      <span class="tick" style="left: var(--h2)">0</span>
+      <span class="tick" style="left: calc(var(--h2) + var(--unit))">1</span>
+    </div>
+
+    {
+      blocks.map((block) => (
+        <div class="block" data-group={block.key}>
+          <p class="block-name">
+            <b>{block.name}</b>
+            <span>{block.rows.length} tests</span>
+          </p>
+          <div class="rows">
+            <div class="lines" aria-hidden="true">
+              {slots.map((j) => (
+                <>
+                  <span class="line" data-j={j} hidden={j >= START.m} style={`left: ${zeroAt(j, 0.3)}`} />
+                  <span class="line zero" data-j={j} hidden={j >= START.m} style={`left: ${zeroAt(j)}`} />
+                </>
+              ))}
+            </div>
+            {block.rows.map((row) => (
+              <button type="button" class="row" data-test={row.i} aria-pressed="false" aria-label={aria(row.i)}>
+                <span class="label">{row.label}</span>
+                <span class="track" />
+                <span class="bar h2" style={`width: ${width(set.h2[row.i])}`} />
+                {slots.map((j) => {
+                  const spot = j < START.m ? place(j, loadings[row.i][j]) : null;
+                  return <span class="bar load" data-j={j} hidden={!spot} style={spot ? `left: ${spot.left}; width: ${spot.width}` : undefined} />;
+                })}
+                <span class="number h2-number" hidden />
+                {slots.map((j) => (
+                  <span class="number load-number" data-j={j} hidden />
+                ))}
+              </button>
+            ))}
+          </div>
+        </div>
+      ))
+    }
+
+    <p class="explained">
+      <span>Variance explained</span>
+      <b>{explained(START, result)}</b>
+    </p>
+  </div>
+
+  <script type="application/json" class="efa-result" set:html={JSON.stringify(result)} />
+</div>
+
+<style>
+  .efa {
+    --deep: #143d5e;
+    --ink: #30394f;
+    --rule: #d3dae2;
+    --empty: #dde3ea;
+    --faint: #e3e7ec;
+    --gold: #c99400;
+    --spatial: #1f5a88;
+    --spatial-text: #1f5a88;
+    --verbal: #c99400;
+    --verbal-text: #7d5c00;
+    --speed: #2e8b74;
+    --speed-text: #1f6b58;
+    --memory: #a2577f;
+    --memory-text: #8a4569;
+    --reasoning: #8a94a0;
+    --reasoning-text: var(--c-text);
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+    width: 100%;
+    max-width: 1240px;
+  }
+
+  p {
+    margin: 0;
+  }
+
+  .narration {
+    max-width: var(--measure);
+    min-height: calc(3 * 1.35em);
+  }
+
+  .top {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 440px;
+    gap: 0 56px;
+    align-items: start;
+  }
+
+  .choices {
+    border-top: 1px solid var(--rule);
+  }
+
+  .choice-row {
+    display: flex;
+    align-items: center;
+    gap: 0 28px;
+    min-height: 44px;
+    border-bottom: 1px solid var(--rule);
+  }
+
+  .choice-label {
+    flex: none;
+    width: 116px;
+    color: var(--c-muted);
+    font-size: 0.875rem;
+  }
+
+  .facts {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 2px 28px;
+    padding: 8px 0;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .tabs {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0 28px;
+  }
+
+  .tabs.counts {
+    gap: 0 4px;
+  }
+
+  .tabs button {
+    min-height: 44px;
+    margin: 0 0 -1px;
+    padding: 0;
+    border: 0;
+    border-bottom: 3px solid transparent;
+    background: none;
+    color: var(--c-text);
+    font: inherit;
+    font-size: 1.0625rem;
+    cursor: pointer;
+  }
+
+  .tabs.counts button {
+    min-width: 34px;
+  }
+
+  .tabs button::after {
+    content: attr(data-text);
+    display: block;
+    height: 0;
+    overflow: hidden;
+    visibility: hidden;
+    font-weight: 700;
+  }
+
+  .tabs button[aria-pressed='true'] {
+    border-bottom-color: var(--deep);
+    color: var(--deep);
+    font-weight: 700;
+    cursor: default;
+  }
+
+  .tabs button:focus-visible,
+  .row:focus-visible {
+    outline: 2px solid var(--c-link);
+    outline-offset: 2px;
+  }
+
+  .scree-title {
+    font-size: 0.9375rem;
+    font-weight: 700;
+    line-height: 20px;
+  }
+
+  svg {
+    display: block;
+    width: 100%;
+    height: auto;
+    margin-top: 6px;
+    overflow: visible;
+    font-family: inherit;
+  }
+
+  .axis-text {
+    fill: var(--c-muted);
+    font-size: 13px;
+  }
+
+  .scree-text {
+    fill: var(--c-text);
+    font-size: 13px;
+  }
+
+  .axis,
+  .reference,
+  .real,
+  .dropped {
+    fill: none;
+    stroke: var(--ink);
+    stroke-width: 1;
+  }
+
+  .reference {
+    stroke: var(--c-muted);
+    stroke-width: 1.5;
+    stroke-dasharray: 5 4;
+  }
+
+  .real {
+    stroke-width: 1.5;
+  }
+
+  .dropped {
+    fill: #ffffff;
+    stroke-width: 1.5;
+  }
+
+  .kept {
+    fill: var(--ink);
+  }
+
+  .verdict {
+    margin-top: 4px;
+    color: var(--deep);
+    font-size: 1.125rem;
+    font-weight: 700;
+    line-height: 1.25;
+  }
+
+  .readout {
+    margin-top: 10px;
+    border-top: 1px solid var(--rule);
+    font-size: 0.9375rem;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .readout div {
+    display: flex;
+    justify-content: space-between;
+    gap: 16px;
+    padding: 6px 0;
+    border-bottom: 1px solid var(--rule);
+  }
+
+  .table {
+    --label: 204px;
+    --h2: 216px;
+    --fixed: 284px;
+    --first: calc(var(--h2) + 36px);
+    --unit: calc((100% - var(--fixed)) / 10.72);
+    --pitch: 20px;
+    --bar: 12px;
+    position: relative;
+  }
+
+  .head {
+    position: relative;
+    height: 62px;
+  }
+
+  .head-title,
+  .column-name,
+  .tick {
+    position: absolute;
+    white-space: nowrap;
+  }
+
+  .head-title {
+    top: 0;
+    font-size: 0.9375rem;
+    font-weight: 700;
+    line-height: 20px;
+  }
+
+  .column-name {
+    top: 22px;
+    font-size: 0.9375rem;
+    line-height: 20px;
+    transform: translateX(-50%);
+  }
+
+  .column-name[data-tone='spatial'] {
+    color: var(--spatial-text);
+  }
+
+  .column-name[data-tone='verbal'] {
+    color: var(--verbal-text);
+  }
+
+  .column-name[data-tone='speed'] {
+    color: var(--speed-text);
+  }
+
+  .column-name[data-tone='memory'] {
+    color: var(--memory-text);
+  }
+
+  .tick {
+    top: 44px;
+    color: var(--c-muted);
+    font-size: 0.8125rem;
+    line-height: 16px;
+    transform: translateX(-50%);
+  }
+
+  .block {
+    margin-top: 14px;
+  }
+
+  .block-name {
+    margin-bottom: 4px;
+    line-height: 22px;
+    white-space: nowrap;
+  }
+
+  .block-name b {
+    font-size: 0.9375rem;
+  }
+
+  .block-name span {
+    margin-left: 8px;
+    color: var(--c-muted);
+    font-size: 0.875rem;
+  }
+
+  .block[data-group='spatial'] {
+    --tone: var(--spatial);
+    --tone-text: var(--spatial-text);
+  }
+
+  .block[data-group='verbal'] {
+    --tone: var(--verbal);
+    --tone-text: var(--verbal-text);
+  }
+
+  .block[data-group='speed'] {
+    --tone: var(--speed);
+    --tone-text: var(--speed-text);
+  }
+
+  .block[data-group='memory'] {
+    --tone: var(--memory);
+    --tone-text: var(--memory-text);
+  }
+
+  .block[data-group='reasoning'] {
+    --tone: var(--reasoning);
+    --tone-text: var(--reasoning-text);
+  }
+
+  .block-name b {
+    color: var(--tone-text);
+  }
+
+  .rows {
+    position: relative;
+  }
+
+  .lines {
+    position: absolute;
+    inset: 0;
+  }
+
+  .line {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    width: 1px;
+    background: var(--faint);
+  }
+
+  .line.zero {
+    background: var(--ink);
+  }
+
+  .row {
+    position: relative;
+    display: block;
+    width: 100%;
+    height: var(--pitch);
+    margin: 0;
+    padding: 0;
+    border: 0;
+    border-radius: 3px;
+    background: none;
+    color: var(--c-text);
+    font: inherit;
+    text-align: left;
+    cursor: pointer;
+  }
+
+  .row[aria-pressed='true'] {
+    outline: 2px solid var(--gold);
+    outline-offset: 1px;
+  }
+
+  .label {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: var(--label);
+    font-size: 0.875rem;
+    line-height: var(--pitch);
+    text-align: right;
+    white-space: nowrap;
+  }
+
+  .row[aria-pressed='true'] .label {
+    font-weight: 700;
+  }
+
+  .track,
+  .bar {
+    position: absolute;
+    top: calc((var(--pitch) - var(--bar)) / 2);
+    height: var(--bar);
+  }
+
+  .track {
+    left: var(--h2);
+    width: var(--unit);
+    background: var(--empty);
+  }
+
+  .bar {
+    transition:
+      left 0.35s ease,
+      width 0.35s ease;
+  }
+
+  .bar.h2 {
+    left: var(--h2);
+    background: var(--ink);
+  }
+
+  .bar.load {
+    background: var(--tone);
+  }
+
+  .number {
+    position: absolute;
+    top: 0;
+    font-size: 0.8125rem;
+    line-height: var(--pitch);
+    white-space: nowrap;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .h2-number {
+    left: calc(var(--h2) + 6px + var(--unit));
+  }
+
+  .bar[hidden],
+  .number[hidden],
+  .line[hidden],
+  .tick[hidden],
+  .column-name[hidden] {
+    display: none;
+  }
+
+  .explained {
+    position: relative;
+    height: 32px;
+    margin-top: 14px;
+    border-top: 1px solid var(--rule);
+  }
+
+  .explained span,
+  .explained b {
+    position: absolute;
+    top: 8px;
+    line-height: 20px;
+    white-space: nowrap;
+  }
+
+  .explained span {
+    left: 0;
+    width: var(--label);
+    color: var(--c-muted);
+    font-size: 0.8125rem;
+    text-align: right;
+  }
+
+  .explained b {
+    left: var(--h2);
+    font-size: 0.9375rem;
+    font-variant-numeric: tabular-nums;
+  }
+
+  @media (hover: hover) {
+    .tabs button:not([aria-pressed='true']):hover {
+      color: var(--c-link);
+    }
+
+    .row:hover .label {
+      text-decoration: underline;
+    }
+  }
+
+  @media (max-width: 1100px) {
+    .top {
+      grid-template-columns: minmax(0, 1fr) 340px;
+      gap: 0 36px;
+    }
+
+    .choice-label {
+      width: 124px;
+      font-size: 0.9375rem;
+    }
+
+    .axis-text,
+    .scree-text {
+      font-size: 18px;
+    }
+
+    .verdict {
+      font-size: 1.0625rem;
+    }
+
+    .readout div {
+      gap: 12px;
+    }
+
+    .table {
+      --label: 218px;
+      --h2: 230px;
+      --fixed: 298px;
+      --pitch: 24px;
+      --bar: 14px;
+    }
+
+    .head {
+      height: 66px;
+    }
+
+    .head-title {
+      font-size: 1rem;
+    }
+
+    .column-name {
+      top: 24px;
+      font-size: 0.875rem;
+    }
+
+    .tick {
+      top: 48px;
+      font-size: 0.875rem;
+    }
+
+    .block-name b {
+      font-size: 1rem;
+    }
+
+    .block-name span {
+      font-size: 0.9375rem;
+    }
+
+    .label {
+      font-size: 0.9375rem;
+    }
+
+    .number {
+      font-size: 0.875rem;
+    }
+
+    .explained span {
+      font-size: 0.875rem;
+    }
+
+    .explained b {
+      font-size: 1rem;
+    }
+  }
+
+  @media (max-width: 940px) {
+    .top {
+      grid-template-columns: minmax(0, 1fr);
+      gap: 24px;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .bar {
+      transition: none;
+    }
+  }
+</style>
+
+<script>
+  import '../scripts/efa.js';
+</script>
