@@ -1,0 +1,364 @@
+---
+import { CORRELATIONS, FACTORS, PEOPLE, TESTS } from '../data/nine-tests.js';
+import { NARROW, START, WIDE, analyze, boxLabel, boxes, diagramLabel, fitText, hint, markup, narrate, shrink, status, tree } from '../lib/cfa.js';
+
+const result = shrink(analyze(CORRELATIONS, PEOPLE, TESTS.map((test) => test.factor)));
+const labels = TESTS.map((test) => test.label);
+const fit = fitText(START, result);
+const sizes = [
+  ['wide', WIDE],
+  ['narrow', NARROW],
+];
+const models = [
+  ['one', 'One factor'],
+  ['three', 'Three factors'],
+];
+const paths = [
+  ['none', 'None'],
+  ['x7x8', 'Addition with Counting dots'],
+  ['x9', 'Straight and curved capitals on Visual'],
+];
+const heads = ['Chi-square', 'CFI', 'TLI', 'RMSEA', 'SRMR', 'Residuals over .10'];
+const guides = ['tests exact fit, strict in large samples', 'close to .95, older rule .90', 'close to .95, older rule .90', null, 'close to .08', 'where the model misses'];
+const shy = (label) => label.replace('comprehension', 'compre­hension');
+---
+
+<div class="cfa">
+  <p class="narration" aria-live="polite">{narrate(START, result, labels, FACTORS)}</p>
+
+  <div class="choices">
+    <div class="choice-row" role="group" aria-label="Model">
+      <span class="choice-label">Model</span>
+      <div class="tabs">
+        {
+          models.map(([id, label]) => (
+            <button type="button" data-model={id} data-text={label} aria-pressed={String(id === START.model)}>
+              {label}
+            </button>
+          ))
+        }
+      </div>
+    </div>
+    <div class="choice-row" role="group" aria-label="Free one path">
+      <span class="choice-label">Free one path</span>
+      <div class="tabs paths">
+        {
+          paths.map(([id, label]) => (
+            <button type="button" data-path={id} data-text={label} aria-pressed={String(id === START.path)}>
+              {label}
+            </button>
+          ))
+        }
+      </div>
+      <span class="only" hidden>Only in the three-factor model</span>
+    </div>
+  </div>
+
+  <p class="hint">{hint(START)}</p>
+
+  {
+    sizes.map(([size, G]) => (
+      <div class={`tree ${size}`} role="group" aria-label={diagramLabel(START, result, labels, FACTORS)} style={`aspect-ratio: ${G.W} / ${G.H}`}>
+        <svg viewBox={`0 0 ${G.W} ${G.H}`} aria-hidden="true" set:html={markup(G, tree(G, START, result, FACTORS, labels))} />
+        {boxes(G).map((box, i) => (
+          <button type="button" class="box" data-test={i} aria-pressed="false" aria-label={boxLabel(START, result, labels, FACTORS, i)} style={`left: ${box.left}; top: ${box.top}; width: ${box.width}; height: ${box.height}`}>
+            {size === 'narrow' ? shy(labels[i]) : labels[i]}
+          </button>
+        ))}
+      </div>
+    ))
+  }
+
+  <p class="status">{status(START)}</p>
+
+  <div class="fit">
+    <span></span>
+    {heads.map((head) => <span class="fit-head">{head}</span>)}
+    <span class="fit-label">This model</span>
+    <span>
+      <b data-fit="chi">{fit.chi}</b>
+      <span class="sub"><span data-fit="df">{fit.df}</span> df, <i>p</i> <span data-fit="p">{fit.p}</span></span>
+    </span>
+    <span><b data-fit="cfi">{fit.cfi}</b></span>
+    <span><b data-fit="tli">{fit.tli}</b></span>
+    <span>
+      <b data-fit="rmsea">{fit.rmsea}</b>
+      <span class="sub" data-fit="ci">{fit.ci}</span>
+    </span>
+    <span><b data-fit="srmr">{fit.srmr}</b></span>
+    <span>
+      <b data-fit="over">{fit.over}</b>
+      <span class="sub" data-fit="largest">{fit.largest}</span>
+    </span>
+    <span class="fit-label">Guide</span>
+    {
+      guides.map((guide) =>
+        guide ? (
+          <span class="guide">{guide}</span>
+        ) : (
+          <span class="guide">
+            <span>about .05 close</span>
+            <span>about .08 reasonable</span>
+            <span>over .10 not used</span>
+          </span>
+        ),
+      )
+    }
+  </div>
+
+  <p class="note">These guides are rules of thumb that shift with loading size and model size.</p>
+
+  <script type="application/json" class="cfa-result" set:html={JSON.stringify(result)} />
+</div>
+
+<style>
+  .cfa {
+    --deep: #143d5e;
+    --ink: #30394f;
+    --rule: #d3dae2;
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+    width: 100%;
+    max-width: 1240px;
+  }
+
+  p {
+    margin: 0;
+  }
+
+  .narration {
+    max-width: var(--measure);
+    min-height: calc(3 * 1.35em);
+  }
+
+  .choices {
+    border-top: 1px solid var(--rule);
+  }
+
+  .choice-row {
+    display: flex;
+    align-items: center;
+    gap: 0 28px;
+    min-height: 44px;
+    border-bottom: 1px solid var(--rule);
+  }
+
+  .choice-label {
+    flex: none;
+    width: 116px;
+    color: var(--c-muted);
+    font-size: 0.875rem;
+  }
+
+  .tabs {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0 28px;
+  }
+
+  .tabs[hidden],
+  .only[hidden] {
+    display: none;
+  }
+
+  .only {
+    font-size: 1.0625rem;
+  }
+
+  .tabs button {
+    min-height: 44px;
+    margin: 0 0 -1px;
+    padding: 0;
+    border: 0;
+    border-bottom: 3px solid transparent;
+    background: none;
+    color: var(--c-text);
+    font: inherit;
+    font-size: 1.0625rem;
+    cursor: pointer;
+  }
+
+  .tabs button::after {
+    content: attr(data-text);
+    display: block;
+    height: 0;
+    overflow: hidden;
+    visibility: hidden;
+    font-weight: 700;
+  }
+
+  .tabs button[aria-pressed='true'] {
+    border-bottom-color: var(--deep);
+    color: var(--deep);
+    font-weight: 700;
+    cursor: default;
+  }
+
+  .tabs button:focus-visible,
+  .box:focus-visible {
+    outline: 2px solid var(--c-link);
+    outline-offset: 2px;
+  }
+
+  .tree {
+    --px: calc(100cqw / 1240);
+    position: relative;
+    width: 100%;
+    container-type: inline-size;
+  }
+
+  .tree.narrow {
+    --px: calc(100cqw / 940);
+    display: none;
+  }
+
+  .tree svg {
+    position: absolute;
+    inset: 0;
+    display: block;
+    width: 100%;
+    height: 100%;
+    overflow: visible;
+    font-family: inherit;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .box {
+    position: absolute;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0;
+    padding: 0 calc(4 * var(--px));
+    box-sizing: border-box;
+    border: 1.5px solid var(--ink);
+    border-radius: 0;
+    background: #ffffff;
+    color: var(--c-text);
+    font: inherit;
+    font-size: calc(14 * var(--px));
+    line-height: calc(17 * var(--px));
+    text-align: center;
+    hyphens: manual;
+    cursor: pointer;
+  }
+
+  .narrow .box {
+    padding: 0 calc(3 * var(--px));
+    font-size: calc(15 * var(--px));
+    line-height: calc(18 * var(--px));
+  }
+
+  .box[aria-pressed='true'] {
+    outline: 2px solid var(--deep);
+    outline-offset: 0;
+  }
+
+  .status {
+    color: var(--deep);
+    font-size: 1.125rem;
+    font-weight: 700;
+    line-height: 1.25;
+  }
+
+  .fit {
+    display: grid;
+    grid-template-columns: 116px repeat(6, minmax(0, 1fr));
+    margin-top: -8px;
+    border-top: 1px solid var(--rule);
+    font-variant-numeric: tabular-nums;
+  }
+
+  .fit > span {
+    padding: 7px 14px 7px 0;
+    border-bottom: 1px solid var(--rule);
+  }
+
+  .fit-head {
+    font-size: 0.9375rem;
+  }
+
+  .fit-label {
+    color: var(--c-muted);
+    font-size: 0.875rem;
+  }
+
+  .fit b {
+    display: block;
+    font-size: 1.25rem;
+    line-height: 26px;
+  }
+
+  .sub,
+  .guide span {
+    display: block;
+  }
+
+  .sub,
+  .guide {
+    font-size: 0.875rem;
+  }
+
+  .note {
+    margin-top: -8px;
+    font-size: 0.875rem;
+  }
+
+  @media (hover: hover) {
+    .tabs button:not([aria-pressed='true']):hover {
+      color: var(--c-link);
+    }
+
+    .box:hover {
+      text-decoration: underline;
+    }
+  }
+
+  @media (max-width: 1179px) {
+    .tree.wide {
+      display: none;
+    }
+
+    .tree.narrow {
+      display: block;
+    }
+
+    .choice-label {
+      width: 124px;
+      font-size: 0.9375rem;
+    }
+
+    .only {
+      font-size: 1.125rem;
+    }
+
+    .status {
+      font-size: 1.1875rem;
+    }
+
+    .fit {
+      grid-template-columns: 110px repeat(6, minmax(0, 1fr));
+    }
+
+    .fit-head {
+      font-size: 1rem;
+    }
+
+    .fit-label,
+    .sub,
+    .guide,
+    .note {
+      font-size: 0.9375rem;
+    }
+
+    .fit b {
+      font-size: 1.375rem;
+      line-height: 28px;
+    }
+  }
+</style>
+
+<script>
+  import '../scripts/cfa.js';
+</script>
