@@ -78,6 +78,7 @@ export const boxes = [
       { video: '/images/visualizations/visualization-7.mp4', image: '/images/visualizations/visualization-7.jpg', caption: 'Actigraphy/accelerometry analysis, statistics, biostatistics, psychometrics and qualitative analysis.' },
       { video: '/images/visualizations/visualization-9.mp4', image: '/images/visualizations/visualization-9.jpg', caption: 'Actigraphy/accelerometry analysis, statistics, biostatistics, psychometrics and qualitative analysis.' },
       { video: '/images/visualizations/visualization-10.mp4', image: '/images/visualizations/visualization-10.jpg', caption: 'Actigraphy/accelerometry analysis, statistics, biostatistics, psychometrics and qualitative analysis.' },
+      { video: '/images/visualizations/visualization-11.mp4', image: '/images/visualizations/visualization-11.jpg', caption: 'Actigraphy/accelerometry analysis, statistics, biostatistics, psychometrics and qualitative analysis.' },
     ],
   },
   {

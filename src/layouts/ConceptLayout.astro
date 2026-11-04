@@ -8,12 +8,12 @@ import { entries } from '../data/visualizations.js';
 
 const path = Astro.url.pathname;
 const here = path.endsWith('/') ? path : `${path}/`;
-const { title, intro, explanation, misreadings, report, references, citation, bibtex, image, video } = entries.find((entry) => entry.link === here);
+const { title, intro, explanation, misreadings, methods, report, references, citation, bibtex, image, video } = entries.find((entry) => entry.link === here);
 const live = Astro.slots.has('default');
 const reported = Boolean(report) || Astro.slots.has('report');
 const misread = Array.isArray(misreadings);
 
-const math = (tex: string) => katex.renderToString(tex, { throwOnError: false });
+const math = (tex: string, displayMode = false) => katex.renderToString(tex, { displayMode, throwOnError: false });
 const dollars = new RegExp('[$]([^$]+)[$]', 'g');
 const withMath = (text: string) => text.replace(dollars, (all, tex) => math(tex));
 const paragraphs = (text: string | string[]) => [text].flat().filter(Boolean);
@@ -23,6 +23,7 @@ const parts = [
   ['visualization', 'Visualization'],
   ['explanation', 'Explanation'],
   ...(misread ? [['misreadings', 'Common misreadings']] : []),
+  ...(methods ? [['methods', 'Methods']] : []),
   ...(reported ? [['report', 'What to report']] : []),
   ['references', 'References'],
   ['cite', 'Cite'],
@@ -88,6 +89,21 @@ const parts = [
               ))}
             </ul>
           )}
+        </section>
+      )
+    }
+    {
+      methods && (
+        <section id="methods">
+          <h2>Methods</h2>
+          <div class="methods">
+            {methods.map(({ heading, body }) => (
+              <div class="method">
+                <h3>{heading}</h3>
+                {body.map((item) => (typeof item === 'string' ? <p class="text" set:html={withMath(item)} /> : <div class="equation" set:html={math(item.tex, true)} />))}
+              </div>
+            ))}
+          </div>
         </section>
       )
     }
@@ -288,6 +304,38 @@ const parts = [
     gap: 6px;
     margin: 0;
     padding-left: 1.2em;
+  }
+
+  .methods {
+    display: flex;
+    flex-direction: column;
+    gap: 28px;
+  }
+
+  .method {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  h3 {
+    margin: 0;
+    font-size: var(--size-lead);
+    font-weight: 700;
+  }
+
+  .methods :global(.katex) {
+    font-size: 1.05em;
+  }
+
+  .equation {
+    max-width: var(--measure);
+    overflow-x: auto;
+    overflow-y: hidden;
+  }
+
+  .equation :global(.katex-display) {
+    margin: 2px 0;
   }
 
   .misreading::before {

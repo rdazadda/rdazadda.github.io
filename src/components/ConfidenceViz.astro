@@ -1,0 +1,655 @@
+---
+import { LEVELS, STUDY_SIZES } from '../data/sleep-survey.js';
+import { NARROW, START, WIDE, figure, figureLabel, narrate, read, readouts } from '../lib/confidence.js';
+import { METHODS, SHARE_NARROW, SHARE_SIZES, SHARE_WIDE, narrateShare, readShare, readoutsShare, shareFigure, shareLabel } from '../lib/proportions.js';
+import { PAIR_NARROW, PAIR_WIDE, narratePair, pairFigure, pairLabel, readPair, statsOf } from '../lib/two-intervals.js';
+
+const many = read(START);
+const pair = readPair(START);
+const share = readShare(START);
+
+const studyTicks = [10, 20, 30, 50, 100, 200, 1000].map((n) => ({ text: n.toLocaleString('en-US'), at: STUDY_SIZES.indexOf(n) / (STUDY_SIZES.length - 1) }));
+const shareTicks = [5, 10, 20, 50, 100, 200].map((n) => ({ text: String(n), at: SHARE_SIZES.indexOf(n) / (SHARE_SIZES.length - 1) }));
+const levelSlider = { name: 'level', label: 'Confidence level', max: LEVELS.length - 1, ticks: LEVELS.map((level, i) => ({ text: String(level), at: i / (LEVELS.length - 1) })) };
+const sizeSlider = { name: 'size', label: 'People in each study', max: STUDY_SIZES.length - 1, ticks: studyTicks };
+const pairSlider = { name: 'pair-size', label: 'People in the study', max: STUDY_SIZES.length - 1, ticks: studyTicks };
+const shareSlider = { name: 'share-size', label: 'People', max: SHARE_SIZES.length - 1, ticks: shareTicks };
+
+const pages = [
+  ['many', 'Many studies'],
+  ['pair', 'Two intervals'],
+  ['share', 'Proportions'],
+];
+const orderChoice = { name: 'Order', key: 'order', options: [['run', 'As run'], ['mean', 'By mean'], ['width', 'By width']], start: START.order };
+const onlyChoice = { name: 'Show', key: 'only', options: [['all', 'All studies'], ['only', 'Only significant']], start: 'all' };
+const truthChoice = { name: 'True value', key: 'truth', options: [['shown', 'Shown'], ['hidden', 'Hidden']], start: 'shown' };
+const barsChoice = { name: 'Bars', key: 'bars', options: [['ci', '95% CI'], ['se', 'Standard error']], start: START.bars };
+const methodChoice = { name: 'Method', key: 'method', options: METHODS.map(({ id, tab }) => [id, tab]), start: START.method };
+
+const pairStats = statsOf(pair);
+const statColumns = ['Mean', 'SD', 'SE', '95% CI', 'Test', '<i>t</i>', 'df', '<i>p</i>'];
+const statRows = [
+  ['Weekdays', ['m1', 'sd1', 'se1', 'ci1', '', '', '', '']],
+  ['Weekends', ['m2', 'sd2', 'se2', 'ci2', '', '', '', '']],
+  ['Difference, same people', ['d', 'sdD', 'seD', 'ciD', 'Paired', 'tD', 'dfD', 'pD']],
+  ['Difference, two separate groups', ['d', '', 'seS', 'ciS', 'Welch', 'tS', 'dfS', 'pS']],
+];
+const fixedCells = ['Paired', 'Welch'];
+
+const sections = [
+  {
+    id: 'many',
+    narration: narrate(many),
+    sliders: [levelSlider, sizeSlider],
+    choices: [orderChoice, onlyChoice, truthChoice],
+    wideChoices: true,
+    hint: 'Drag the level line up or down, or the value line sideways. Pick a row to open that study.',
+    again: 'New studies',
+    keys: [['ci-value', 'Value to test, in hours', -200, 400], ['ci-study', 'Choose a study', 1, 100]],
+    figures: [
+      ['wide', WIDE, figure(WIDE, many), figureLabel(many), [{ left: WIDE.plotR - 10, width: WIDE.axisTitleR - WIDE.plotR + 10, top: WIDE.curveTop - 8, height: WIDE.curveBase - WIDE.curveTop + 16 }]],
+      ['narrow', NARROW, figure(NARROW, many), figureLabel(many), [{ left: NARROW.plotR - 10, width: NARROW.axisTitleR - NARROW.plotR + 10, top: NARROW.curveTop - 8, height: NARROW.curveBase - NARROW.curveTop + 16 }]],
+    ],
+    results: readouts(many),
+  },
+  {
+    id: 'pair',
+    narration: narratePair(pair),
+    sliders: [pairSlider],
+    choices: [barsChoice],
+    hint: 'Drag the weekend mean up or down in either panel.',
+    again: 'New study',
+    keys: [['ci-shift', 'Move the weekend mean, in hours', -300, 300]],
+    figures: [
+      ['wide', PAIR_WIDE, pairFigure(PAIR_WIDE, pair), pairLabel(pair), PAIR_WIDE.panels.map((panel) => ({ left: panel + PAIR_WIDE.xB - 70, width: 140, top: PAIR_WIDE.top, height: PAIR_WIDE.bottom - PAIR_WIDE.top }))],
+      ['narrow', PAIR_NARROW, pairFigure(PAIR_NARROW, pair), pairLabel(pair), PAIR_NARROW.panels.map((panel) => ({ left: panel + PAIR_NARROW.xB - 50, width: 100, top: PAIR_NARROW.top, height: PAIR_NARROW.bottom - PAIR_NARROW.top }))],
+    ],
+    stats: true,
+  },
+  {
+    id: 'share',
+    narration: narrateShare(share),
+    sliders: [shareSlider],
+    choices: [methodChoice],
+    hint: 'Point across the chart to move the true proportion. The line jumps when one bar flips.',
+    keys: [['ci-point', 'True proportion, in thousandths', 1, 999]],
+    figures: [
+      ['wide', SHARE_WIDE, shareFigure(SHARE_WIDE, share), shareLabel(share), null],
+      ['narrow', SHARE_NARROW, shareFigure(SHARE_NARROW, share), shareLabel(share), null],
+    ],
+    results: readoutsShare(share),
+  },
+];
+
+const percent = (part, whole) => (100 * part) / whole;
+---
+
+<div class="confidence">
+  <div class="pages" role="group" aria-label="View">
+    {
+      pages.map(([id, text]) => (
+        <button type="button" data-page={id} data-text={text} aria-pressed={String(id === START.view)}>
+          {text}
+        </button>
+      ))
+    }
+  </div>
+
+  {
+    sections.map(({ id, narration, sliders, choices, wideChoices, hint, again, keys, figures, results, stats }) => (
+      <section class="page" data-section={id} hidden={id !== START.view}>
+        <p class="narration" aria-live="polite" set:html={narration} />
+
+        <div class="controls">
+          {sliders.map(({ name, label, max, ticks }) => (
+            <div class:list={['ruler', name === 'level' ? 'level' : 'size']}>
+              <div class="head">
+                <label for={`ci-${name}`}>{label}</label>
+                <output class="value" for={`ci-${name}`} />
+              </div>
+              <div class="track">
+                <input id={`ci-${name}`} type="range" min="0" max={max} step="1" data-name={name} />
+                <div class="scale" aria-hidden="true">
+                  {ticks.map(({ text, at }) => (
+                    <span class="tick" style={`--at: ${at}`}>
+                      <span class="tick-text">{text}</span>
+                    </span>
+                  ))}
+                </div>
+              </div>
+            </div>
+          ))}
+          <div class:list={['switches', { across: wideChoices }]}>
+            {choices.map(({ name, key, options, start }) => (
+              <div class="choice" role="group" aria-label={name}>
+                <span class="choice-name">{name}</span>
+                <div class="tabs">
+                  {options.map(([value, text]) => (
+                    <button type="button" data-choice={key} data-value={value} data-text={text} aria-pressed={String(value === start)}>
+                      {text}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        <p class="hint">
+          <span>{hint}</span>
+          {again && (
+            <button type="button" class="again" data-action="again">
+              <span>{again}</span>
+            </button>
+          )}
+          <button type="button" class="again" data-action="restart">
+            <span>Start over</span>
+          </button>
+        </p>
+
+        <div class="keys">
+          {keys.map(([key, text, min, max]) => (
+            <>
+              <label for={key}>{text}</label>
+              <input id={key} type="range" min={min} max={max} step="1" />
+            </>
+          ))}
+        </div>
+
+        {figures.map(([name, G, markup, title, strips]) => (
+          <div class:list={['figure', name]}>
+            <svg viewBox={`0 0 ${G.W} ${G.H}`} role="img" aria-label={title} set:html={markup} />
+            {strips && strips.map((strip) => <div class="strip" style={`left: ${percent(strip.left, G.W)}%; width: ${percent(strip.width, G.W)}%; top: ${percent(strip.top, G.H)}%; height: ${percent(strip.height, G.H)}%`} />)}
+          </div>
+        ))}
+
+        {results && (
+          <div class="readouts">
+            {Object.entries(results).map(([key, item]) => (
+              <p class:list={['readout', key]} data-read={key}>
+                <span class="read-name" set:html={item.name} />
+                <span class="read-number">{item.number}</span>
+                <span class="read-note" set:html={item.note} />
+              </p>
+            ))}
+          </div>
+        )}
+
+        {stats && (
+          <div class="stats">
+            <div class="stats-table">
+            <table>
+              <thead>
+                <tr>
+                  <td />
+                  {statColumns.map((column) => <th scope="col" set:html={column} />)}
+                </tr>
+              </thead>
+              <tbody>
+                {statRows.map(([name, cells]) => (
+                  <tr>
+                    <th scope="row">{name}</th>
+                    {cells.map((cell, i) => (fixedCells.includes(cell) || !cell ? <td>{cell}</td> : <td class:list={{ strong: i === cells.length - 1 }} data-stat={cell}>{pairStats[cell]}</td>))}
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+            </div>
+            <p class="stats-note">The two answers correlate at <i>r</i> = <span data-stat="r">{pairStats.r}</span>. <span data-stat="over">{pairStats.over}</span></p>
+          </div>
+        )}
+      </section>
+    ))
+  }
+</div>
+
+<script>
+  import '../scripts/confidence.js';
+</script>
+
+<style>
+  .confidence {
+    --deep: #143d5e;
+    --ink: #30394f;
+    --rule: #d3dae2;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    width: 100%;
+    max-width: 1240px;
+  }
+
+  .page {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+  }
+
+  .page[hidden] {
+    display: none;
+  }
+
+  p {
+    margin: 0;
+  }
+
+  .pages {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0 28px;
+    border-bottom: 1px solid var(--rule);
+  }
+
+  .pages button,
+  .tabs button {
+    min-height: 44px;
+    margin: 0 0 -1px;
+    padding: 0;
+    border: 0;
+    border-bottom: 3px solid transparent;
+    background: none;
+    color: var(--c-text);
+    font: inherit;
+    font-size: 17px;
+    cursor: pointer;
+  }
+
+  .pages button::after,
+  .tabs button::after {
+    content: attr(data-text);
+    display: block;
+    height: 0;
+    overflow: hidden;
+    visibility: hidden;
+    font-weight: 700;
+  }
+
+  .pages button[aria-pressed='true'],
+  .tabs button[aria-pressed='true'] {
+    border-bottom-color: var(--deep);
+    color: var(--deep);
+    font-weight: 700;
+    cursor: default;
+  }
+
+  .pages button:focus-visible,
+  .tabs button:focus-visible,
+  .again:focus-visible {
+    outline: 2px solid var(--c-link);
+    outline-offset: 2px;
+  }
+
+  .narration {
+    max-width: var(--measure);
+    min-height: calc(4 * 1.35em);
+  }
+
+  .controls {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px 40px;
+  }
+
+  .ruler {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  .ruler.level {
+    --handle: var(--deep);
+  }
+
+  .ruler.size {
+    --handle: var(--ink);
+  }
+
+  .head {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 12px;
+  }
+
+  .value {
+    color: var(--handle);
+    font-size: 22px;
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .track {
+    position: relative;
+    height: 46px;
+  }
+
+  .track input {
+    position: absolute;
+    top: 0;
+    left: 0;
+    z-index: 1;
+    width: 100%;
+    height: 28px;
+    margin: 0;
+    background: transparent;
+    cursor: pointer;
+    appearance: none;
+  }
+
+  .track input::-webkit-slider-runnable-track {
+    height: 3px;
+    border-radius: 3px;
+    background: linear-gradient(to right, var(--handle) var(--fill, 0%), #b8c1cc var(--fill, 0%));
+  }
+
+  .track input::-webkit-slider-thumb {
+    box-sizing: border-box;
+    width: 14px;
+    height: 14px;
+    margin-top: -5.5px;
+    border: 2px solid var(--c-bg);
+    border-radius: 50%;
+    background: var(--handle);
+    transition: transform 0.12s;
+    appearance: none;
+  }
+
+  .track input:hover::-webkit-slider-thumb,
+  .track input:active::-webkit-slider-thumb {
+    transform: scale(1.15);
+  }
+
+  .track input::-moz-range-track {
+    height: 3px;
+    border-radius: 3px;
+    background: #b8c1cc;
+  }
+
+  .track input::-moz-range-progress {
+    height: 3px;
+    border-radius: 3px;
+    background: var(--handle);
+  }
+
+  .track input::-moz-range-thumb {
+    box-sizing: border-box;
+    width: 14px;
+    height: 14px;
+    border: 2px solid var(--c-bg);
+    border-radius: 50%;
+    background: var(--handle);
+    transition: transform 0.12s;
+  }
+
+  .track input:hover::-moz-range-thumb,
+  .track input:active::-moz-range-thumb {
+    transform: scale(1.15);
+  }
+
+  @media (pointer: coarse) {
+    .track input::-webkit-slider-thumb {
+      width: 16px;
+      height: 16px;
+      margin-top: -6.5px;
+    }
+
+    .track input::-moz-range-thumb {
+      width: 16px;
+      height: 16px;
+    }
+  }
+
+  .track input:focus-visible {
+    outline: 2px solid var(--c-link);
+    outline-offset: 4px;
+  }
+
+  .scale {
+    position: absolute;
+    top: 14px;
+    right: 0;
+    left: 0;
+    pointer-events: none;
+  }
+
+  .tick {
+    position: absolute;
+    top: 0;
+    left: calc(7px + var(--at) * (100% - 14px));
+    height: 8px;
+    border-left: 1px solid rgb(48 57 79 / 0.6);
+  }
+
+  .tick-text {
+    position: absolute;
+    top: 11px;
+    left: 0;
+    color: var(--c-muted);
+    font-size: 12px;
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+    transform: translateX(-50%);
+  }
+
+  .tick:first-child .tick-text {
+    transform: translateX(-7px);
+  }
+
+  .tick:last-child .tick-text {
+    transform: translateX(calc(7px - 100%));
+  }
+
+  .switches {
+    display: flex;
+    flex-direction: column;
+    align-self: start;
+  }
+
+  .switches.across {
+    grid-column: 1 / -1;
+    flex-direction: row;
+    flex-wrap: wrap;
+    gap: 0 40px;
+    align-self: stretch;
+  }
+
+  .choice {
+    display: flex;
+    align-items: center;
+    gap: 0 18px;
+    border-bottom: 1px solid var(--rule);
+  }
+
+  .switches.across .choice {
+    flex: 1 1 auto;
+  }
+
+  .choice-name {
+    flex: none;
+    min-width: 76px;
+    color: var(--c-muted);
+    font-size: 0.875rem;
+  }
+
+  .tabs {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0 28px;
+  }
+
+  .choice[aria-label='Method'] .tabs {
+    gap: 0 20px;
+  }
+
+  .hint {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0 14px;
+  }
+
+  .again {
+    display: inline-flex;
+    align-items: center;
+    min-height: 44px;
+    padding: 0;
+    border: 0;
+    background: none;
+    color: var(--c-link);
+    font: inherit;
+    cursor: pointer;
+  }
+
+  .again span {
+    padding: 0 4px;
+  }
+
+  .keys {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+
+  .page:has(.keys input:focus-visible) .figure {
+    outline: 2px solid var(--c-link);
+    outline-offset: 4px;
+  }
+
+  .figure {
+    position: relative;
+    width: 100%;
+    touch-action: pan-y;
+  }
+
+  .figure.narrow {
+    display: none;
+  }
+
+  .figure svg {
+    display: block;
+    width: 100%;
+    height: auto;
+    overflow: visible;
+    font-family: inherit;
+    font-variant-numeric: tabular-nums;
+    user-select: none;
+  }
+
+  .strip {
+    position: absolute;
+    touch-action: none;
+  }
+
+  .readouts {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 0 40px;
+    padding: 12px 0;
+    border-top: 1px solid var(--rule);
+    border-bottom: 1px solid var(--rule);
+  }
+
+  .readout {
+    display: flex;
+    flex-direction: column;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .read-name {
+    font-weight: 700;
+  }
+
+  .read-number {
+    color: var(--ink);
+    font-size: 22px;
+    font-weight: 700;
+    line-height: 1.25;
+  }
+
+  .readout.caught .read-name,
+  .readout.caught .read-number {
+    color: #1f5a88;
+  }
+
+  .confidence[data-hidden] .readout.caught .read-name,
+  .confidence[data-hidden] .readout.caught .read-number {
+    color: var(--ink);
+  }
+
+  .stats {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .stats-table {
+    overflow-x: auto;
+  }
+
+  .stats table {
+    width: 100%;
+    border-collapse: collapse;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .stats th,
+  .stats td {
+    padding: 6px 0 6px 16px;
+    border-bottom: 1px solid var(--rule);
+    font-weight: 400;
+    text-align: right;
+    white-space: nowrap;
+  }
+
+  .stats thead th,
+  .stats thead td {
+    border-top: 1px solid var(--rule);
+    color: var(--c-muted);
+    font-size: 0.875rem;
+  }
+
+  .stats tr > :first-child {
+    padding-left: 0;
+    text-align: left;
+  }
+
+  .stats .strong {
+    font-weight: 700;
+  }
+
+  .stats-note {
+    font-size: 0.9375rem;
+  }
+
+  @media (hover: hover) {
+    .pages button:not([aria-pressed='true']):hover,
+    .tabs button:not([aria-pressed='true']):hover {
+      color: var(--c-link);
+    }
+
+    .again:hover span {
+      background-color: var(--c-link);
+      color: var(--c-bg);
+    }
+  }
+
+  @media (max-width: 1179px) {
+    .figure.wide {
+      display: none;
+    }
+
+    .figure.narrow {
+      display: block;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .track input::-webkit-slider-thumb,
+    .track input::-moz-range-thumb {
+      transition: none;
+    }
+  }
+</style>
