@@ -2,7 +2,7 @@ export const kinds = [
   { id: 'statistics', heading: 'Statistics/Biostatistics' },
   { id: 'actigraphy', heading: 'Actigraphy' },
   { id: 'psychometrics', heading: 'Psychometrics' },
-  { id: 'other', heading: 'Other' },
+  { id: 'qualitative', heading: 'Qualitative Coding' },
 ];
 
 export const entries = [
@@ -758,9 +758,9 @@ export const entries = [
     link: '/visualizations/confirmatory-factor-analysis/',
   },
   {
-    kind: 'other',
+    kind: 'qualitative',
     year: '2026',
-    title: 'Untitled Visualization',
+    title: 'Thematic Analysis',
     about: '',
     intro: '',
     explanation: '',
@@ -768,6 +768,8 @@ export const entries = [
     references: [],
     citation: '',
     bibtex: '',
-    link: '/visualizations/untitled-visualization/',
+    image: '/images/visualizations/visualization-12.png',
+    video: '/images/visualizations/visualization-12.mp4',
+    link: '/visualizations/thematic-analysis/',
   },
 ];

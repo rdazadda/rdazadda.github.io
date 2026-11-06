@@ -79,17 +79,17 @@ export const boxes = [
       { video: '/images/visualizations/visualization-9.mp4', image: '/images/visualizations/visualization-9.jpg', caption: 'Actigraphy/accelerometry analysis, statistics, biostatistics, psychometrics and qualitative analysis.' },
       { video: '/images/visualizations/visualization-10.mp4', image: '/images/visualizations/visualization-10.jpg', caption: 'Actigraphy/accelerometry analysis, statistics, biostatistics, psychometrics and qualitative analysis.' },
       { video: '/images/visualizations/visualization-11.mp4', image: '/images/visualizations/visualization-11.jpg', caption: 'Actigraphy/accelerometry analysis, statistics, biostatistics, psychometrics and qualitative analysis.' },
+      { video: '/images/visualizations/visualization-12.mp4', image: '/images/visualizations/visualization-12.png', caption: 'Actigraphy/accelerometry analysis, statistics, biostatistics, psychometrics and qualitative analysis.' },
     ],
   },
   {
     title: 'Blog',
     link: '/blog/',
     slides: [
-      { video: '/images/blog/blog-1.mp4', image: '/images/blog/blog-1.png', caption: 'Statistics, biostatistics, psychometrics, qualitative analysis and others.' },
-      { video: '/images/blog/blog-2.mp4', image: '/images/blog/blog-2.png', caption: 'Statistics, biostatistics, psychometrics, qualitative analysis and others.' },
-      { video: '/images/blog/blog-3.mp4', image: '/images/blog/blog-3.png', caption: 'Statistics, biostatistics, psychometrics, qualitative analysis and others.' },
-      { video: '/images/blog/blog-4.mp4', image: '/images/blog/blog-4.png', caption: 'Statistics, biostatistics, psychometrics, qualitative analysis and others.' },
-      { video: '/images/blog/blog-5.mp4', image: '/images/blog/blog-5.png', caption: 'Statistics, biostatistics, psychometrics, qualitative analysis and others.' },
+      { video: '/images/blog/blog-1.mp4', image: '/images/blog/blog-1.png', caption: 'Statistics, biostatistics, psychometrics and others.' },
+      { video: '/images/blog/blog-2.mp4', image: '/images/blog/blog-2.png', caption: 'Statistics, biostatistics, psychometrics and others.' },
+      { video: '/images/blog/blog-3.mp4', image: '/images/blog/blog-3.png', caption: 'Statistics, biostatistics, psychometrics and others.' },
+      { video: '/images/blog/blog-5.mp4', image: '/images/blog/blog-5.png', caption: 'Statistics, biostatistics, psychometrics and others.' },
     ],
   },
   {

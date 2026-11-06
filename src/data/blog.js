@@ -1,7 +1,6 @@
 export const kinds = [
   { id: 'statistics', heading: 'Statistics/Biostatistics' },
   { id: 'psychometrics', heading: 'Psychometrics' },
-  { id: 'qualitative', heading: 'Qualitative Analysis' },
   { id: 'other', heading: 'Other' },
 ];
 
@@ -85,26 +84,6 @@ export const entries = [
     image: '/images/blog/blog-3.png',
     video: '/images/blog/blog-3.mp4',
     link: '/blog/item-response-theory/',
-  },
-  {
-    kind: 'qualitative',
-    year: '2026',
-    title: 'Thematic Analysis',
-    about: '',
-    date: '',
-    intro: '',
-    goals: [],
-    caption: '',
-    explanation: '',
-    formulas: [],
-    code: '',
-    summary: '',
-    references: [],
-    citation: '',
-    bibtex: '',
-    image: '/images/blog/blog-4.png',
-    video: '/images/blog/blog-4.mp4',
-    link: '/blog/thematic-analysis/',
   },
   {
     kind: 'other',
