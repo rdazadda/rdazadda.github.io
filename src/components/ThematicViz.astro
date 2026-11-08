@@ -1,0 +1,1509 @@
+---
+import { PASSAGES, POWER_ROWS, STUDIES, readsHtml, speakerLine, transcriptHtml } from '../lib/thematic-views.js';
+
+const pages = [
+  ['coding', 'Coding'],
+  ['themes', 'Themes'],
+  ['agreement', 'Agreement'],
+  ['interviews', 'Interviews'],
+];
+const first = PASSAGES[0];
+const paperChoice = [['with', 'With the paper'], ['without', 'Without the paper']];
+const sourceChoice = [['coding', 'This coding'], ['one', 'Cohen’s Table 1'], ['two', 'Cohen’s Table 2']];
+const modeChoice = [['one', 'One theme for each quote'], ['many', 'Any number of themes']];
+const rulers = [
+  { name: 'base', label: 'Base size', max: 2, ticks: ['4', '5', '6'] },
+  { name: 'run', label: 'Run length', max: 2, ticks: ['2', '3', '4'] },
+  { name: 'allow', label: 'New information allowed', max: 10, ticks: ['0%', '5%', '10%'] },
+  { name: 'times', label: 'Times a code must appear', max: 2, ticks: ['1', '2', '3'] },
+];
+const questions = [
+  'Is this a theme, or just a code?',
+  'Does it say something useful about the data and the research question?',
+  'What does it include, and what does it leave out?',
+  'Are there enough data behind it, or is it thin?',
+  'Are the data so diverse that it lacks one idea?',
+];
+---
+
+<div class="thematic">
+  <div class="pages" role="group" aria-label="View">
+    {pages.map(([id, text], i) => (
+      <button type="button" data-page={id} data-text={text} aria-pressed={String(i === 0)}>{text}</button>
+    ))}
+  </div>
+
+  <section class="page" data-section="coding">
+    <p class="narration" aria-live="polite">Drag across the words to mark a stretch of talk, then name it in a margin. The first margin is for what the person says. The second is for what may lie under the words. A stretch can carry one code, several codes, or none.</p>
+    <div class="nav">
+      <div class="choice" role="group" aria-label="Passage">
+        <span class="choice-name">Passage</span>
+        <div class="tabs">
+          {PASSAGES.map((passage, i) => (
+            <button type="button" data-passage={i} data-text={String(passage.id)} aria-pressed={String(i === 0)}>{passage.id}</button>
+          ))}
+        </div>
+      </div>
+      <p class="speaker" data-speaker>{speakerLine(first)}</p>
+    </div>
+    <div class="keys">
+      <label for="code-first">First word to mark</label>
+      <input id="code-first" type="range" min="0" max="1" step="1" value="0" />
+      <label for="code-last">Last word to mark</label>
+      <input id="code-last" type="range" min="0" max="1" step="1" value="0" />
+    </div>
+    <datalist id="code-names"></datalist>
+    <div class="work" data-work>
+      <div class="transcript" data-transcript set:html={transcriptHtml(first)} />
+      <div class="lane" data-lane="says">
+        <h3>What it says</h3><small>Semantic codes</small>
+        <div class="naming" hidden><span class="bracket"></span><span class="label"><input id="name-says" class="namer" type="text" list="code-names" maxlength="80" autocomplete="off" placeholder="Name this code" aria-label="Name a semantic code for the marked words" /></span></div>
+        <div class="marks"></div>
+      </div>
+      <div class="lane" data-lane="means">
+        <h3>What it may mean</h3><small>Latent codes</small>
+        <div class="naming" hidden><span class="bracket"></span><span class="label"><input id="name-means" class="namer" type="text" list="code-names" maxlength="80" autocomplete="off" placeholder="Name this code" aria-label="Name a latent code for the marked words" /></span></div>
+        <div class="marks"></div>
+      </div>
+      <div class="lane" data-lane="paper"><h3>In the paper</h3><small>Closest code in Table 2</small><div class="marks"></div></div>
+    </div>
+    <div class="hint">
+      <span class="grow" data-coding-status></span>
+      <div class="choice plain" role="group" aria-label="The paper’s reading">
+        <div class="tabs">
+          {paperChoice.map(([value, text]) => (
+            <button type="button" data-paper={value} data-text={text} aria-pressed={String(value === 'with')}>{text}</button>
+          ))}
+        </div>
+      </div>
+      <button type="button" class="again" data-action="clear-codes"><span>Clear</span></button>
+      <button type="button" class="again" data-action="restart"><span>Start over</span></button>
+    </div>
+    <div class="reads" data-reads set:html={readsHtml(first)} />
+    <p class="note">Codes made here also appear in the Themes tab, beside the paper’s 27.</p>
+  </section>
+
+  <section class="page" data-section="themes" hidden>
+    <p class="narration" aria-live="polite" data-themes-narration></p>
+    <div class="choice plain" role="group" aria-label="Themes view">
+      <div class="tabs">
+        <button type="button" data-sub-themes="sort" data-text="Sort the codes" aria-pressed="true">Sort the codes</button>
+        <button type="button" data-sub-themes="trace" data-text="Trace the paper" aria-pressed="false">Trace the paper</button>
+      </div>
+    </div>
+    <div class="subpage" data-subpage="sort">
+      <div class="sort">
+        <div class="board">
+          <div class="tray" data-drop="tray">
+            <h3>Not sorted yet</h3>
+            <div class="code-list two" data-tray></div>
+            <button type="button" class="put" data-put="tray" hidden><span>Put it back here</span></button>
+          </div>
+          <div class="piles" data-piles></div>
+          <p><span data-count></span> <button type="button" class="again inline" data-action="new-pile"><span>New pile</span></button></p>
+        </div>
+        <div class="side">
+          <div class="figure"><svg role="img" aria-label="Each code from its pile to its theme in the paper" data-lines></svg></div>
+          <p class="note" data-lines-note></p>
+        </div>
+      </div>
+      <div class="hint">
+        <span class="grow">Click or tap a code, then choose Put here, to move it without dragging.</span>
+        <button type="button" class="again" data-action="paper-piles"><span>Use the paper’s themes</span></button>
+        <button type="button" class="again" data-action="clear-piles"><span>Clear</span></button>
+        <button type="button" class="again" data-action="restart"><span>Start over</span></button>
+      </div>
+      <div class="review">
+        <div>
+          <h3 data-reading-title></h3>
+          <div class="rows quotes" data-reading></div>
+        </div>
+        <div>
+          <h3>Questions to ask of a pile</h3>
+          <ol class="questions">{questions.map((question) => <li>{question}</li>)}</ol>
+          <p class="note small">From Braun and Clarke (2012), as listed in Byrne (2022).</p>
+        </div>
+      </div>
+    </div>
+    <div class="subpage" data-subpage="trace" hidden>
+      <div class="key">
+        <span><i class="swatch blue"></i>Sufficiently active</span>
+        <span><i class="swatch warm"></i>Insufficiently active</span>
+        <span><i class="swatch deep"></i><span data-trace-key></span></span>
+        <span><i class="box"></i>A code with no printed quote</span>
+      </div>
+      <div class="figure wide"><svg data-trace="wide"></svg></div>
+      <div class="figure narrow"><svg data-trace="narrow"></svg></div>
+      <div class="rows trace-rows" data-trace-rows></div>
+      <div class="hint"><button type="button" class="again" data-action="restart"><span>Start over</span></button></div>
+    </div>
+  </section>
+
+  <section class="page" data-section="agreement" hidden>
+    <p class="narration" aria-live="polite" data-agreement-narration></p>
+    <div class="switches">
+      <div class="choice" role="group" aria-label="Counts from">
+        <span class="choice-name">Counts from</span>
+        <div class="tabs">
+          {sourceChoice.map(([value, text]) => (
+            <button type="button" data-source={value} data-text={text} aria-pressed={String(value === 'coding')}>{text}</button>
+          ))}
+        </div>
+      </div>
+      <div class="choice" role="group" aria-label="Themes for each quote" data-mode-choice>
+        <span class="choice-name">Each quote</span>
+        <div class="tabs">
+          {modeChoice.map(([value, text]) => (
+            <button type="button" data-mode={value} data-text={text} aria-pressed={String(value === 'one')}>{text}</button>
+          ))}
+        </div>
+      </div>
+    </div>
+    <div class="agree">
+      <div class="agree-left">
+        <div class="agree-panel" data-agree-left></div>
+        <div class="hint">
+          <button type="button" class="again" data-action="undo"><span>Undo</span></button>
+          <button type="button" class="again" data-action="fill"><span>Fill the rest by chance</span></button>
+          <button type="button" class="again" data-action="restart"><span>Start over</span></button>
+        </div>
+      </div>
+      <div class="agree-right">
+        <div class="figure" data-matrix-wrap role="group" aria-label="Agreement table"><svg data-matrix></svg></div>
+        <div class="binary" data-binary hidden></div>
+        <p class="note" data-matrix-note>Each cell shows the count, then the count chance would give in parentheses.</p>
+      </div>
+    </div>
+    <div class="agree-read" data-readouts></div>
+    <div class="figure wide"><svg role="img" aria-label="Kappa with 95% limits" data-forest="wide"></svg></div>
+    <div class="figure narrow"><svg role="img" aria-label="Kappa with 95% limits" data-forest="narrow"></svg></div>
+    <div class="talk" data-talk-area></div>
+    <p class="note" data-campbell>Campbell et al. (2013) call the figure from coding alone “reliability” and the figure after talking it over “agreement.” In their study, coding alone reached 54%, and talking it over reached 96%. In the disagreements they settled, the assistant gave way to the lead researcher 69% of the time. Reflexive thematic analysis does not aim for agreement at all.</p>
+  </section>
+
+  <section class="page" data-section="interviews" hidden>
+    <p class="narration" aria-live="polite" data-interviews-narration></p>
+    <div class="choice plain" role="group" aria-label="Interviews view">
+      <div class="tabs">
+        <button type="button" data-sub-interviews="saturation" data-text="Saturation" aria-pressed="true">Saturation</button>
+        <button type="button" data-sub-interviews="power" data-text="Information power" aria-pressed="false">Information power</button>
+      </div>
+    </div>
+    <div class="subpage" data-subpage="saturation">
+      <div class="top">
+        <div class="choice" role="group" aria-label="Data">
+          <span class="choice-name">Data</span>
+          <div class="tabs">
+            {STUDIES.map((study, i) => (
+              <button type="button" data-study={i} data-text={`${study.name}, ${study.interviews}`} aria-pressed={String(i === 0)}>{study.name}, {study.interviews}</button>
+            ))}
+          </div>
+        </div>
+        <div class="order">
+          <button type="button" class="again" data-action="file-order" aria-pressed="true"><span>File order</span></button>
+          <button type="button" class="again" data-action="shuffle"><span>Shuffle</span></button>
+          <button type="button" class="again" data-action="restart"><span>Start over</span></button>
+        </div>
+      </div>
+      <div class="controls four">
+        {rulers.map(({ name, label, max, ticks }) => (
+          <div class="ruler">
+            <div class="head">
+              <label for={`sat-${name}`}>{label}</label>
+              <output class="value" for={`sat-${name}`}></output>
+            </div>
+            <div class="track">
+              <input id={`sat-${name}`} type="range" min="0" max={max} step="1" data-rule={name} />
+              <div class="scale" aria-hidden="true">
+                {ticks.map((text, i) => (
+                  <span class="tick" style={`--at: ${i / (ticks.length - 1)}`}><span class="tick-text">{text}</span></span>
+                ))}
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
+      <div class="keys">
+        <label for="sat-row">Choose a code</label>
+        <input id="sat-row" type="range" min="1" max="93" step="1" value="1" />
+      </div>
+      <div class="main">
+        <div>
+          <p class="row-note" data-row-note></p>
+          <div class="figure wide raster"><svg role="img" data-raster="wide"></svg></div>
+          <div class="figure narrow raster"><svg role="img" data-raster="narrow"></svg></div>
+        </div>
+        <div class="side">
+          <div class="verdict">
+            <span data-verdict-name>Saturation indicated at</span>
+            <span class="big" data-verdict></span>
+          </div>
+          <div class="rows sums" data-sums></div>
+          <div class="hist">
+            <h3>Where 10,000 random samples of these interviews meet the rule</h3>
+            <div class="figure"><svg role="img" aria-label="Stopping points across samples" data-hist></svg></div>
+            <p class="note" data-sample-note></p>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="subpage" data-subpage="power" hidden>
+      <div class="key">
+        <span><i class="dot"></i>Harris et al. (2025), who stopped at 16 interviews</span>
+        <span><i class="ring"></i>The worked case in Malterud et al. (2016), a first estimate of 10</span>
+        <span><i class="thumb"></i>A planned study</span>
+      </div>
+      <div class="power">
+        {POWER_ROWS.map(({ name, left, right, harris, malterud, note }, i) => (
+          <div class="pr">
+            <b>{name}</b>
+            <span>{left}</span>
+            <span class="line">
+              <i style={`left: calc(8px + ${harris} * (100% - 16px) / 100)`}></i>
+              <em style={`left: calc(8px + ${malterud} * (100% - 16px) / 100)`}></em>
+              <input type="range" min="0" max="100" step="1" value="50" data-power={i} aria-label={`${name}, a planned study, from ${left} to ${right}`} />
+            </span>
+            <span class="r">{right}</span>
+            <span>{note}</span>
+          </div>
+        ))}
+      </div>
+      <div class="hint"><button type="button" class="again" data-action="restart"><span>Start over</span></button></div>
+    </div>
+  </section>
+</div>
+
+<script>
+  import '../scripts/thematic.js';
+</script>
+
+<style is:global>
+  .thematic {
+    --deep: #143d5e;
+    --slate: #30394f;
+    --rule: #d3dae2;
+    --orange: #b04a00;
+    --warm: #d55e00;
+    --blue: #1f5a88;
+    --track: #b8c1cc;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    width: 100%;
+    max-width: 1240px;
+  }
+
+  .thematic [hidden] {
+    display: none !important;
+  }
+
+  .thematic .grow {
+    flex: 1 1 320px;
+  }
+
+  .thematic p {
+    margin: 0;
+  }
+
+  .thematic h3 {
+    margin: 0 0 6px;
+    font-size: 17px;
+    font-weight: 700;
+  }
+
+  .thematic .page,
+  .thematic .subpage {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+  }
+
+  .thematic .pages {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0 28px;
+    border-bottom: 1px solid var(--rule);
+  }
+
+  .thematic .pages button,
+  .thematic .tabs button {
+    min-height: 44px;
+    margin: 0 0 -1px;
+    padding: 0;
+    border: 0;
+    border-bottom: 3px solid transparent;
+    background: none;
+    color: var(--c-text);
+    font: inherit;
+    font-size: 17px;
+    cursor: pointer;
+  }
+
+  .thematic .pages button::after,
+  .thematic .tabs button::after,
+  .thematic .talk .keep button::after {
+    content: attr(data-text);
+    display: block;
+    height: 0;
+    overflow: hidden;
+    visibility: hidden;
+    font-weight: 700;
+  }
+
+  .thematic .pages button[aria-pressed='true'],
+  .thematic .tabs button[aria-pressed='true'] {
+    border-bottom-color: var(--deep);
+    color: var(--deep);
+    font-weight: 700;
+    cursor: default;
+  }
+
+  .thematic button:focus-visible,
+  .thematic input:focus-visible,
+  .thematic [data-pick]:focus-visible,
+  .thematic [data-cell]:focus-visible {
+    outline: 2px solid var(--c-link);
+    outline-offset: 2px;
+  }
+
+  .thematic .narration,
+  .thematic .note {
+    max-width: var(--measure);
+  }
+
+  .thematic .note.small {
+    margin-top: 8px;
+    font-size: 15px;
+  }
+
+  .thematic .tabs {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0 24px;
+  }
+
+  .thematic .choice {
+    display: flex;
+    align-items: center;
+    gap: 0 18px;
+    border-bottom: 1px solid var(--rule);
+  }
+
+  .thematic .choice.plain {
+    border-bottom: 0;
+  }
+
+  .thematic .subpage > .choice,
+  .thematic .page > .choice.plain {
+    border-bottom: 1px solid var(--rule);
+  }
+
+  .thematic .choice-name {
+    flex: none;
+    color: var(--c-muted);
+    font-size: 0.875rem;
+  }
+
+  .thematic .switches {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0 40px;
+  }
+
+  .thematic .switches .choice {
+    flex: 1 1 auto;
+  }
+
+  .thematic .hint {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0 18px;
+  }
+
+  .thematic .again {
+    display: inline-flex;
+    align-items: center;
+    min-height: 44px;
+    padding: 0;
+    border: 0;
+    background: none;
+    color: var(--c-link);
+    font: inherit;
+    cursor: pointer;
+  }
+
+  .thematic .again.inline {
+    display: inline;
+    min-height: 0;
+  }
+
+  .thematic .again span {
+    text-decoration: underline;
+    text-underline-offset: 3px;
+    text-decoration-thickness: 1px;
+  }
+
+  .thematic .again[disabled] {
+    color: var(--c-muted);
+    cursor: default;
+  }
+
+  .thematic .again[disabled] span {
+    text-decoration: none;
+  }
+
+  .thematic .keys {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+
+  .thematic .page:has(.keys input:focus-visible) .work,
+  .thematic .page:has(.keys input:focus-visible) .raster {
+    outline: 2px solid var(--c-link);
+    outline-offset: 4px;
+  }
+
+  .thematic .figure {
+    position: relative;
+    width: 100%;
+    touch-action: pan-y;
+  }
+
+  .thematic .figure.narrow {
+    display: none;
+  }
+
+  .thematic .figure svg {
+    display: block;
+    width: 100%;
+    height: auto;
+    overflow: visible;
+    font-family: inherit;
+    font-variant-numeric: lining-nums tabular-nums;
+    user-select: none;
+  }
+
+  .thematic .hit {
+    cursor: pointer;
+  }
+
+  .thematic .rows {
+    display: flex;
+    flex-direction: column;
+    border-top: 1px solid var(--rule);
+  }
+
+  .thematic .rows > div {
+    padding: 8px 0;
+    border-bottom: 1px solid var(--rule);
+  }
+
+  .thematic .who-line {
+    display: block;
+    margin-top: 2px;
+    font-size: 15px;
+  }
+
+  .thematic .nav {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    align-items: center;
+    gap: 4px 24px;
+  }
+
+  .thematic .nav .choice {
+    border-bottom: 0;
+  }
+
+  .thematic .nav .tabs {
+    gap: 0 16px;
+  }
+
+  .thematic .nav .tabs button {
+    min-width: 22px;
+  }
+
+  .thematic .work {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 170px 170px 200px;
+    border-top: 1px solid var(--rule);
+    border-bottom: 1px solid var(--rule);
+  }
+
+  .thematic .work.no-paper {
+    grid-template-columns: minmax(0, 1fr) 210px 210px;
+  }
+
+  .thematic .work.no-paper .lane[data-lane='paper'] {
+    display: none;
+  }
+
+  .thematic .transcript {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    padding: 64px 26px 22px 0;
+  }
+
+  .thematic .turn {
+    display: grid;
+    grid-template-columns: 30px minmax(0, 1fr);
+    font-size: 19px;
+    line-height: 1.7;
+  }
+
+  .thematic .who {
+    color: var(--c-muted);
+    font-size: 15px;
+    line-height: 32px;
+    user-select: none;
+  }
+
+  .thematic .said {
+    cursor: text;
+  }
+
+  .thematic .w .t,
+  .thematic .w .sp {
+    --says: none;
+    --means: none;
+    padding-bottom: 4px;
+    background-image: var(--says), var(--means);
+    background-repeat: no-repeat, repeat-x;
+    background-position: 0 100%, 0 calc(100% - 3px);
+    background-size: 100% 2px, 4px 2px;
+  }
+
+  .thematic .w.says .t,
+  .thematic .w.says-on .sp {
+    --says: linear-gradient(var(--deep), var(--deep));
+  }
+
+  .thematic .w.means .t,
+  .thematic .w.means-on .sp {
+    --means: linear-gradient(to right, var(--orange) 50%, transparent 50%);
+  }
+
+  .thematic .w.pending .t,
+  .thematic .w.pending-on .sp {
+    background-color: #cfe0ed;
+  }
+
+  .thematic .w.hot .t,
+  .thematic .w.hot-on .sp {
+    background-color: #e7ebef;
+  }
+
+  .thematic .lane {
+    position: relative;
+    padding: 10px 8px 0 10px;
+    border-left: 1px solid var(--rule);
+  }
+
+  .thematic .lane h3 {
+    margin: 0;
+    font-size: 15.5px;
+    line-height: 1.25;
+  }
+
+  .thematic .lane small {
+    display: block;
+    color: var(--c-muted);
+    font-size: 13.5px;
+    line-height: 1.3;
+  }
+
+  .thematic .marks,
+  .thematic .naming {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+  }
+
+  .thematic .lane .bracket {
+    position: absolute;
+    box-sizing: border-box;
+    width: 8px;
+    border-top: 2px solid var(--deep);
+    border-bottom: 2px solid var(--deep);
+    border-left: 2px solid var(--deep);
+  }
+
+  .thematic .lane[data-lane='means'] .bracket {
+    border-style: dotted;
+    border-color: var(--orange);
+  }
+
+  .thematic .lane[data-lane='paper'] .bracket {
+    border-color: var(--c-text);
+  }
+
+  .thematic .mark.hot .bracket {
+    border-width: 3px;
+  }
+
+  .thematic .lane .label {
+    position: absolute;
+    right: 6px;
+    font-size: 14.6px;
+    line-height: 1.26;
+    overflow-wrap: anywhere;
+    pointer-events: auto;
+  }
+
+  .thematic .mark .label .theme {
+    display: block;
+    margin-top: 3px;
+    font-style: italic;
+  }
+
+  .thematic .mark .named {
+    display: block;
+    padding-right: 18px;
+  }
+
+  .thematic .mark .drop {
+    position: absolute;
+    top: -3px;
+    right: -6px;
+    width: 24px;
+    height: 24px;
+    padding: 0;
+    border: 0;
+    background: none;
+    color: var(--c-link);
+    font: inherit;
+    cursor: pointer;
+  }
+
+  .thematic .namer {
+    display: block;
+    width: 100%;
+    padding: 0 0 2px;
+    border: 0;
+    border-bottom: 2px solid var(--deep);
+    border-radius: 0;
+    background: none;
+    color: var(--c-text);
+    font: inherit;
+    font-size: 14.6px;
+  }
+
+  .thematic .namer::placeholder {
+    color: var(--c-muted);
+    opacity: 1;
+  }
+
+  .thematic .namer::-webkit-calendar-picker-indicator {
+    display: none !important;
+  }
+
+  .thematic .namer:focus-visible {
+    outline: none;
+    border-bottom-width: 3px;
+    padding-bottom: 1px;
+  }
+
+  .thematic .reads .rows > div {
+    display: grid;
+    grid-template-columns: 240px minmax(0, 1fr);
+    gap: 14px;
+    line-height: 1.42;
+  }
+
+  .thematic .reads-note {
+    margin-top: 10px;
+    max-width: var(--measure);
+  }
+
+  .thematic .sort {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 410px;
+    gap: 34px;
+    align-items: start;
+  }
+
+  .thematic .board {
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+    min-width: 0;
+  }
+
+  .thematic .code-list {
+    display: flex;
+    flex-direction: column;
+    border-top: 1px solid var(--rule);
+  }
+
+  .thematic .code-list.two {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    column-gap: 26px;
+  }
+
+  .thematic .code {
+    display: block;
+    width: 100%;
+    min-height: 30px;
+    padding: 4px 0;
+    border: 0;
+    border-bottom: 1px solid var(--rule);
+    background: none;
+    color: var(--c-text);
+    font: inherit;
+    font-size: 15px;
+    line-height: 1.3;
+    text-align: left;
+    overflow-wrap: anywhere;
+    cursor: grab;
+    user-select: none;
+    touch-action: pan-y;
+  }
+
+  .thematic .code[aria-pressed='true'] {
+    color: var(--orange);
+    font-weight: 700;
+  }
+
+  .thematic .code .made {
+    font-style: italic;
+  }
+
+  .thematic .piles {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 20px 26px;
+  }
+
+  .thematic .pile {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+  }
+
+  .thematic [data-drop].over .pile-name,
+  .thematic [data-drop].over h3 {
+    color: var(--orange);
+  }
+
+  .thematic .pile-name {
+    width: 100%;
+    padding: 0 0 3px;
+    border: 0;
+    border-bottom: 1px solid var(--slate);
+    border-radius: 0;
+    background: none;
+    color: var(--c-text);
+    font: inherit;
+    font-size: 16.5px;
+    font-weight: 700;
+  }
+
+  .thematic .pile.open .pile-name {
+    color: var(--orange);
+  }
+
+  .thematic .pile-name:focus-visible {
+    outline: none;
+    border-bottom: 2px solid var(--deep);
+    padding-bottom: 2px;
+  }
+
+  .thematic .pile-name::placeholder {
+    color: var(--c-muted);
+    font-weight: 400;
+    opacity: 1;
+  }
+
+  .thematic .pile .empty {
+    padding: 4px 0;
+    color: var(--c-text);
+    font-size: 15px;
+  }
+
+  .thematic .flag {
+    margin-top: 6px;
+    font-size: 15px;
+    line-height: 1.35;
+  }
+
+  .thematic .pile-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0 14px;
+    font-size: 14.5px;
+  }
+
+  .thematic .pile-actions .again {
+    min-height: 32px;
+  }
+
+  .thematic .put {
+    display: inline-flex;
+    align-self: flex-start;
+    align-items: center;
+    min-height: 36px;
+    padding: 0;
+    border: 0;
+    background: none;
+    color: var(--orange);
+    font: inherit;
+    font-size: 15px;
+    font-weight: 700;
+    cursor: pointer;
+  }
+
+  .thematic .put span {
+    text-decoration: underline;
+    text-underline-offset: 3px;
+  }
+
+  .thematic .side {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    min-width: 0;
+  }
+
+  .thematic .drag-ghost {
+    position: fixed;
+    z-index: 50;
+    max-width: 320px;
+    padding: 3px 6px;
+    border: 1px solid var(--slate);
+    background: var(--c-bg);
+    font-size: 15px;
+    pointer-events: none;
+  }
+
+  .thematic .review {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 340px;
+    gap: 34px;
+    align-items: start;
+  }
+
+  .thematic .quotes > div {
+    line-height: 1.42;
+  }
+
+  .thematic .questions {
+    margin: 0;
+    padding: 0;
+    border-top: 1px solid var(--rule);
+    list-style: none;
+    line-height: 1.38;
+  }
+
+  .thematic .questions li {
+    padding: 7px 0;
+    border-bottom: 1px solid var(--rule);
+  }
+
+  .thematic .key {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 4px 28px;
+  }
+
+  .thematic .key .swatch {
+    display: inline-block;
+    width: 24px;
+    margin-right: 9px;
+    border-top: 2.5px solid;
+    vertical-align: 4px;
+  }
+
+  .thematic .key .swatch.blue {
+    border-color: var(--blue);
+  }
+
+  .thematic .key .swatch.warm {
+    border-color: var(--warm);
+  }
+
+  .thematic .key .swatch.deep {
+    border-color: var(--deep);
+  }
+
+  .thematic .key .box {
+    display: inline-block;
+    width: 12px;
+    height: 8px;
+    margin-right: 9px;
+    border: 1px solid var(--c-muted);
+    vertical-align: 1px;
+  }
+
+  .thematic .trace-rows > div {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 270px 280px;
+    gap: 18px;
+    line-height: 1.38;
+  }
+
+  .thematic .trace-rows .head-row {
+    font-weight: 700;
+  }
+
+  .thematic .agree {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 718px;
+    gap: 30px;
+    align-items: start;
+  }
+
+  .thematic .agree-panel {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .thematic .agree-left {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    min-width: 0;
+  }
+
+  .thematic .agree-right {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    min-width: 0;
+  }
+
+  .thematic .quote-text {
+    font-size: 19.5px;
+    line-height: 1.62;
+  }
+
+  .thematic .pick-list {
+    display: flex;
+    flex-direction: column;
+    border-top: 1px solid var(--rule);
+  }
+
+  .thematic .pick {
+    display: block;
+    width: 100%;
+    min-height: 44px;
+    padding: 9px 0;
+    border: 0;
+    border-bottom: 1px solid var(--rule);
+    background: none;
+    color: var(--c-text);
+    font: inherit;
+    line-height: 1.3;
+    text-align: left;
+    cursor: pointer;
+  }
+
+  .thematic .pick[aria-pressed='true'] {
+    color: var(--deep);
+    font-weight: 700;
+  }
+
+  .thematic .binary table {
+    width: 100%;
+    border-collapse: collapse;
+    font-variant-numeric: lining-nums tabular-nums;
+  }
+
+  .thematic .binary th,
+  .thematic .binary td {
+    padding: 8px 6px;
+    border-bottom: 1px solid var(--rule);
+    font-weight: 400;
+    text-align: right;
+  }
+
+  .thematic .binary thead th {
+    border-top: 1px solid var(--rule);
+    font-weight: 700;
+    vertical-align: bottom;
+  }
+
+  .thematic .binary tr > :first-child {
+    padding-left: 0;
+    text-align: left;
+  }
+
+  .thematic .agree-read {
+    display: grid;
+    grid-template-columns: auto repeat(4, minmax(0, 1fr));
+    gap: 0 40px;
+    align-items: end;
+    padding: 12px 0;
+    border-top: 1px solid var(--rule);
+    border-bottom: 1px solid var(--rule);
+  }
+
+  .thematic .read {
+    display: flex;
+    flex-direction: column;
+    font-variant-numeric: lining-nums tabular-nums;
+  }
+
+  .thematic .read .n {
+    color: var(--slate);
+    font-size: 30px;
+    font-weight: 700;
+    line-height: 1.2;
+  }
+
+  .thematic .read.big .n {
+    color: var(--deep);
+    font-size: 48px;
+    line-height: 1.05;
+  }
+
+  .thematic .read .n.words,
+  .thematic .read.big .n.words {
+    color: var(--c-text);
+    font-size: 19px;
+    font-weight: 400;
+    line-height: 1.3;
+  }
+
+  .thematic .read .t {
+    line-height: 1.3;
+  }
+
+  .thematic .read.big .t {
+    font-weight: 700;
+  }
+
+  .thematic .talk .keep {
+    display: flex;
+    justify-content: flex-end;
+    gap: 0 16px;
+    align-items: baseline;
+    white-space: nowrap;
+  }
+
+  .thematic .talk .rows > div {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 24px;
+    line-height: 1.42;
+  }
+
+  .thematic .talk .lead {
+    margin-bottom: 8px;
+  }
+
+  .thematic .talk .keep button {
+    min-height: 32px;
+    padding: 0;
+    border: 0;
+    border-bottom: 3px solid transparent;
+    background: none;
+    color: var(--c-text);
+    font: inherit;
+    cursor: pointer;
+  }
+
+  .thematic .talk .keep button[aria-pressed='true'] {
+    border-bottom-color: var(--deep);
+    color: var(--deep);
+    font-weight: 700;
+  }
+
+  .thematic .top {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 4px 40px;
+  }
+
+  .thematic .top .choice {
+    border-bottom: 0;
+  }
+
+  .thematic .order {
+    display: flex;
+    gap: 0 18px;
+    align-items: center;
+  }
+
+  .thematic .order .on {
+    color: var(--deep);
+    font-weight: 700;
+  }
+
+  .thematic .order .on span {
+    text-decoration: none;
+    border-bottom: 3px solid var(--deep);
+  }
+
+  .thematic .controls.four {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 12px 34px;
+    align-items: end;
+  }
+
+  .thematic .ruler {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    --handle: var(--deep);
+  }
+
+  .thematic .ruler .head {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 12px;
+  }
+
+  .thematic .ruler .value {
+    color: var(--handle);
+    font-size: 22px;
+    font-weight: 700;
+    font-variant-numeric: lining-nums tabular-nums;
+  }
+
+  .thematic .track {
+    position: relative;
+    height: 46px;
+  }
+
+  .thematic .track input,
+  .thematic .line input {
+    position: absolute;
+    top: 0;
+    left: 0;
+    z-index: 1;
+    width: 100%;
+    height: 28px;
+    margin: 0;
+    background: transparent;
+    cursor: pointer;
+    appearance: none;
+  }
+
+  .thematic .track input::-webkit-slider-runnable-track {
+    height: 3px;
+    border-radius: 3px;
+    background: linear-gradient(to right, var(--handle) var(--fill, 0%), var(--track) var(--fill, 0%));
+  }
+
+  .thematic .track input::-webkit-slider-thumb {
+    box-sizing: border-box;
+    width: 14px;
+    height: 14px;
+    margin-top: -5.5px;
+    border: 2px solid var(--c-bg);
+    border-radius: 50%;
+    background: var(--handle);
+    appearance: none;
+  }
+
+  .thematic .track input::-moz-range-track {
+    height: 3px;
+    background: var(--track);
+  }
+
+  .thematic .track input::-moz-range-progress {
+    height: 3px;
+    background: var(--handle);
+  }
+
+  .thematic .track input::-moz-range-thumb {
+    box-sizing: border-box;
+    width: 14px;
+    height: 14px;
+    border: 2px solid var(--c-bg);
+    border-radius: 50%;
+    background: var(--handle);
+  }
+
+  .thematic .scale {
+    position: absolute;
+    top: 14px;
+    right: 0;
+    left: 0;
+    pointer-events: none;
+  }
+
+  .thematic .tick {
+    position: absolute;
+    top: 0;
+    left: calc(7px + var(--at) * (100% - 14px));
+    height: 8px;
+    border-left: 1px solid rgb(48 57 79 / 0.6);
+  }
+
+  .thematic .tick-text {
+    position: absolute;
+    top: 11px;
+    left: 0;
+    color: var(--c-muted);
+    font-size: 12.5px;
+    font-variant-numeric: lining-nums tabular-nums;
+    white-space: nowrap;
+    transform: translateX(-50%);
+  }
+
+  .thematic .main {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 318px;
+    gap: 26px;
+    align-items: start;
+  }
+
+  .thematic .main > div {
+    min-width: 0;
+  }
+
+  .thematic .row-note {
+    min-height: 1.4em;
+    margin-bottom: 4px;
+  }
+
+  .thematic .verdict {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .thematic .verdict .big {
+    color: var(--deep);
+    font-size: 48px;
+    font-weight: 700;
+    line-height: 1.05;
+    font-variant-numeric: lining-nums tabular-nums;
+  }
+
+  .thematic .verdict .big.words {
+    font-size: 26px;
+    line-height: 1.2;
+  }
+
+  .thematic .sums > div {
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 6px 0;
+    font-variant-numeric: lining-nums tabular-nums;
+  }
+
+  .thematic .hist {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .thematic .hist h3 {
+    margin: 0;
+    font-size: 16px;
+  }
+
+  .thematic .power {
+    display: flex;
+    flex-direction: column;
+    border-top: 1px solid var(--rule);
+  }
+
+  .thematic .pr {
+    display: grid;
+    grid-template-columns: 186px 90px minmax(0, 1fr) 90px 330px;
+    gap: 14px;
+    align-items: center;
+    padding: 9px 0;
+    border-bottom: 1px solid var(--rule);
+    line-height: 1.3;
+  }
+
+  .thematic .pr .r {
+    text-align: right;
+  }
+
+  .thematic .line {
+    position: relative;
+    height: 28px;
+  }
+
+  .thematic .line::before {
+    content: '';
+    position: absolute;
+    top: 13px;
+    right: 0;
+    left: 0;
+    height: 2px;
+    background: var(--track);
+  }
+
+  .thematic .line i,
+  .thematic .line em {
+    position: absolute;
+    top: 7px;
+    z-index: 2;
+    width: 14px;
+    height: 14px;
+    margin-left: -7px;
+    border-radius: 50%;
+    pointer-events: none;
+  }
+
+  .thematic .line i {
+    background: var(--deep);
+  }
+
+  .thematic .line em {
+    border: 2px solid var(--orange);
+    background: var(--c-bg);
+  }
+
+  .thematic .line input::-webkit-slider-runnable-track {
+    height: 2px;
+    background: transparent;
+  }
+
+  .thematic .line input::-webkit-slider-thumb {
+    box-sizing: border-box;
+    width: 16px;
+    height: 16px;
+    margin-top: -7px;
+    border: 3px solid var(--c-text);
+    border-radius: 0;
+    background: var(--c-bg);
+    appearance: none;
+  }
+
+  .thematic .line input::-moz-range-track {
+    height: 2px;
+    background: transparent;
+  }
+
+  .thematic .line input::-moz-range-thumb {
+    box-sizing: border-box;
+    width: 16px;
+    height: 16px;
+    border: 3px solid var(--c-text);
+    border-radius: 0;
+    background: var(--c-bg);
+  }
+
+  .thematic .key .dot,
+  .thematic .key .ring,
+  .thematic .key .thumb {
+    display: inline-block;
+    width: 13px;
+    height: 13px;
+    margin-right: 8px;
+    vertical-align: -1px;
+  }
+
+  .thematic .key .dot {
+    border-radius: 50%;
+    background: var(--deep);
+  }
+
+  .thematic .key .ring {
+    border: 2px solid var(--orange);
+    border-radius: 50%;
+  }
+
+  .thematic .key .thumb {
+    border: 3px solid var(--c-text);
+  }
+
+  @media (max-width: 1179px) {
+    .thematic .figure.wide {
+      display: none;
+    }
+
+    .thematic .figure.narrow {
+      display: block;
+    }
+
+    .thematic .main {
+      grid-template-columns: minmax(0, 1fr);
+    }
+
+    .thematic .main .side {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+      gap: 12px 34px;
+    }
+
+    .thematic .main .verdict,
+    .thematic .main .sums {
+      grid-column: 1;
+    }
+
+    .thematic .main .hist {
+      grid-column: 2;
+      grid-row: 1 / span 2;
+    }
+
+    .thematic .agree {
+      grid-template-columns: minmax(0, 1fr);
+    }
+
+    .thematic .agree-right {
+      max-width: 718px;
+    }
+
+    .thematic .work {
+      grid-template-columns: minmax(0, 1fr) 150px 150px 180px;
+    }
+
+    .thematic .work.no-paper {
+      grid-template-columns: minmax(0, 1fr) 190px 190px;
+    }
+
+    .thematic .turn {
+      font-size: 18px;
+    }
+
+    .thematic .sort {
+      grid-template-columns: minmax(0, 1fr) 360px;
+      gap: 24px;
+    }
+
+    .thematic .review {
+      grid-template-columns: minmax(0, 1fr) 280px;
+      gap: 24px;
+    }
+
+    .thematic .trace-rows > div {
+      grid-template-columns: minmax(0, 1fr) 210px 220px;
+    }
+
+    .thematic .pr {
+      grid-template-columns: 150px 70px minmax(0, 1fr) 84px 232px;
+      gap: 10px;
+    }
+
+    .thematic .reads .rows > div {
+      grid-template-columns: 200px minmax(0, 1fr);
+    }
+
+    .thematic .controls.four {
+      gap: 12px 24px;
+    }
+
+    .thematic .ruler .head label {
+      font-size: 15px;
+    }
+  }
+
+  @media (max-width: 899px) {
+    .thematic .agree-read {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 12px 24px;
+    }
+  }
+</style>
