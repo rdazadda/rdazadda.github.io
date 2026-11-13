@@ -984,7 +984,7 @@ const views = SCALES.map((scale) => {
     }
   }
 
-  @media (max-width: 1100px) {
+  @container sheet (max-width: 1060px) {
     .stage {
       grid-template-columns: minmax(0, 540fr) minmax(0, 364fr);
       gap: 0 36px;
@@ -1019,13 +1019,6 @@ const views = SCALES.map((scale) => {
     .choice-head,
     .choice {
       grid-template-columns: minmax(0, 1fr) 50%;
-    }
-  }
-
-  @media (max-width: 940px) {
-    .stage {
-      grid-template-columns: minmax(0, 1fr);
-      gap: 32px;
     }
   }
 

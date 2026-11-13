@@ -1,0 +1,45 @@
+---
+import Story from './Story.astro';
+import Cite from './Cite.astro';
+import { kinds, entries } from '../data/software.js';
+
+interface Props {
+  software: (typeof entries)[number];
+  listed?: boolean;
+}
+
+const { software, listed } = Astro.props;
+const first = entries[0];
+
+const address = (entry) => (entry === first ? '/software/' : `/software/${entry.slug}/`);
+const type = (entry) => kinds.find((kind) => kind.id === entry.kind).heading;
+
+const facts = [
+  { label: 'Type', value: type(software) },
+  { label: 'Year', value: software.year },
+];
+const others = entries.filter((entry) => entry !== software).map((entry) => ({ href: address(entry), image: entry.images?.[0], title: entry.title, note: type(entry) }));
+---
+
+<Story home={{ label: 'Software', href: '/software/' }} first={listed || software === first} title={software.title} subtitle={software.subtitle} facts={facts} lead={software.about} images={software.images} links={software.links} more="More Software" others={others} turn={listed ? address(software) : undefined} current={software === first}>
+  {
+    (software.reference || software.bibtex) && (
+      <div class="cite">
+        <Cite reference={software.reference} bibtex={software.bibtex} name={listed ? software.slug : undefined} />
+      </div>
+    )
+  }
+</Story>
+
+<style>
+  .cite {
+    margin-top: 36px;
+    border-top: 1px solid var(--ink);
+  }
+
+  @media (min-width: 1024px) {
+    .cite {
+      margin-top: 42px;
+    }
+  }
+</style>

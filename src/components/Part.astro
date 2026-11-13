@@ -1,0 +1,134 @@
+---
+interface Props {
+  name: string;
+  id?: string;
+  open?: boolean;
+  side?: boolean;
+  expanded?: boolean;
+}
+
+const { name, id, open, side, expanded } = Astro.props;
+---
+
+<section id={id} class:list={{ open, side }}>
+  <h2>
+    {
+      open ? (
+        name
+      ) : (
+        <>
+          <span id={`${id}-name`}>{name}</span>
+          <button type="button" aria-labelledby={`${id}-name`} aria-expanded={expanded ? 'true' : 'false'} aria-controls={`${id}-part`} data-open>
+            <svg viewBox="0 0 16 10" width="13" height="8" aria-hidden="true"><path d="M2 2l6 6 6-6" /></svg>
+          </button>
+        </>
+      )
+    }
+  </h2>
+  <div class="text" id={open ? undefined : `${id}-part`} hidden={!open && !expanded}>
+    <slot />
+  </div>
+</section>
+
+<style>
+  section:not(.open) {
+    border-bottom: 1px solid var(--line);
+  }
+
+  h2 {
+    color: var(--black);
+    font: var(--side);
+  }
+
+  :where(.open) h2 {
+    padding-bottom: 10px;
+    border-bottom: 1px solid var(--ink);
+  }
+
+  :where(.open:not(.side)) h2 {
+    font: var(--heading);
+  }
+
+  :where(section:not(.open)) h2 {
+    position: relative;
+    display: flex;
+    align-items: center;
+    min-height: 60px;
+    padding-right: 30px;
+  }
+
+  h2:has(button:hover) {
+    color: var(--blue);
+  }
+
+  button {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    width: 100%;
+    padding: 0;
+    border: 0;
+    background: none;
+    cursor: pointer;
+  }
+
+  svg {
+    fill: none;
+    stroke: var(--blue);
+    stroke-width: 2.2;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    transition: transform 0.2s ease;
+  }
+
+  [aria-expanded='true'] svg {
+    transform: rotate(180deg);
+  }
+
+  section:not(.open) .text {
+    padding-bottom: 20px;
+  }
+
+  @media (min-width: 1024px) {
+    section:not(.open) {
+      border-bottom: 0;
+    }
+
+    :where(section) h2 {
+      display: block;
+      min-height: 0;
+      padding: 0 0 12px;
+      border-bottom: 1px solid var(--ink);
+      font: var(--heading);
+    }
+
+    :where(.side) h2 {
+      padding-top: 7px;
+      font: var(--side);
+    }
+
+    button {
+      display: none;
+    }
+
+    .text[hidden] {
+      display: block;
+    }
+
+    section:not(.open) .text {
+      padding-bottom: 0;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    svg {
+      transition: none;
+    }
+  }
+</style>
+
+<script>
+  import '../scripts/open.js';
+</script>

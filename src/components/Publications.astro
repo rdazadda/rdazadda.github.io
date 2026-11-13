@@ -1,0 +1,266 @@
+---
+import Publication from './Publication.astro';
+import { kinds, entries } from '../data/publications.js';
+
+const groups = kinds.map((kind) => ({ heading: kind.heading, items: entries.filter((entry) => entry.kind === kind.id) })).filter((group) => group.items.length > 0);
+const shown = groups.flatMap((group) => group.items);
+const rows = (column) => column.reduce((sum, group) => sum + group.items.length + 1, 0);
+const split = groups.findIndex((group, i) => rows(groups.slice(0, i + 1)) >= rows(groups) / 2) + 1;
+const columns = [groups.slice(0, split), groups.slice(split)].filter((column) => column.length > 0);
+---
+
+<div class="showing">
+  <div class="box" style={`--played: ${1 / shown.length}`} data-box>
+    <div class="strip">
+      <p class="type" data-type>{groups[0].heading}</p>
+      <div class="turn">
+        <span data-count>1 / {shown.length}</span>
+        <button type="button" aria-label="Previous" data-step="-1">
+          <svg viewBox="0 0 10 16" width="9" height="15" aria-hidden="true"><path d="M8 2 2 8l6 6" /></svg>
+        </button>
+        <button type="button" aria-label="Next" data-step="1">
+          <svg viewBox="0 0 10 16" width="9" height="15" aria-hidden="true"><path d="M2 2l6 6-6 6" /></svg>
+        </button>
+      </div>
+    </div>
+    <div class="stage" data-stage>
+      {shown.map((entry, i) => <Publication id={`entry-${i + 1}`} first={i === 0} {...entry} />)}
+    </div>
+    <span class="played"></span>
+  </div>
+</div>
+
+<nav class="names" aria-label="Publications" data-names>
+  <div class="columns">
+    {
+      columns.map((column) => (
+        <div>
+          {column.map((group) => (
+            <section>
+              <h2>{group.heading}</h2>
+              <ul>
+                {group.items.map((entry) => (
+                  <li>
+                    <button type="button" aria-current={entry === shown[0] ? 'true' : undefined}>
+                      {entry.title}
+                      <svg class="mark" viewBox="0 0 10 12" width="9" height="11" aria-hidden="true"><path d="M1 1l8 5-8 5z" /></svg>
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            </section>
+          ))}
+        </div>
+      ))
+    }
+  </div>
+</nav>
+
+<style>
+  .showing {
+    padding: 24px var(--pad) 28px;
+    background: var(--band);
+  }
+
+  .box {
+    background: var(--white);
+    color: var(--black);
+  }
+
+  .strip {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    min-height: 52px;
+    padding-left: 14px;
+    border-bottom: 1px solid var(--line);
+  }
+
+  .type {
+    min-width: 0;
+    font-size: 15px;
+    font-weight: 700;
+    line-height: 20px;
+  }
+
+  .turn {
+    display: flex;
+    flex: none;
+    align-items: center;
+    font-size: 15px;
+    line-height: 20px;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .turn span {
+    margin-right: 2px;
+  }
+
+  .turn button {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 44px;
+    padding: 0;
+    border: 0;
+    background: none;
+    cursor: pointer;
+  }
+
+  .turn svg {
+    fill: none;
+    stroke: var(--black);
+    stroke-width: 2.2;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+
+  .turn button:hover svg {
+    stroke: var(--blue);
+  }
+
+  .stage {
+    display: grid;
+  }
+
+  .played {
+    display: block;
+    height: 3px;
+    background: var(--line);
+  }
+
+  .played::after {
+    display: block;
+    height: 100%;
+    background: var(--blue);
+    transform: scaleX(var(--played));
+    transform-origin: left;
+    transition: transform 0.3s ease;
+    content: '';
+  }
+
+  .names {
+    position: relative;
+    margin: 32px var(--pad) 50px;
+    padding-right: 8px;
+    overflow-y: auto;
+    scroll-behavior: smooth;
+    scrollbar-width: thin;
+    scrollbar-color: var(--rule) var(--band);
+  }
+
+  .columns > div + div,
+  section + section {
+    margin-top: 30px;
+  }
+
+  h2 {
+    position: sticky;
+    top: 0;
+    z-index: 1;
+    padding-bottom: 10px;
+    border-bottom: 1px solid var(--ink);
+    background: var(--white);
+    color: var(--black);
+    font: var(--side);
+  }
+
+  .names button {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    width: 100%;
+    min-height: 54px;
+    padding: 12px 0;
+    border: 0;
+    border-bottom: 1px solid var(--line);
+    background: none;
+    color: var(--black);
+    font: inherit;
+    font-size: 16px;
+    line-height: 22px;
+    text-align: left;
+    cursor: pointer;
+  }
+
+  .names button:focus-visible {
+    outline-offset: -2px;
+  }
+
+  .names button:hover,
+  .names [aria-current] {
+    color: var(--blue);
+  }
+
+  .mark {
+    flex: none;
+    fill: var(--blue);
+  }
+
+  .names button:not([aria-current]) .mark {
+    visibility: hidden;
+  }
+
+  @media (min-width: 1024px) {
+    .showing {
+      padding-top: 48px;
+      padding-bottom: 56px;
+    }
+
+    .strip {
+      min-height: 56px;
+      padding: 0 6px 0 36px;
+    }
+
+    .type {
+      font-size: 16px;
+      line-height: 22px;
+    }
+
+    .turn span {
+      margin-right: 10px;
+    }
+
+    .turn button {
+      width: 44px;
+    }
+
+    .names {
+      margin-top: 44px;
+      margin-bottom: 84px;
+    }
+
+    .columns {
+      display: grid;
+      grid-auto-columns: minmax(0, 1fr);
+      grid-auto-flow: column;
+      gap: 60px;
+    }
+
+    .columns > div + div {
+      margin-top: 0;
+    }
+
+    .names button {
+      min-height: 46px;
+      padding: 11px 0;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .played::after {
+      transition: none;
+    }
+
+    .names {
+      scroll-behavior: auto;
+    }
+  }
+</style>
+
+<script>
+  import '../scripts/publications.js';
+</script>

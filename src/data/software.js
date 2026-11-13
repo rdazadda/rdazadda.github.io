@@ -1,13 +1,14 @@
-// kinds: the groups, in page order
-// entries, newest first in each group:
+// kinds: the groups; each software shows its group as Type
+// entries, newest first in each group; the first one is the Software page itself:
 //   kind, year, title (the software name), subtitle (its full title), about (HTML, what it does)
+//   slug: the page address, /software/<slug>/
 //   images: optional pictures in public/images/ (4:3); more than one take turns
-//   links: optional [{ label, href }]
-//   reference: optional, the full citation the Cite button shows (HTML)
-//   bibtex: optional, the full BibTeX entry
+//   links: optional [{ label, href }]; a link to an .exe, .dmg or other download shows a download arrow
+//   reference: optional, the full citation that Cite opens (HTML)
+//   bibtex: optional, the full BibTeX entry that BibTeX opens
 export const kinds = [
-  { id: 'apps', heading: 'Dashboards and desktop apps', short: 'Dashboards and desktop apps' },
-  { id: 'packages', heading: 'Packages', short: 'Packages' },
+  { id: 'apps', heading: 'Dashboards and desktop apps' },
+  { id: 'packages', heading: 'Packages' },
 ];
 
 export const entries = [
@@ -15,6 +16,7 @@ export const entries = [
     kind: 'apps',
     year: '2026',
     title: 'CANHRActi',
+    slug: 'canhracti',
     subtitle: 'Analysis of accelerometer data for physical activity, sleep, sedentary behavior and circadian rhythm research',
     about: 'A web and desktop app that does the work of GGIR and of count-based accelerometer software in one place: its raw pipeline implements GGIR’s methods, and it runs the wear-time, sleep-scoring, cut-point and energy-expenditure algorithms that count-based software uses on ActiGraph files. It then goes further, with advanced circadian rhythm and sedentary fragmentation analysis.',
     images: ['/images/software/canhracti-logo.png', '/images/software/canhracti-dark.png', '/images/software/canhracti-light.png'],
@@ -39,6 +41,7 @@ export const entries = [
     kind: 'apps',
     year: '2026',
     title: 'canhrQsort',
+    slug: 'canhrqsort',
     subtitle: 'A dashboard for Q-sort analysis',
     about: 'An online dashboard that ranks the statements of a Q-sort study by average placement, compares rankings across demographic groups, and identifies shared viewpoints with classical factor analysis. Its Bayesian factor analysis identifies them too and quantifies the uncertainty in each result.',
     images: ['/images/software/canhrqsort-logo.png', '/images/software/canhrqsort-app.png'],
@@ -52,6 +55,7 @@ export const entries = [
     kind: 'apps',
     year: '2025',
     title: 'Intertribal Healthy Data Dashboard',
+    slug: 'intertribal-healthy-data-dashboard',
     subtitle: 'Native Transformation Project Intertribal Healthy Data Dashboard',
     about: 'An online platform for displaying community level health information and community level protective factors.',
     images: ['/images/software/intertribal-dashboard.png'],
@@ -61,6 +65,7 @@ export const entries = [
     kind: 'packages',
     year: '2026',
     title: 'bayesqm',
+    slug: 'bayesqm',
     subtitle: 'Bayesian Q Methodology: Exact Rank-Order Likelihood for Forced Q Sorts',
     about: 'An R package that models each forced Q sort exactly, as an ordered partition of the statements, and reports every Q-methodology result with its posterior uncertainty under one false-discovery rule. Its results are checked against planted truth in simulation and against the qmethod package where both compute the same result.',
     images: ['/images/software/bayesqm.png'],
@@ -82,6 +87,7 @@ export const entries = [
     kind: 'packages',
     year: '2026',
     title: 'actiRhythm',
+    slug: 'actirhythm',
     subtitle: 'Circadian Rest-Activity Rhythm Analysis',
     about: 'An R package that brings circadian methods usually spread across several packages into one interface: nonparametric measures, cosinor, periodograms, fractal and wavelet analysis, sleep scoring, and a hidden Markov rest-activity model. It reads ActiGraph, Axivity and GENEActiv files, and its results are checked against GGIR, cosinor, nparACT and ActCR.',
     images: ['/images/software/actirhythm.png'],
@@ -103,6 +109,7 @@ export const entries = [
     kind: 'packages',
     year: '2025',
     title: 'canhrcolors',
+    slug: 'canhrcolors',
     subtitle: 'CANHR Colors for R and Stata',
     about: 'An R package and Stata scheme that bring the Center for Alaska Native Health Research’s 12-color palette into both programs: canhrcolors(), a ggplot2 color scale and a theme in R, and set scheme canhr in Stata, so figures from R and Stata share the same CANHR look.',
     images: ['/images/software/canhrcolors.png'],
@@ -123,6 +130,7 @@ export const entries = [
     kind: 'packages',
     year: '2025',
     title: 'sleepwaker',
+    slug: 'sleepwaker',
     subtitle: 'Detect Sleep and Wake Periods from Accelerometry Data',
     about: 'An R package that inverts the sleep periods ActiGraph ActiLife detects into the waking periods between them, using the end of one sleep as the start of the wake and the start of the next sleep as its end. This keeps sleep out of sedentary time estimates.',
     images: ['/images/software/sleepwaker.png'],

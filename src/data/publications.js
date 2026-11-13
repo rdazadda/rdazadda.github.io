@@ -9,11 +9,11 @@
 export const me = 'Azadda, R. D.';
 
 export const kinds = [
-  { id: 'articles', heading: 'Journal articles', short: 'Journal articles', bibtex: 'article' },
-  { id: 'under-review', heading: 'Manuscripts under review', short: 'Under review' },
-  { id: 'reports', heading: 'Reports', short: 'Reports', bibtex: 'techreport' },
-  { id: 'presentations', heading: 'Presentations and posters', short: 'Presentations and posters', bibtex: 'misc' },
-  { id: 'thesis', heading: 'Master’s thesis', short: 'Master’s thesis', bibtex: 'mastersthesis' },
+  { id: 'articles', heading: 'Journal articles', bibtex: 'article' },
+  { id: 'under-review', heading: 'Manuscripts under review' },
+  { id: 'reports', heading: 'Reports', bibtex: 'techreport' },
+  { id: 'presentations', heading: 'Presentations and posters', bibtex: 'misc' },
+  { id: 'thesis', heading: 'Master’s thesis', bibtex: 'mastersthesis' },
 ];
 
 export const entries = [

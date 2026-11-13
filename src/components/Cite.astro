@@ -1,0 +1,144 @@
+---
+import Copy from './Copy.astro';
+
+interface Props {
+  reference?: string;
+  bibtex?: string;
+  name?: string;
+}
+
+const { reference, bibtex, name } = Astro.props;
+const id = (part) => (name ? `${name}-${part}` : part);
+
+const lines = bibtex && bibtex.trim().split('\n');
+const indent = lines && Math.max(...lines.map((line) => line.match(/^.*?=\s*[{"]/)?.[0].length ?? 0));
+---
+
+{
+  reference && (
+    <section>
+      <h2>
+        <button type="button" aria-expanded="false" aria-controls={id('reference')} data-open>
+          Cite
+          <svg viewBox="0 0 16 10" width="13" height="8" aria-hidden="true"><path d="M2 2l6 6 6-6" /></svg>
+        </button>
+      </h2>
+      <div id={id('reference')} hidden>
+        <p class="reference" set:html={reference} />
+        <Copy label="Copy" />
+      </div>
+    </section>
+  )
+}
+{
+  lines && (
+    <section>
+      <h2>
+        <button type="button" aria-expanded="false" aria-controls={id('bibtex')} data-open>
+          BibTeX
+          <svg viewBox="0 0 16 10" width="13" height="8" aria-hidden="true"><path d="M2 2l6 6 6-6" /></svg>
+        </button>
+      </h2>
+      <div id={id('bibtex')} hidden>
+        <code class="bibtex" style={`--indent: ${indent}`}>{lines.map((line) => <span class:list={{ unbroken: /= \{\S+\},$/.test(line) }}>{line}</span>)}</code>
+        <Copy label="Copy BibTeX" />
+      </div>
+    </section>
+  )
+}
+
+<style>
+  section {
+    border-bottom: 1px solid var(--line);
+  }
+
+  h2 {
+    color: var(--black);
+    font: var(--side);
+  }
+
+  h2 button {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    width: 100%;
+    min-height: 56px;
+    padding: 0;
+    border: 0;
+    background: none;
+    color: inherit;
+    font: inherit;
+    text-align: left;
+    cursor: pointer;
+  }
+
+  svg {
+    flex: none;
+    fill: none;
+    stroke: var(--blue);
+    stroke-width: 2.2;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    transition: transform 0.2s ease;
+  }
+
+  [aria-expanded='true'] svg {
+    transform: rotate(180deg);
+  }
+
+  .reference {
+    padding-top: 2px;
+    font: var(--text);
+    overflow-wrap: anywhere;
+  }
+
+  .bibtex {
+    display: block;
+    margin: 4px calc(var(--pad) * -1) 0;
+    padding: 16px var(--pad);
+    background: var(--band);
+    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    font-size: 13px;
+    line-height: 21px;
+  }
+
+  .bibtex span {
+    display: block;
+    padding-left: calc(var(--indent) * 1ch);
+    text-indent: calc(var(--indent) * -1ch);
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+  }
+
+  .bibtex .unbroken {
+    word-break: break-all;
+  }
+
+  h2 button:hover {
+    color: var(--blue);
+  }
+
+  @media (min-width: 1024px) {
+    h2 button {
+      min-height: 60px;
+    }
+
+    .bibtex {
+      margin: 4px 0 0;
+      padding: 18px 20px;
+      font-size: 14px;
+      line-height: 22px;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    svg {
+      transition: none;
+    }
+  }
+</style>
+
+<script>
+  import '../scripts/open.js';
+</script>

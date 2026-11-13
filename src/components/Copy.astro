@@ -1,0 +1,46 @@
+---
+interface Props {
+  label: string;
+}
+
+const { label } = Astro.props;
+---
+
+<button type="button" class="copy" data-copy>
+  <span>{label}</span>
+</button>
+
+<style>
+  .copy {
+    display: inline-flex;
+    align-items: center;
+    min-height: 44px;
+    margin: 4px 0 8px;
+    padding: 0;
+    border: 0;
+    background: none;
+    color: var(--black);
+    font: inherit;
+    font-size: 16px;
+    font-weight: 700;
+    cursor: pointer;
+  }
+
+  .copy span {
+    border-bottom: 2px solid var(--blue);
+  }
+
+  .copy:hover {
+    color: var(--blue);
+  }
+
+  @media (min-width: 1024px) {
+    .copy {
+      margin-bottom: 10px;
+    }
+  }
+</style>
+
+<script>
+  import '../scripts/copy.js';
+</script>

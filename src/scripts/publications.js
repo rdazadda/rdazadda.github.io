@@ -1,80 +1,122 @@
-const page = document.querySelector('[data-publications]');
-const groups = page.querySelector('[data-groups]');
+const TURN = 6000;
+const PEEK = 26;
+const WIDE_HEIGHT = 330;
+const PHONE_HEIGHT = 560;
+const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+const hovers = window.matchMedia('(hover: hover)').matches;
+const wide = window.matchMedia('(min-width: 1024px)');
 
-if (groups.querySelector('li')) {
-  const byType = [...groups.querySelectorAll('section')];
-  const entries = [...groups.querySelectorAll('li')].map((li) => ({ li, home: li.parentElement }));
-  const empty = page.querySelector('[data-empty]');
+const box = document.querySelector('[data-box]');
+const stage = box.querySelector('[data-stage]');
+const type = box.querySelector('[data-type]');
+const count = box.querySelector('[data-count]');
+const list = document.querySelector('[data-names]');
+const panels = [...stage.children];
+const names = [...list.querySelectorAll('button')];
+let current = 0;
+let held = false;
+let seen = false;
+let pointed = false;
+let focused = false;
+let timer;
 
-  const place = (year) => (/^\d+$/.test(year) ? -Number(year) : 0);
-  const years = [...new Set(entries.map(({ li }) => li.dataset.year))].sort((a, b) => place(a) - place(b));
-  const byYear = new Map(
-    years.map((year) => {
-      const [section, heading, list] = [byType[0], byType[0].querySelector('h2'), byType[0].querySelector('ol')].map((e) => e.cloneNode(false));
-      section.removeAttribute('id');
-      section.hidden = true;
-      heading.textContent = year;
-      section.append(heading, list);
-      groups.append(section);
-      return [year, { section, list }];
-    }),
-  );
-
-  let show = 'all';
-  let arrange = 'type';
-
-  const update = () => {
-    for (const { li, home } of entries) {
-      (arrange === 'type' ? home : byYear.get(li.dataset.year).list).append(li);
-      li.hidden = show !== 'all' && li.dataset.kind !== show;
-    }
-    const filled = (section) => section.querySelector('li:not([hidden])') !== null;
-    for (const section of byType) section.hidden = arrange !== 'type' || !filled(section);
-    for (const { section } of byYear.values()) section.hidden = arrange !== 'year' || !filled(section);
-    empty.hidden = groups.querySelector('li:not([hidden])') !== null;
-  };
-
-  const choices = (selector, choose) => {
-    const buttons = [...page.querySelectorAll(selector)];
-    for (const button of buttons) {
-      button.addEventListener('click', () => {
-        for (const other of buttons) other.setAttribute('aria-pressed', String(other === button));
-        choose(button);
-        update();
-      });
-    }
-  };
-  choices('[data-show]', (button) => {
-    show = button.dataset.show;
-  });
-  choices('[data-arrange]', (button) => {
-    arrange = button.dataset.arrange;
-  });
-
-  for (const button of groups.querySelectorAll('[data-hide]')) {
-    const panel = document.getElementById(button.getAttribute('aria-controls'));
-    const label = button.querySelector('span');
-    const closed = label.textContent;
-    button.addEventListener('click', () => {
-      const opening = panel.hidden;
-      panel.hidden = !opening;
-      button.setAttribute('aria-expanded', String(opening));
-      label.textContent = opening ? button.dataset.hide : closed;
-    });
+const close = () => {
+  for (const button of panels[current].querySelectorAll('[aria-expanded="true"]')) {
+    button.setAttribute('aria-expanded', 'false');
+    document.getElementById(button.getAttribute('aria-controls')).hidden = true;
   }
+};
 
-  for (const button of groups.querySelectorAll('[data-copy]')) {
-    const source = button.previousElementSibling;
-    const label = button.querySelector('span');
-    const idle = label.textContent;
-    button.addEventListener('click', async () => {
-      try {
-        await navigator.clipboard.writeText(source.innerText.replaceAll('\u00a0', ' '));
-        label.textContent = 'Copied';
-        setTimeout(() => {
-          label.textContent = idle;
-        }, 2000);
-      } catch {}
-    });
-  }
+const reveal = (name) => {
+  const top = name.offsetTop - name.closest('section').querySelector('h2').offsetHeight;
+  const bottom = name.offsetTop + name.offsetHeight;
+  if (top < list.scrollTop) list.scrollTop = top;
+  else if (bottom > list.scrollTop + list.clientHeight) list.scrollTop = bottom - list.clientHeight;
+};
+
+const show = (index) => {
+  close();
+  panels[current].classList.remove('current');
+  panels[current].inert = true;
+  names[current].removeAttribute('aria-current');
+  current = index;
+  panels[current].classList.add('current');
+  panels[current].inert = false;
+  names[current].setAttribute('aria-current', 'true');
+  type.textContent = panels[current].dataset.type;
+  count.textContent = `${current + 1} / ${panels.length}`;
+  box.style.setProperty('--played', (current + 1) / panels.length);
+  if (!list.matches(':hover')) reveal(names[current]);
+};
+
+const stop = () => clearInterval(timer);
+
+const start = () => {
+  stop();
+  if (held || pointed || focused || reduceMotion || !seen) return;
+  timer = setInterval(() => show((current + 1) % panels.length), TURN);
+};
+
+const hold = () => {
+  held = true;
+  stop();
+};
+
+const fit = () => {
+  const limit = wide.matches ? WIDE_HEIGHT : PHONE_HEIGHT;
+  const cut = names.find((name) => name.offsetTop + name.offsetHeight > limit);
+  list.style.maxHeight = cut ? `${cut.offsetTop + PEEK}px` : '';
+};
+
+for (const button of box.querySelectorAll('[data-step]')) {
+  button.addEventListener('click', () => {
+    hold();
+    show((current + Number(button.dataset.step) + panels.length) % panels.length);
+  });
 }
+
+for (const button of stage.querySelectorAll('[aria-controls]')) {
+  const panel = document.getElementById(button.getAttribute('aria-controls'));
+  button.addEventListener('click', () => {
+    const opening = panel.hidden;
+    hold();
+    close();
+    if (!opening) return;
+    panel.hidden = false;
+    button.setAttribute('aria-expanded', 'true');
+  });
+}
+
+names.forEach((name, i) =>
+  name.addEventListener('click', () => {
+    hold();
+    show(i);
+    type.parentElement.scrollIntoView({ block: 'nearest', behavior: reduceMotion ? 'auto' : 'smooth' });
+  }),
+);
+
+if (hovers) {
+  box.addEventListener('mouseenter', () => {
+    pointed = true;
+    start();
+  });
+  box.addEventListener('mouseleave', () => {
+    pointed = false;
+    start();
+  });
+}
+
+box.addEventListener('focusin', () => {
+  focused = true;
+  start();
+});
+box.addEventListener('focusout', () => {
+  focused = false;
+  start();
+});
+
+new ResizeObserver(fit).observe(list.firstElementChild);
+new IntersectionObserver((entries) => {
+  seen = entries.at(-1).isIntersecting;
+  start();
+}).observe(box);

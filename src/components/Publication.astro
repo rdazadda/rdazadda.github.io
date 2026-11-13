@@ -1,4 +1,5 @@
 ---
+import Copy from './Copy.astro';
 import { keepTogether } from '../lib/text.js';
 import { bibtexEntry } from '../lib/bibtex.js';
 import { me, kinds } from '../data/publications.js';
@@ -10,6 +11,7 @@ interface Link {
 
 interface Props {
   id: string;
+  first: boolean;
   kind: string;
   year: string;
   title: string;
@@ -21,231 +23,214 @@ interface Props {
   bibtex?: Record<string, string>;
 }
 
-const { id, kind, year, title, authors, venue, image, links = [], reference, bibtex } = Astro.props;
+const { id, first, kind, year, title, authors, venue, image, links = [], reference, bibtex } = Astro.props;
 
+const type = kinds.find((item) => item.id === kind);
 const between = (i: number) => (i === 0 ? '' : i === authors.length - 1 ? ', &\u00a0' : ', ');
 const titleEnd = /[.?!]$/.test(title) ? '' : '.';
 const authorsEnd = authors.at(-1).endsWith('.') ? '' : '.';
-
-const bib = bibtex && bibtexEntry(kinds.find((k) => k.id === kind)?.bibtex, { title, authors, year, fields: bibtex });
+const bib = bibtex && bibtexEntry(type.bibtex, { title, authors, year, fields: bibtex });
 ---
 
-<li data-kind={kind} data-year={year}>
-  <div class="lead">
-    {
-      image ? (
-        <a href={image} class="frame" aria-hidden="true" tabindex="-1">
-          <span class="print"><img src={image} alt="" width="200" height="150" loading="lazy" /></span>
-        </a>
-      ) : (
-        <span class="frame">
-          <span class="print"><span class="blank" /></span>
-        </span>
-      )
-    }
-  </div>
+<article class:list={{ current: first }} inert={!first} data-type={type.heading}>
+  <div class="picture">{image && <img src={image} alt="" width="640" height="480" loading={first ? undefined : 'lazy'} />}</div>
   <div class="text">
-    <p class="title">{title}</p>
+    <h2>{title}</h2>
     <p class="authors">{authors.map((name, i) => <>{between(i)}{name === me ? <strong>{keepTogether(name)}</strong> : keepTogether(name)}</>)}</p>
-    <p set:html={venue} />
+    <p class="venue" set:html={venue} />
     {
-      (reference || bib || links.length > 0) && (
-        <p class="actions">
-          {reference && (
-            <button type="button" aria-expanded="false" aria-controls={`${id}-reference`} data-hide="Hide citation">
-              <span>Cite</span>
-            </button>
+      (links.length > 0 || reference || bib) && (
+        <div class="actions">
+          {links.length > 0 && (
+            <p>
+              {links.map((item) => (
+                <a href={item.href}>
+                  <span>{item.label}</span>
+                  <svg viewBox="0 0 10 16" width="8" height="13" aria-hidden="true"><path d="M2 2l6 6-6 6" /></svg>
+                </a>
+              ))}
+            </p>
           )}
-          {bib && (
-            <button type="button" aria-expanded="false" aria-controls={`${id}-bibtex`} data-hide="Hide BibTeX">
-              <span>BibTeX</span>
-            </button>
+          {(reference || bib) && (
+            <p>
+              {reference && (
+                <button type="button" aria-expanded="false" aria-controls={`${id}-reference`}>
+                  Cite
+                  <svg viewBox="0 0 16 10" width="13" height="8" aria-hidden="true"><path d="M2 2l6 6 6-6" /></svg>
+                </button>
+              )}
+              {bib && (
+                <button type="button" aria-expanded="false" aria-controls={`${id}-bibtex`}>
+                  BibTeX
+                  <svg viewBox="0 0 16 10" width="13" height="8" aria-hidden="true"><path d="M2 2l6 6 6-6" /></svg>
+                </button>
+              )}
+            </p>
           )}
-          {links.map((item) => (
-            <a href={item.href}>
-              <span>{item.label}</span>
-            </a>
-          ))}
-        </p>
-      )
-    }
-    {
-      reference && (
-        <div id={`${id}-reference`} hidden>
-          <p class="reference">{authors.map((name, i) => <>{between(i)}{keepTogether(name)}</>)}{authorsEnd} ({year}). {title}{titleEnd} <Fragment set:html={reference} /></p>
-          <button type="button" class="copy" data-copy>
-            <span>Copy</span>
-          </button>
-        </div>
-      )
-    }
-    {
-      bib && (
-        <div id={`${id}-bibtex`} hidden>
-          <code class="bibtex" style={`--indent: ${bib.indent}`}>{bib.lines.map((line) => <span class:list={{ unbroken: /= \{\S+\},$/.test(line) }}>{line}</span>)}</code>
-          <button type="button" class="copy" data-copy>
-            <span>Copy BibTeX</span>
-          </button>
         </div>
       )
     }
   </div>
-</li>
+  {
+    reference && (
+      <div class="panel" id={`${id}-reference`} hidden>
+        <p class="reference">{authors.map((name, i) => <>{between(i)}{keepTogether(name)}</>)}{authorsEnd} ({year}). {title}{titleEnd} <Fragment set:html={reference} /></p>
+        <Copy label="Copy" />
+      </div>
+    )
+  }
+  {
+    bib && (
+      <div class="panel" id={`${id}-bibtex`} hidden>
+        <code class="bibtex" style={`--indent: ${bib.indent}`}>{bib.lines.map((line) => <span class:list={{ unbroken: /= \{\S+\},$/.test(line) }}>{line}</span>)}</code>
+        <Copy label="Copy BibTeX" />
+      </div>
+    )
+  }
+</article>
 
 <style>
-  li {
+  article {
+    display: grid;
+    grid-template-rows: auto 1fr;
+    grid-area: 1 / 1;
+    min-width: 0;
+    color: var(--black);
+  }
+
+  article:not(.current) > :not(.picture) {
+    visibility: hidden;
+  }
+
+  .picture {
     display: flex;
-    flex-wrap: wrap;
-    align-items: flex-start;
-    gap: 14px 36px;
-    margin: 0;
+    align-items: center;
+    border-bottom: 1px solid var(--line);
+    transition: opacity 0.5s ease-in-out;
   }
 
-  li:not([hidden]) {
-    counter-increment: entry;
+  article:not(.current) .picture {
+    opacity: 0;
   }
 
-  li[hidden] {
-    display: none;
-  }
-
-  .lead {
-    display: flex;
-    flex: none;
-    align-items: flex-start;
-    gap: 14px;
-  }
-
-  .lead::before {
-    flex: 0 0 36px;
-    color: var(--c-muted);
-    font-variant-numeric: tabular-nums;
-    text-align: right;
-    content: counter(entry) '.';
-  }
-
-  .frame {
-    display: block;
-    box-sizing: border-box;
-    width: 240px;
-    padding: 10px;
-    border: var(--line) solid var(--c-brand);
-    background-color: var(--c-card);
-    transition:
-      border-color 0.3s ease,
-      box-shadow 0.3s ease;
-  }
-
-  .frame:hover {
-    border-color: var(--c-frame-hover);
-    box-shadow: 0 0 0 calc(var(--line) * 2) var(--c-frame-hover);
-  }
-
-  .print {
-    display: block;
-  }
-
-  .print img,
-  .blank {
+  img {
     display: block;
     width: 100%;
     height: auto;
     aspect-ratio: 4 / 3;
-  }
-
-  .print img {
-    object-fit: cover;
-  }
-
-  .blank {
-    background-color: #ffffff;
+    object-fit: contain;
   }
 
   .text {
     display: flex;
-    flex: 999 1 420px;
     flex-direction: column;
     min-width: 0;
-    max-width: var(--measure);
+    padding: 0 14px;
   }
 
-  .text p {
-    margin: 0;
+  h2 {
+    margin-top: 18px;
+    font: var(--heading);
   }
 
-  .title {
-    font-weight: 700;
-    text-wrap: pretty;
+  .authors,
+  .venue {
+    font-size: 16px;
+    line-height: 25px;
   }
 
   .authors {
-    text-wrap: pretty;
+    margin-top: 10px;
+  }
+
+  .venue {
+    margin: 4px 0 14px;
   }
 
   .actions {
     display: flex;
     flex-wrap: wrap;
     align-items: center;
-    gap: 0 14px;
-    margin-left: -4px;
+    justify-content: space-between;
+    gap: 0 20px;
+    min-height: 56px;
+    margin-top: auto;
+    border-top: 1px solid var(--line);
+  }
+
+  .actions p {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0 22px;
   }
 
   .actions a,
-  .actions button,
-  .copy {
+  .actions button {
     display: inline-flex;
     align-items: center;
     min-height: 44px;
+    font-size: 16px;
+    font-weight: 700;
   }
 
-  button {
+  .actions a {
+    gap: 10px;
+  }
+
+  .actions span {
+    border-bottom: 2px solid var(--blue);
+  }
+
+  .actions button {
+    gap: 9px;
     padding: 0;
     border: 0;
     background: none;
-    color: var(--c-link);
-    font: inherit;
+    color: inherit;
+    font-family: inherit;
     cursor: pointer;
   }
 
-  .actions span,
-  .copy span {
-    padding: 0 4px;
+  .actions a:hover,
+  .actions button:hover {
+    color: var(--blue);
   }
 
-  .actions a:hover {
-    text-decoration: none;
+  svg {
+    flex: none;
+    fill: none;
+    stroke: var(--blue);
+    stroke-width: 2.2;
+    stroke-linecap: round;
+    stroke-linejoin: round;
   }
 
-  .actions a:hover span,
-  .actions button:hover span,
-  .copy:hover span {
-    background-color: var(--c-link);
-    color: var(--c-bg);
+  button svg {
+    transition: transform 0.2s ease;
   }
 
-  button:focus-visible {
-    outline: 2px solid var(--c-link);
-    outline-offset: 2px;
+  [aria-expanded='true'] svg {
+    transform: rotate(180deg);
+  }
+
+  .panel {
+    padding: 14px 14px 0;
+    border-top: 1px solid var(--line);
   }
 
   .reference {
-    padding-left: 1.6em;
-    line-height: 1.45;
-    text-indent: -1.6em;
-  }
-
-  .copy {
-    padding-left: calc(1.6em - 4px);
+    font: var(--text);
+    overflow-wrap: anywhere;
   }
 
   .bibtex {
     display: block;
-    padding: 12px 16px;
-    border: var(--line) solid var(--c-brand);
-    background-color: var(--c-mat);
-    font-family: var(--font-mono);
-    font-size: var(--size-small);
-    line-height: 1.6;
+    margin: -14px -14px 0;
+    padding: 16px 14px;
+    background: var(--band);
+    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    font-size: 13px;
+    line-height: 21px;
   }
 
   .bibtex span {
@@ -260,13 +245,54 @@ const bib = bibtex && bibtexEntry(kinds.find((k) => k.id === kind)?.bibtex, { ti
     word-break: break-all;
   }
 
-  .bibtex + .copy {
-    margin-left: -4px;
-    padding-left: 0;
+  @media (min-width: 1024px) {
+    article {
+      grid-template-columns: minmax(0, 640fr) minmax(0, 610fr);
+      grid-template-rows: 1fr;
+    }
+
+    .picture {
+      border-right: 1px solid var(--line);
+      border-bottom: 0;
+    }
+
+    .text {
+      padding: 0 36px;
+    }
+
+    h2 {
+      margin-top: 28px;
+    }
+
+    .authors {
+      margin-top: 12px;
+    }
+
+    .actions,
+    .actions p {
+      column-gap: 28px;
+    }
+
+    .panel {
+      grid-column: 1 / -1;
+      padding: 18px 36px 0;
+    }
+
+    .reference {
+      max-width: 940px;
+    }
+
+    .bibtex {
+      margin: 4px 0 0;
+      padding: 18px 20px;
+      font-size: 14px;
+      line-height: 22px;
+    }
   }
 
   @media (prefers-reduced-motion: reduce) {
-    .frame {
+    .picture,
+    button svg {
       transition: none;
     }
   }

@@ -5,6 +5,7 @@ const play = (video) => video.play().catch(() => {});
 
 for (const container of document.querySelectorAll('[data-rotate]')) {
   const slides = [...container.children];
+  const dots = container.nextElementSibling?.matches('[data-dots]') ? [...container.nextElementSibling.children] : [];
   let current = 0;
   let timer;
 
@@ -19,6 +20,7 @@ for (const container of document.querySelectorAll('[data-rotate]')) {
     slides[current].inert = false;
     const video = clip();
     if (video) video.currentTime = 0;
+    dots.forEach((dot, i) => dot.setAttribute('aria-pressed', String(i === current)));
   };
 
   const stop = () => {
@@ -38,15 +40,26 @@ for (const container of document.querySelectorAll('[data-rotate]')) {
   };
 
   for (const video of container.querySelectorAll('video')) video.addEventListener('ended', next);
+  dots.forEach((dot, i) =>
+    dot.addEventListener('click', () => {
+      show(i);
+      start();
+    }),
+  );
   container.addEventListener('mouseenter', stop);
   container.addEventListener('mouseleave', start);
   start();
 }
 
-for (const video of document.querySelectorAll('.slides:not([data-rotate]) video')) {
-  if (reduceMotion) continue;
-  const container = video.closest('.slides');
-  container.addEventListener('mouseenter', () => video.pause());
-  container.addEventListener('mouseleave', () => play(video));
-  play(video);
+if (!reduceMotion) {
+  const watcher = new IntersectionObserver(
+    (entries) => {
+      for (const { target, isIntersecting } of entries) {
+        if (isIntersecting) play(target);
+        else target.pause();
+      }
+    },
+    { threshold: 0.5 },
+  );
+  for (const video of document.querySelectorAll('.slides:not([data-rotate]) video')) watcher.observe(video);
 }

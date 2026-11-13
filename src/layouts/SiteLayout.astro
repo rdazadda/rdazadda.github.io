@@ -1,0 +1,89 @@
+---
+import '../styles/site.css';
+import Masthead from '../components/Masthead.astro';
+import { site } from '../data/site.js';
+import { boxes } from '../data/boxes.js';
+import { DOT } from '../lib/text.js';
+
+interface Props {
+  title: string;
+  current?: string;
+}
+
+const { title, current } = Astro.props;
+const sections = boxes.map((box) => ({ title: box.title, link: box.link }));
+const built = new Date();
+const updated = built.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
+const year = built.getFullYear();
+---
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#1f5a88" />
+    <title>{title}</title>
+    <link rel="icon" href="/favicon.ico" sizes="32x32" />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+    <link rel="preload" href="/fonts/inter.woff2" as="font" type="font/woff2" crossorigin />
+  </head>
+  <body>
+    <Masthead links={site.links} sections={sections} current={current} />
+
+    <slot />
+
+    <footer>
+      <span>© {year} {site.name}</span>
+      <span class="details"><span>64.84° N, 147.72° W</span><span class="dot" aria-hidden="true">{DOT}</span><span>Last updated {updated}</span></span>
+    </footer>
+  </body>
+</html>
+
+<style>
+  footer {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-top: auto;
+    padding: 22px var(--pad);
+    background: var(--bar);
+    color: var(--white);
+    font-size: 14px;
+    line-height: 22px;
+    text-align: center;
+  }
+
+  .details {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .dot {
+    display: none;
+  }
+
+  @media (min-width: 640px) {
+    footer {
+      flex-direction: row;
+      justify-content: space-between;
+      text-align: left;
+    }
+
+    .details {
+      flex-direction: row;
+    }
+
+    .dot {
+      display: inline;
+      white-space: pre;
+    }
+  }
+
+  @media (min-width: 1024px) {
+    footer {
+      box-sizing: border-box;
+      min-height: 72px;
+    }
+  }
+</style>

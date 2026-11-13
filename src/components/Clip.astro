@@ -1,0 +1,23 @@
+---
+interface Props {
+  src: string;
+  poster: string;
+  label: string;
+}
+
+const { src, poster, label } = Astro.props;
+---
+
+<video src={src} poster={poster} width="1920" height="1018" muted loop playsinline preload="auto" aria-label={label} data-clip></video>
+
+<style>
+  video {
+    display: block;
+    width: 100%;
+    height: auto;
+  }
+</style>
+
+<script>
+  import '../scripts/clips.js';
+</script>

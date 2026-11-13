@@ -20,7 +20,7 @@ const paths = [
 ];
 const heads = ['Chi-square', 'CFI', 'TLI', 'RMSEA', 'SRMR', 'Residuals over .10'];
 const guides = ['tests exact fit, strict in large samples', 'close to .95, older rule .90', 'close to .95, older rule .90', null, 'close to .08', 'where the model misses'];
-const shy = (label) => label.replace('comprehension', 'compre­hension');
+const shy = (label) => label.replace('comprehension', 'compre\u00adhension');
 ---
 
 <div class="cfa">
@@ -300,6 +300,10 @@ const shy = (label) => label.replace('comprehension', 'compre­hension');
     font-size: 0.875rem;
   }
 
+  .sub {
+    white-space: nowrap;
+  }
+
   .note {
     margin-top: -8px;
     font-size: 0.875rem;
@@ -315,7 +319,7 @@ const shy = (label) => label.replace('comprehension', 'compre­hension');
     }
   }
 
-  @media (max-width: 1179px) {
+  @container sheet (max-width: 1139px) {
     .tree.wide {
       display: none;
     }

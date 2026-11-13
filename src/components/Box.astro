@@ -1,0 +1,102 @@
+---
+interface Props {
+  title: string;
+  link: string;
+  slides: { image: string; video?: string; fill?: string; zoom?: number }[];
+}
+
+const { title, link, slides } = Astro.props;
+const rotates = slides.length > 1;
+
+function fit(slide) {
+  if (slide.fill) return `--keep: ${slide.fill}`;
+  if (slide.zoom) return `--zoom: ${slide.zoom}`;
+}
+---
+
+<a class="box" href={link}>
+  <span class:list={['slides', { rotate: rotates }]} data-rotate={rotates ? '' : undefined}>
+    {
+      slides.map((slide, j) => (
+        <span class={rotates && j === 0 ? 'current' : undefined} inert={j > 0 ? true : undefined}>
+          {slide.video ? (
+            <video class:list={{ fill: slide.fill, zoom: slide.zoom }} style={fit(slide)} width="290" height="154" src={slide.video} poster={slide.image} muted playsinline preload="none" loop={!rotates} />
+          ) : (
+            <img class:list={{ fill: slide.fill, zoom: slide.zoom }} style={fit(slide)} src={slide.image} alt="" width="290" height="154" loading="lazy" />
+          )}
+        </span>
+      ))
+    }
+  </span>
+  <span class="name">{title}</span>
+</a>
+
+<style>
+  .box {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    min-width: 0;
+    background: var(--white);
+  }
+
+  .slides {
+    display: grid;
+    overflow: hidden;
+  }
+
+  .slides > * {
+    grid-area: 1 / 1;
+  }
+
+  .rotate > * {
+    transition: opacity 0.9s ease-in-out;
+  }
+
+  .rotate > :not(.current) {
+    opacity: 0;
+  }
+
+  .slides img,
+  .slides video {
+    display: block;
+    box-sizing: border-box;
+    width: 100%;
+    height: auto;
+    aspect-ratio: 290 / 153.69;
+    padding: 8px 0;
+    object-fit: contain;
+  }
+
+  .slides .fill {
+    padding: 0;
+    object-fit: cover;
+    object-position: var(--keep);
+  }
+
+  .slides .zoom {
+    transform: scale(var(--zoom));
+  }
+
+  .name {
+    display: flex;
+    flex: 1;
+    align-items: center;
+    padding: 15px;
+    font: var(--side);
+  }
+
+  .box:hover .name {
+    color: var(--blue);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .rotate > * {
+      transition: none;
+    }
+  }
+</style>
+
+<script>
+  import '../scripts/rotate.js';
+</script>

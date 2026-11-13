@@ -1,0 +1,157 @@
+---
+import { site } from '../data/site.js';
+---
+
+<div class="welcome">
+  <h1>{site.greeting}</h1>
+  <div class="now">
+    <p class="place">Fairbanks, Alaska</p>
+    <div class="row">
+      <p class="number"><span data-now="time">&nbsp;</span> <span class="unit" data-now="period"></span></p>
+      <p class="note" data-now="date">&nbsp;</p>
+    </div>
+    <div class="row waiting" data-now="weather">
+      <p class="number degrees">
+        <span><span data-now="fahrenheit"></span> <span class="unit">°F</span></span>
+        <span><span data-now="celsius"></span> <span class="unit">°C</span></span>
+      </p>
+      <p class="note" data-now="sky">&nbsp;</p>
+    </div>
+  </div>
+  <p class="text" set:html={site.welcome} />
+</div>
+
+<style>
+  .welcome {
+    padding: 24px 20px 26px;
+    background: var(--white);
+    overflow-wrap: anywhere;
+  }
+
+  h1 {
+    color: var(--black);
+    font: var(--title);
+    letter-spacing: -0.02em;
+  }
+
+  .now {
+    margin-top: 18px;
+  }
+
+  .place {
+    padding-bottom: 9px;
+    border-bottom: 1px solid var(--ink);
+    color: var(--black);
+    font-size: 15px;
+    font-weight: 700;
+    line-height: 22px;
+  }
+
+  .row {
+    padding: 12px 0 13px;
+    border-bottom: 1px solid var(--line);
+  }
+
+  .waiting {
+    visibility: hidden;
+  }
+
+  .number {
+    color: var(--black);
+    font-size: 28px;
+    font-weight: 700;
+    line-height: 34px;
+    letter-spacing: -0.02em;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .unit {
+    font-size: 16px;
+    letter-spacing: 0;
+  }
+
+  .degrees {
+    display: flex;
+    align-items: baseline;
+  }
+
+  .degrees > span + span {
+    margin-left: 16px;
+    padding-left: 16px;
+    border-left: 1px solid var(--line);
+  }
+
+  .note {
+    margin-top: 2px;
+    font-size: 14px;
+    line-height: 20px;
+  }
+
+  .text {
+    margin-top: 18px;
+    font: var(--text);
+    text-wrap: pretty;
+  }
+
+  .text :global(a) {
+    border-bottom: 2px solid var(--blue);
+    color: var(--black);
+  }
+
+  .text :global(a:hover) {
+    color: var(--blue);
+  }
+
+  @media (min-width: 1024px) {
+    .welcome {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) 330px;
+      grid-template-rows: auto 1fr;
+      column-gap: 56px;
+      padding: 44px 48px 46px;
+    }
+
+    .now {
+      grid-area: 1 / 2 / 3 / 3;
+      align-self: center;
+      margin-top: 0;
+      padding-left: 48px;
+      border-left: 1px solid var(--line);
+    }
+
+    .place {
+      padding-bottom: 10px;
+    }
+
+    .row {
+      padding: 13px 0 14px;
+    }
+
+    .row:last-child {
+      padding-bottom: 0;
+      border-bottom: 0;
+    }
+
+    .number {
+      font-size: 32px;
+      line-height: 38px;
+    }
+
+    .unit {
+      font-size: 17px;
+    }
+
+    .degrees > span + span {
+      margin-left: 18px;
+      padding-left: 18px;
+    }
+
+    .text {
+      margin-top: 16px;
+    }
+  }
+</style>
+
+<script>
+  import '../scripts/welcome.js';
+</script>

@@ -621,7 +621,7 @@ const aria = (i) => `${labels[i]}, communality ${bounded(set.h2[i])}, ${loadings
     }
   }
 
-  @media (max-width: 1100px) {
+  @container sheet (max-width: 1060px) {
     .top {
       grid-template-columns: minmax(0, 1fr) 340px;
       gap: 0 36px;
@@ -693,13 +693,6 @@ const aria = (i) => `${labels[i]}, communality ${bounded(set.h2[i])}, ${loadings
 
     .explained b {
       font-size: 1rem;
-    }
-  }
-
-  @media (max-width: 940px) {
-    .top {
-      grid-template-columns: minmax(0, 1fr);
-      gap: 24px;
     }
   }
 

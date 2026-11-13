@@ -1,0 +1,103 @@
+---
+interface Props {
+  others: { href: string; image?: string; title: string; note: string }[];
+  shape?: string;
+}
+
+const { others, shape } = Astro.props;
+
+const whole = (image) => image.endsWith('.png');
+---
+
+<ul style={shape && `--shape: ${shape}`} data-more>
+  {
+    others.map((other) => (
+      <li>
+        <a href={other.href}>
+          {other.image &&
+            (whole(other.image) ? (
+              <span class="thumb panel">
+                <img src={other.image} alt="" width="94" height="70" loading="lazy" />
+              </span>
+            ) : (
+              <img class="thumb photo" src={other.image} alt="" width="125" height="70" loading="lazy" />
+            ))}
+          <span>
+            <span class="title">{other.title}</span>
+            <span class="note">{other.note}</span>
+          </span>
+        </a>
+      </li>
+    ))
+  }
+</ul>
+
+<style>
+  ul {
+    padding-right: 6px;
+    overflow-y: auto;
+    scrollbar-width: thin;
+    scrollbar-color: var(--rule) var(--band);
+  }
+
+  a {
+    display: flex;
+    align-items: flex-start;
+    gap: 14px;
+    padding: 14px 0;
+    border-bottom: 1px solid var(--line);
+  }
+
+  .thumb {
+    flex: none;
+    width: 125px;
+  }
+
+  .panel {
+    display: flex;
+    justify-content: center;
+    background: var(--band);
+    isolation: isolate;
+  }
+
+  .panel img {
+    display: block;
+    width: 75%;
+    height: auto;
+    aspect-ratio: 4 / 3;
+    object-fit: contain;
+    mix-blend-mode: multiply;
+  }
+
+  .photo {
+    display: block;
+    height: auto;
+    aspect-ratio: var(--shape, 16 / 9);
+    object-fit: cover;
+  }
+
+  .title,
+  .note {
+    display: block;
+  }
+
+  .title {
+    font-size: 16px;
+    font-weight: 700;
+    line-height: 21px;
+  }
+
+  .note {
+    margin-top: 2px;
+    font-size: 14px;
+    line-height: 22px;
+  }
+
+  a:hover .title {
+    color: var(--blue);
+  }
+</style>
+
+<script>
+  import '../scripts/more.js';
+</script>

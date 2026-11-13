@@ -1,0 +1,276 @@
+---
+interface Props {
+  links: { label: string; href: string; logo: string }[];
+  sections: { title: string; link: string }[];
+  current?: string;
+}
+
+const { links, sections, current } = Astro.props;
+---
+
+<div class="top">
+  {
+    current ? (
+      <a class="home" href="/" aria-label="Home">
+        <img class="logo" src="/favicon.svg" alt="" width="30" height="30" />
+      </a>
+    ) : (
+      <img class="logo" src="/favicon.svg" alt="" width="30" height="30" />
+    )
+  }
+  <div class="links">
+    {links.map((link) => <a href={link.href} aria-label={link.label}><img src={`/images/logos/${link.logo}.svg`} alt="" width="20" height="20" /><span>{link.label}</span></a>)}
+  </div>
+</div>
+
+<div class="masthead">
+  <button class="menu-button" type="button" id="menu-button" aria-expanded="false" aria-controls="sections">
+    Menu
+    <span class="lines"><span></span><span></span><span></span></span>
+  </button>
+  <nav class="sections" id="sections" aria-label="Sections">
+    {sections.map((section) => <a href={section.link} aria-current={section.link === current ? 'page' : undefined}>{section.title}</a>)}
+  </nav>
+</div>
+
+<style>
+  .top {
+    position: sticky;
+    top: 0;
+    z-index: 21;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    height: var(--top-bar);
+    padding: 0 var(--pad);
+    background: var(--white);
+    transition: transform 0.3s ease;
+  }
+
+  .logo {
+    display: block;
+    width: 30px;
+    height: 30px;
+  }
+
+  .home {
+    display: flex;
+    align-items: center;
+    width: 44px;
+    height: var(--top-bar);
+  }
+
+  .links {
+    display: flex;
+    margin-right: -12px;
+    font-size: 14px;
+    line-height: 20px;
+  }
+
+  .links a {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 44px;
+    height: 44px;
+  }
+
+  .links img {
+    width: 20px;
+    height: 20px;
+  }
+
+  .links span {
+    display: none;
+  }
+
+  .links a:hover {
+    color: var(--blue);
+  }
+
+  .masthead {
+    position: sticky;
+    top: var(--top-bar);
+    z-index: 20;
+    background: var(--bar);
+    color: var(--white);
+    transition: top 0.3s ease;
+  }
+
+  :global(.tucked) .top {
+    transform: translateY(-100%);
+  }
+
+  :global(.tucked) .masthead {
+    top: 0;
+  }
+
+  .masthead a:focus-visible,
+  .masthead button:focus-visible {
+    outline-color: var(--gold);
+  }
+
+  .menu-button {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    box-sizing: border-box;
+    width: 100%;
+    height: 46px;
+    padding: 0 var(--pad);
+    border: 0;
+    background: none;
+    color: inherit;
+    font: inherit;
+    font-size: 18px;
+    font-weight: 600;
+    line-height: 26px;
+    cursor: pointer;
+  }
+
+  .menu-button:focus-visible {
+    outline-offset: -4px;
+  }
+
+  .lines {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 5px;
+    width: 24px;
+  }
+
+  .lines span {
+    display: block;
+    height: 2px;
+    background: currentColor;
+    transition:
+      transform 0.16s ease,
+      opacity 0.16s ease;
+  }
+
+  .menu-button[aria-expanded='true'] .lines {
+    color: var(--gold);
+  }
+
+  .menu-button[aria-expanded='true'] .lines span:nth-child(1) {
+    transform: translateY(7px) rotate(45deg);
+  }
+
+  .menu-button[aria-expanded='true'] .lines span:nth-child(2) {
+    opacity: 0;
+  }
+
+  .menu-button[aria-expanded='true'] .lines span:nth-child(3) {
+    transform: translateY(-7px) rotate(-45deg);
+  }
+
+  .sections {
+    position: absolute;
+    top: 100%;
+    right: 0;
+    left: 0;
+    display: none;
+    box-sizing: border-box;
+    height: calc(100dvh - var(--below, 90px));
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    background: var(--bar);
+    font-size: 18px;
+    font-weight: 600;
+  }
+
+  :global(.menu-open) {
+    overflow: hidden;
+  }
+
+  :global(.menu-open) .sections {
+    display: block;
+    animation: appear 0.14s ease;
+  }
+
+  .sections a {
+    display: flex;
+    align-items: center;
+    min-height: 52px;
+    padding: 0 var(--pad);
+    border-top: 1px solid var(--menu-rule);
+  }
+
+  .sections a:hover {
+    color: var(--gold);
+  }
+
+  @keyframes appear {
+    from {
+      opacity: 0;
+    }
+  }
+
+  @media (min-width: 640px) {
+    .links a {
+      gap: 7px;
+      width: auto;
+      padding: 0 12px;
+    }
+
+    .links img {
+      width: 16px;
+      height: 16px;
+    }
+
+    .links span {
+      display: inline;
+    }
+  }
+
+  @media (min-width: 1024px) {
+    .menu-button {
+      display: none;
+    }
+
+    .sections {
+      position: static;
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 0 clamp(14px, calc((100% - 830px) / 7), 30px);
+      height: auto;
+      min-height: 69px;
+      padding: 0 var(--pad);
+      overflow: visible;
+      font-size: 16px;
+      line-height: 35px;
+      animation: none;
+    }
+
+    .sections a {
+      min-height: 44px;
+      padding: 0;
+      border: 0;
+    }
+
+    .sections [aria-current] {
+      align-self: stretch;
+      box-sizing: border-box;
+      border-top: 3px solid transparent;
+      border-bottom: 3px solid var(--gold);
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .top,
+    .masthead,
+    .lines span {
+      transition: none;
+    }
+
+    :global(.menu-open) .sections {
+      animation: none;
+    }
+  }
+</style>
+
+<script>
+  import '../scripts/masthead.js';
+</script>

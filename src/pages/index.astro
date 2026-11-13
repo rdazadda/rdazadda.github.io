@@ -1,193 +1,71 @@
 ---
-import BaseLayout from '../layouts/BaseLayout.astro';
-import DayStrip from '../components/DayStrip.astro';
+import SiteLayout from '../layouts/SiteLayout.astro';
+import Welcome from '../components/Welcome.astro';
+import Box from '../components/Box.astro';
 import { site } from '../data/site.js';
 import { boxes } from '../data/boxes.js';
-import { keepTogether, DOT } from '../lib/text.js';
-
-// The lines under the name; each logo is public/images/logos/<logo>.svg
-const titles = ['Biostatistician', 'Center for Alaska Native Health Research (CANHR)', 'University of Alaska Fairbanks'];
-const links = [
-  { label: 'Email', href: 'mailto:rdazadda@alaska.edu', logo: 'email' },
-  { label: 'Google Scholar', href: '#', logo: 'google-scholar' },
-  { label: 'GitHub', href: 'https://github.com/rdazadda', logo: 'github' },
-  { label: 'ORCID', href: 'https://orcid.org/0009-0002-4384-4556', logo: 'orcid' },
-  { label: 'LinkedIn', href: 'https://www.linkedin.com/in/rdazadda', logo: 'linkedin' },
-];
-
-const cards = boxes.map((box, i) => ({
-  title: box.title,
-  link: box.link,
-  slides: box.slides,
-  rotates: box.slides.length > 1,
-  number: String(i + 1).padStart(2, '0'),
-  caption: [box.slides[0].caption].flat(),
-}));
 ---
 
-<BaseLayout title={site.name}>
-  <h1>{site.name}</h1>
+<SiteLayout title={site.name}>
+  <main>
+    <Welcome />
 
-  <p class="titles">{titles.map((title, i) => <>{i > 0 && DOT}{keepTogether(title)}</>)}</p>
-  <p class="links">{links.map((link) => <a href={link.href}><img src={`/images/logos/${link.logo}.svg`} alt="" width="20" height="20" /><span>{keepTogether(link.label)}</span></a>)}</p>
-
-  <DayStrip />
-
-  <section class="cards">
-    {
-      cards.map((card) => (
-        <a class="card" href={card.link} data-card>
-          <span class:list={['slides', { rotate: card.rotates }]} data-rotate={card.rotates ? '' : undefined}>
-            {card.slides.map((slide, j) => (
-              <span class={card.rotates && j === 0 ? 'current' : undefined} inert={j > 0 ? true : undefined}>
-                {slide.video ? (
-                  <video width="300" height="300" src={slide.video} poster={slide.image} muted playsinline preload="auto" loop={!card.rotates} />
-                ) : (
-                  <img src={slide.image} alt="" width="300" height="300" />
-                )}
-              </span>
-            ))}
-          </span>
-          <span class="label">
-            <span class="number">NO. {card.number}</span>
-            <span class="name">{card.title}</span>
-            {card.caption.map((text) => (
-              <span class="caption" set:html={text} />
-            ))}
-          </span>
-        </a>
-      ))
-    }
-  </section>
-</BaseLayout>
+    <section>
+      <h2>Explore</h2>
+      <ul class="grid">
+        {
+          boxes.map((box) => (
+            <li>
+              <Box title={box.title} link={box.link} slides={box.slides} />
+            </li>
+          ))
+        }
+      </ul>
+    </section>
+  </main>
+</SiteLayout>
 
 <style>
-  .titles {
+  main {
+    padding: 24px var(--pad) 60px;
+    background: var(--band);
+  }
+
+  h2 {
+    margin: 40px 0 20px;
+    color: var(--black);
+    font: var(--heading);
     text-align: center;
   }
 
-  .titles,
-  .links {
-    margin: 0.3ex 0 0;
-    font-size: var(--size-lead);
-  }
-
-  .links {
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: center;
-    gap: 0.2ex 1.4em;
-  }
-
-  .links img {
-    width: 1.1em;
-    height: 1.1em;
-    margin-right: 0.35em;
-    vertical-align: -0.2em;
-  }
-
-  .links a:hover {
-    text-decoration: none;
-  }
-
-  .links a:hover span {
-    background-color: var(--c-link);
-    color: var(--c-bg);
-  }
-
-  .cards {
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: center;
-  }
-
-  .card {
-    box-sizing: border-box;
-    width: calc(320px + var(--line) * 2);
-    margin: 3ex 1em;
-    padding: 10px 10px 11px;
-    border: var(--line) solid var(--c-brand);
-    background-color: var(--c-card);
-    transition:
-      border-color 0.25s ease,
-      box-shadow 0.25s ease;
-  }
-
-  .card:hover {
-    border-color: var(--c-frame-hover);
-    box-shadow: 0 0 0 calc(var(--line) * 2) var(--c-frame-hover);
-    text-decoration: none;
-  }
-
-  .card:focus-visible {
-    outline: 2px solid var(--c-link);
-    outline-offset: 4px;
-  }
-
-  .slides {
+  .grid {
     display: grid;
+    grid-auto-rows: 1fr;
+    gap: 30px;
   }
 
-  .slides > * {
-    grid-area: 1 / 1;
+  li {
+    display: flex;
   }
 
-  .rotate > * {
-    transition: opacity 0.9s ease-in-out;
+  @media (min-width: 530px) {
+    .grid {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
   }
 
-  .rotate > :not(.current) {
-    opacity: 0;
-  }
+  @media (min-width: 1024px) {
+    main {
+      padding-top: 40px;
+      padding-bottom: 90px;
+    }
 
-  .slides img,
-  .slides video {
-    display: block;
-    width: 100%;
-    height: auto;
-    aspect-ratio: 1;
-    object-fit: cover;
-  }
+    h2 {
+      margin-top: 56px;
+    }
 
-  .label {
-    display: block;
-  }
-
-  .number {
-    display: block;
-    margin-top: 12px;
-    color: var(--c-brand);
-    font-family: var(--font-mono);
-    font-size: 11px;
-    letter-spacing: 0.14em;
-    line-height: 13px;
-  }
-
-  .name {
-    display: block;
-    margin-top: 6px;
-    color: var(--c-link);
-    font-size: var(--size-heading);
-    font-weight: 700;
-    line-height: 24px;
-  }
-
-  .caption {
-    display: block;
-    margin-top: 6px;
-    color: var(--c-text);
-    font-style: italic;
-  }
-
-  @media (prefers-reduced-motion: reduce) {
-    .card,
-    .rotate > * {
-      transition: none;
+    .grid {
+      grid-template-columns: repeat(4, minmax(0, 1fr));
     }
   }
 </style>
-
-<script>
-  import '../scripts/cards.js';
-  import '../scripts/rotate.js';
-</script>

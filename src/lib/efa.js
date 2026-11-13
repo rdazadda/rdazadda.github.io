@@ -6,7 +6,7 @@ export const MOST = 6;
 
 const LOWER = 0.005;
 const MINUS = '−';
-const KEEP = ' ';
+const KEEP = '\u00a0';
 const NUMBERS = ['one', 'two', 'three', 'four', 'five', 'six'];
 const CAPITALS = ['One', 'Two', 'Three', 'Four', 'Five', 'Six'];
 

@@ -57,6 +57,7 @@ function extent(from, to) {
 function layoutCoding() {
   if (view !== 'coding' || !words.length) return;
   work.style.minHeight = '';
+  const drawn = root.getBoundingClientRect().width / root.offsetWidth;
   let tallest = 0;
   for (const lane of lanes) {
     if (!showing(lane)) continue;
@@ -64,7 +65,7 @@ function layoutCoding() {
     const nodes = [...lane.querySelectorAll('.mark, .naming:not([hidden])')];
     const placed = nodes.map((node) => {
       const box = extent(Number(node.dataset.from), Number(node.dataset.to));
-      return { node, from: Number(node.dataset.from), to: Number(node.dataset.to), top: box.top - laneTop, bottom: box.bottom - laneTop };
+      return { node, from: Number(node.dataset.from), to: Number(node.dataset.to), top: (box.top - laneTop) / drawn, bottom: (box.bottom - laneTop) / drawn };
     }).sort((a, b) => a.top - b.top || a.from - b.from || a.to - b.to);
     const tracks = [];
     for (const item of placed) {
@@ -433,8 +434,10 @@ function moveDrag(event) {
       for (const node of all('.code[aria-pressed="true"]')) node.setAttribute('aria-pressed', 'false');
     }
   }
-  drag.ghost.style.left = `${event.clientX + 12}px`;
-  drag.ghost.style.top = `${event.clientY + 8}px`;
+  const box = root.getBoundingClientRect();
+  const drawn = box.width / root.offsetWidth;
+  drag.ghost.style.left = `${(event.clientX - box.left) / drawn + 12}px`;
+  drag.ghost.style.top = `${(event.clientY - box.top) / drawn + 8}px`;
   const target = document.elementFromPoint(event.clientX, event.clientY)?.closest('[data-drop]') ?? null;
   if (target !== drag.over) {
     drag.over?.classList.remove('over');

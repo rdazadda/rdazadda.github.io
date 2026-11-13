@@ -286,6 +286,7 @@ const questions = [
     --warm: #d55e00;
     --blue: #1f5a88;
     --track: #b8c1cc;
+    position: relative;
     display: flex;
     flex-direction: column;
     gap: 14px;
@@ -873,7 +874,7 @@ const questions = [
   }
 
   .thematic .drag-ghost {
-    position: fixed;
+    position: absolute;
     z-index: 50;
     max-width: 320px;
     padding: 3px 6px;
@@ -903,6 +904,7 @@ const questions = [
   }
 
   .thematic .questions li {
+    margin-bottom: 8px;
     padding: 7px 0;
     border-bottom: 1px solid var(--rule);
   }
@@ -1327,6 +1329,7 @@ const questions = [
 
   .thematic .pr .r {
     text-align: right;
+    white-space: nowrap;
   }
 
   .thematic .line {
@@ -1419,7 +1422,7 @@ const questions = [
     border: 3px solid var(--c-text);
   }
 
-  @media (max-width: 1179px) {
+  @container sheet (max-width: 1139px) {
     .thematic .figure.wide {
       display: none;
     }
@@ -1497,13 +1500,6 @@ const questions = [
 
     .thematic .ruler .head label {
       font-size: 15px;
-    }
-  }
-
-  @media (max-width: 899px) {
-    .thematic .agree-read {
-      grid-template-columns: repeat(3, minmax(0, 1fr));
-      gap: 12px 24px;
     }
   }
 </style>

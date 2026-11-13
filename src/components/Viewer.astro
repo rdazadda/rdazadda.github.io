@@ -1,0 +1,262 @@
+---
+import { kinds, entries } from '../data/visualizations.js';
+import { capital } from '../lib/text.js';
+
+const groups = kinds.map((kind) => ({ heading: kind.heading, items: entries.filter((entry) => entry.kind === kind.id) })).filter((group) => group.items.length > 0);
+const first = groups[0].items[0];
+---
+
+<div class="body">
+  <div class="stage" data-stage>
+    {
+      groups.map((group) =>
+        group.items.map((entry) => (
+          <article class:list={{ current: entry === first }} inert={entry !== first}>
+            <a class="clip" href={entry.link} aria-hidden="true" tabindex="-1">
+              <video src={entry.video} poster={entry.image} width="790" height="419" muted playsinline preload="none" />
+              <span class="played" />
+            </a>
+            <p class="type">{group.heading}</p>
+            <h2>{entry.title}</h2>
+            {entry.about && <p class="lead" set:html={capital(entry.about)} />}
+            <a class="open" href={entry.link}>
+              <span>Explore the visualization</span>
+              <svg viewBox="0 0 10 16" width="8" height="13" aria-hidden="true"><path d="M2 2l6 6-6 6" /></svg>
+            </a>
+          </article>
+        )),
+      )
+    }
+  </div>
+
+  <nav class="names" aria-label="Visualizations" data-names>
+    {
+      groups.map((group) => (
+        <section>
+          <h2>{group.heading}</h2>
+          <ul>
+            {group.items.map((entry) => (
+              <li>
+                <a href={entry.link} aria-current={entry === first ? 'true' : undefined}>
+                  {entry.title}
+                  <svg class="mark" viewBox="0 0 10 12" width="9" height="11" aria-hidden="true"><path d="M1 1l8 5-8 5z" /></svg>
+                </a>
+              </li>
+            ))}
+          </ul>
+        </section>
+      ))
+    }
+  </nav>
+</div>
+
+<style>
+  .body {
+    display: grid;
+    gap: 30px;
+    padding: 0 var(--pad) 44px;
+  }
+
+  .stage,
+  .names {
+    min-width: 0;
+  }
+
+  .stage {
+    display: grid;
+  }
+
+  article {
+    grid-area: 1 / 1;
+    min-width: 0;
+  }
+
+  article:not(.current) > :not(.clip) {
+    visibility: hidden;
+  }
+
+  .clip {
+    display: block;
+    margin: 0 calc(var(--pad) * -1);
+    transition: opacity 0.5s ease-in-out;
+  }
+
+  article:not(.current) .clip {
+    opacity: 0;
+  }
+
+  video {
+    display: block;
+    width: 100%;
+    height: auto;
+    aspect-ratio: 290 / 153.69;
+    object-fit: cover;
+  }
+
+  .played {
+    display: block;
+    height: 3px;
+    background: var(--line);
+  }
+
+  .played::after {
+    display: block;
+    height: 100%;
+    background: var(--blue);
+    transform: scaleX(var(--played, 0));
+    transform-origin: left;
+    content: '';
+  }
+
+  .type {
+    margin-top: 18px;
+    font-size: 14px;
+    line-height: 20px;
+  }
+
+  h2 {
+    color: var(--black);
+  }
+
+  .stage h2 {
+    margin-top: 2px;
+    font: var(--featured);
+  }
+
+  .lead {
+    margin-top: 8px;
+    color: var(--black);
+    font: var(--lead);
+  }
+
+  .open {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    min-height: 44px;
+    margin-top: 4px;
+    color: var(--black);
+    font-size: 16px;
+    font-weight: 700;
+  }
+
+  .open span {
+    border-bottom: 2px solid var(--blue);
+  }
+
+  .open svg {
+    flex: none;
+    fill: none;
+    stroke: var(--blue);
+    stroke-width: 2.2;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+
+  .names {
+    position: relative;
+    padding-right: 8px;
+    overflow-y: auto;
+    scroll-behavior: smooth;
+    scrollbar-width: thin;
+    scrollbar-color: var(--rule) var(--band);
+  }
+
+  section + section {
+    margin-top: 34px;
+  }
+
+  .names h2 {
+    position: sticky;
+    top: 0;
+    z-index: 1;
+    padding-bottom: 10px;
+    border-bottom: 1px solid var(--ink);
+    background: var(--white);
+    font: var(--side);
+  }
+
+  .names a {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    min-height: 54px;
+    border-bottom: 1px solid var(--line);
+    color: var(--black);
+    font-size: 16px;
+    line-height: 22px;
+  }
+
+  .names a:focus-visible {
+    outline-offset: -2px;
+  }
+
+  .names [aria-current] {
+    font-weight: 700;
+  }
+
+  .open:hover,
+  .names a:hover,
+  .names [aria-current] {
+    color: var(--blue);
+  }
+
+  .mark {
+    flex: none;
+    fill: var(--blue);
+  }
+
+  .names a:not([aria-current]) .mark {
+    visibility: hidden;
+  }
+
+  @media (min-width: 1024px) {
+    .body {
+      grid-template-columns: minmax(0, 79fr) minmax(0, 40fr);
+      align-items: start;
+      gap: clamp(32px, 4.8%, 60px);
+      padding-top: 48px;
+      padding-bottom: 80px;
+    }
+
+    .clip {
+      margin: 0;
+      border: 1px solid var(--line);
+    }
+
+    .type {
+      margin-top: 22px;
+    }
+
+    .lead {
+      margin-top: 10px;
+    }
+
+    .open {
+      margin-top: 8px;
+    }
+
+    section + section {
+      margin-top: 30px;
+    }
+
+    .names a {
+      min-height: 46px;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .clip {
+      transition: none;
+    }
+
+    .names {
+      scroll-behavior: auto;
+    }
+  }
+</style>
+
+<script>
+  import '../scripts/viewer.js';
+</script>

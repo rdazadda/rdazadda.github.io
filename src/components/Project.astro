@@ -1,0 +1,48 @@
+---
+import Story from './Story.astro';
+import { entries } from '../data/research.js';
+
+interface Props {
+  project: (typeof entries)[number];
+  listed?: boolean;
+}
+
+const { project, listed } = Astro.props;
+const first = entries[0];
+
+const address = (entry) => (entry === first ? '/research/' : `/research/${entry.slug}/`);
+
+const facts = [
+  ...(project.pis ? [{ label: project.pis.length > 1 ? 'Principal Investigators' : 'Principal Investigator', value: project.pis.join(', ') }] : []),
+  ...(project.funder ? [{ label: 'Funder', value: project.funder }] : []),
+  ...(project.years ? [{ label: 'Years', value: project.years }] : []),
+];
+const others = entries.filter((entry) => entry !== project).map((entry) => ({ href: address(entry), image: entry.images?.[0], title: entry.title, note: entry.years }));
+---
+
+<Story home={{ label: 'Research Projects', href: '/research/' }} first={listed || project === first} title={project.title} facts={facts} lead={project.about} images={project.images} links={project.links} more="More Projects" others={others} turn={listed ? address(project) : undefined} current={project === first}>
+  {
+    project.role && (
+      <section class="role">
+        <h2>Role</h2>
+        <p>{project.role}</p>
+      </section>
+    )
+  }
+</Story>
+
+<style>
+  .role {
+    margin-top: 38px;
+  }
+
+  h2 {
+    margin-bottom: 8px;
+    color: var(--black);
+    font: var(--heading);
+  }
+
+  .role p {
+    font: var(--text);
+  }
+</style>

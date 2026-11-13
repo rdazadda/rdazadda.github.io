@@ -1,18 +1,12 @@
-// kinds: the groups, in page order
-// entries, newest first in each group:
-//   kind, year (the start year), title (the project name), pis (list of principal investigators), funder, role, years, about (HTML)
-//   images: optional pictures in public/images/ (4:3); more than one take turns
+// entries, in page order; the first one is the Research Projects page itself:
+//   title (the project name), pis (list of principal investigators), funder, role, years, about (HTML)
+//   slug: the page address, /research/<slug>/
+//   images: optional pictures in public/images/ (4:3); a .jpg fills its frame, a .png shows whole; more than one take turns
 //   links: optional [{ label, href }]
-export const kinds = [
-  { id: 'current', heading: 'Current projects', short: 'Current' },
-  { id: 'completed', heading: 'Completed projects', short: 'Completed' },
-];
-
 export const entries = [
   {
-    kind: 'current',
-    year: '2025',
     title: 'Qungasvik (Toolbox)-Healthy Hearts: An Alaska Enrichment Initiative (AK Enrichment)',
+    slug: 'ak-enrichment',
     pis: ['Dr. Stacy Rasmus'],
     funder: 'NHLBI (OT2HL158287)',
     role: 'Member of the project’s Biostatistics (“Numbers”) Team, contributing to survey design and quantitative analyses, including multilevel modeling, physical activity analysis, and Bayesian methods. Out of this project, developed the CANHRActi dashboard and desktop apps and the actiRhythm package.',
@@ -26,9 +20,8 @@ export const entries = [
     ],
   },
   {
-    kind: 'current',
-    year: '2025',
     title: 'Alaska Alliance for Community Engagement - Partnership for Action Toward Health (AK ACE - PATH)',
+    slug: 'ak-ace-path',
     pis: ['Dr. Stacy Rasmus'],
     funder: 'NHLBI (OT2HL158287)',
     role: 'Member of the project’s Biostatistics (“Numbers”) Team, contributing to quantitative analyses, including multilevel modeling, Q-methodology, and Bayesian methods. Out of this project, developed the canhrQsort dashboard and the bayesqm package.',
@@ -38,9 +31,8 @@ export const entries = [
     links: [{ label: 'AK ACE - PATH project page', href: 'https://www.uaf.edu/canhr/research/akace/index.php' }],
   },
   {
-    kind: 'current',
-    year: '2026',
     title: 'Neqpiaput Iinruugut (Our Food is Medicine)',
+    slug: 'our-food-is-medicine',
     pis: ['Dr. Andrea Bersamin'],
     funder: 'NHLBI (R01HL181633-01)',
     role: 'One of the project’s two statisticians, contributing to survey design and quantitative analyses, including multilevel modeling and other statistical methods.',
@@ -49,9 +41,8 @@ export const entries = [
     images: ['/images/research/our-food-is-medicine.png'],
   },
   {
-    kind: 'current',
-    year: '2025',
     title: 'Native Transformations Project (NTP)',
+    slug: 'native-transformations',
     pis: ['Dr. Stacy Rasmus'],
     funder: 'NIH',
     role: 'Member of the project’s Biostatistics (“Numbers”) Team, contributing to the project’s analysis and developing the Intertribal Healthy Data Dashboard, an online platform for displaying community level health information and community level protective factors.',
@@ -61,9 +52,8 @@ export const entries = [
     links: [{ label: 'Intertribal Healthy Data Dashboard', href: 'https://rdazadda.github.io/Intertribal-Healthy-Data-Dashboard/dashboard.html' }],
   },
   {
-    kind: 'current',
-    year: '2026',
     title: 'Alaska INBRE Community-Based Participatory Research (CBPR) Core',
+    slug: 'alaska-inbre-cbpr-core',
     pis: ['Dr. Katie Cueva'],
     funder: 'NIH, through the Alaska INBRE (IDeA Network of Biomedical Research Excellence)',
     role: 'Member of the CBPR Core, conducting semi-structured interviews with CBPR researchers across Alaska, performing thematic analysis of interview transcripts, and helping produce one-pagers that synthesize community-engaged research practices into the Core’s CBPR Toolkit.',
@@ -73,9 +63,8 @@ export const entries = [
     links: [{ label: 'CBPR Toolkit', href: 'https://alaskainbre.org/cbpr-core/cbpr-toolkit/' }],
   },
   {
-    kind: 'completed',
-    year: '2025',
     title: 'Preventing the Disproportionate Incarceration and Recidivism of Alaska Native People',
+    slug: 'incarceration-and-recidivism',
     pis: ['Dr. Katie Cueva'],
     funder: 'Alaska Federation of Natives',
     role: 'Statistician on the UAF CANHR team, one of the study’s partner teams, analyzing over 80 survey responses and contributing to thematic analysis of over 20 expert interview transcripts for the final stakeholder report to the Alaska Legislature.',

@@ -1,0 +1,18 @@
+---
+import SiteLayout from '../../layouts/SiteLayout.astro';
+import Software from '../../components/Software.astro';
+import { site } from '../../data/site.js';
+import { entries } from '../../data/software.js';
+
+export function getStaticPaths() {
+  return entries.slice(1).map((software) => ({ params: { slug: software.slug }, props: { software } }));
+}
+
+const { software } = Astro.props;
+---
+
+<SiteLayout title={`${software.title} by ${site.name}`} current="/software/">
+  <main>
+    <Software software={software} />
+  </main>
+</SiteLayout>

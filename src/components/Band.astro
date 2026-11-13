@@ -1,0 +1,153 @@
+---
+interface Props {
+  where?: { label: string; href?: string };
+  title: string;
+  subtitle?: string;
+  facts: { label: string; value: string }[];
+}
+
+const { where, title, subtitle, facts } = Astro.props;
+---
+
+<header class:list={{ plain: !where }}>
+  {
+    where &&
+      (where.href ? (
+        <a class="where" href={where.href}>
+          <svg viewBox="0 0 10 16" width="8" height="13" aria-hidden="true"><path d="M8 2 2 8l6 6" /></svg>
+          {where.label}
+        </a>
+      ) : (
+        <p class="where">{where.label}</p>
+      ))
+  }
+  <h1>{title}</h1>
+  {subtitle && <p class="subtitle" set:html={subtitle} />}
+  {
+    facts.length > 0 && (
+      <dl class="facts">
+        {facts.map((fact) => (
+          <div>
+            <dt>{fact.label}</dt>
+            <dd>{fact.value}</dd>
+          </div>
+        ))}
+      </dl>
+    )
+  }
+</header>
+
+<style>
+  header {
+    padding: 10px var(--pad) 28px;
+    background: var(--stage);
+    color: var(--white);
+  }
+
+  .plain {
+    padding-top: 26px;
+  }
+
+  .where {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    min-height: 44px;
+    font-size: 15px;
+    line-height: 22px;
+  }
+
+  svg {
+    flex: none;
+    fill: none;
+    stroke: var(--gold);
+    stroke-width: 2.2;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+
+  a.where:focus-visible {
+    outline-color: var(--gold);
+  }
+
+  h1 {
+    margin-top: 6px;
+    font: var(--title);
+    letter-spacing: -0.02em;
+  }
+
+  .plain h1 {
+    margin-top: 0;
+  }
+
+  .subtitle {
+    margin-top: 8px;
+    font: var(--text);
+  }
+
+  .facts {
+    margin-top: 22px;
+    border-top: 1px solid var(--gold);
+    font-size: 15px;
+    line-height: 20px;
+  }
+
+  .facts div {
+    display: flex;
+    justify-content: space-between;
+    gap: 16px;
+    padding: 9px 0;
+    border-bottom: 1px solid var(--rule);
+  }
+
+  .facts dd {
+    font-weight: 700;
+    text-align: right;
+  }
+
+  @media (min-width: 1024px) {
+    header {
+      padding-top: 18px;
+      padding-bottom: 36px;
+    }
+
+    .plain {
+      padding-top: 40px;
+    }
+
+    h1 {
+      max-width: 920px;
+      margin-top: 8px;
+    }
+
+    .subtitle {
+      max-width: 820px;
+    }
+
+    .facts {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 14px 64px;
+      margin-top: 28px;
+      padding-top: 16px;
+    }
+
+    .facts div {
+      display: block;
+      max-width: 430px;
+      padding: 0;
+      border: 0;
+    }
+
+    .facts dt {
+      font-size: 14px;
+    }
+
+    .facts dd {
+      margin-top: 2px;
+      font-size: 16px;
+      line-height: 22px;
+      text-align: left;
+    }
+  }
+</style>

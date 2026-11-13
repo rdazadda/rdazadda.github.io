@@ -1,53 +1,63 @@
-const page = document.querySelector('[data-memory]');
-const groups = page.querySelector('[data-groups]');
+const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+const hovers = window.matchMedia('(hover: hover)').matches;
 
-if (groups.querySelector('li')) {
-  const byType = [...groups.querySelectorAll('section')];
-  const entries = [...groups.querySelectorAll('li')].map((li) => ({ li, home: li.parentElement }));
-  const empty = page.querySelector('[data-empty]');
+const panels = [...document.querySelector('[data-stage]').children];
+const clips = panels.map((panel) => panel.querySelector('video'));
+const tabs = [...document.querySelector('[data-tabs]').children];
+const rows = [...document.querySelector('[data-parts]').children];
+let current = 0;
+let held = false;
+let seen = false;
+let frame;
 
-  const place = (year) => (/^[0-9]+$/.test(year) ? -Number(year) : 0);
-  const years = [...new Set(entries.map(({ li }) => li.dataset.year))].sort((a, b) => place(a) - place(b));
-  const byYear = new Map(
-    years.map((year) => {
-      const [section, heading, list] = [byType[0], byType[0].querySelector('h2'), byType[0].querySelector('ol')].map((e) => e.cloneNode(false));
-      section.removeAttribute('id');
-      section.hidden = true;
-      heading.textContent = year;
-      section.append(heading, list);
-      groups.append(section);
-      return [year, { section, list }];
-    }),
-  );
+const draw = () => {
+  const clip = clips[current];
+  panels[current].style.setProperty('--played', clip.duration ? clip.currentTime / clip.duration : 0);
+  frame = requestAnimationFrame(draw);
+};
 
-  let show = 'all';
-  let arrange = 'type';
+const stop = () => {
+  cancelAnimationFrame(frame);
+  clips[current].pause();
+};
 
-  const update = () => {
-    for (const { li, home } of entries) {
-      (arrange === 'type' ? home : byYear.get(li.dataset.year).list).append(li);
-      li.hidden = show !== 'all' && li.dataset.kind !== show;
-    }
-    const filled = (section) => section.querySelector('li:not([hidden])') !== null;
-    for (const section of byType) section.hidden = arrange !== 'type' || !filled(section);
-    for (const { section } of byYear.values()) section.hidden = arrange !== 'year' || !filled(section);
-    empty.hidden = groups.querySelector('li:not([hidden])') !== null;
-  };
+const start = () => {
+  stop();
+  if (reduceMotion || !seen) return;
+  clips[current].play().catch(() => {});
+  draw();
+};
 
-  const choices = (selector, choose) => {
-    const buttons = [...page.querySelectorAll(selector)];
-    for (const button of buttons) {
-      button.addEventListener('click', () => {
-        for (const other of buttons) other.setAttribute('aria-pressed', String(other === button));
-        choose(button);
-        update();
-      });
-    }
-  };
-  choices('[data-show]', (button) => {
-    show = button.dataset.show;
-  });
-  choices('[data-arrange]', (button) => {
-    arrange = button.dataset.arrange;
-  });
+const show = (index) => {
+  stop();
+  panels[current].classList.remove('current');
+  panels[current].inert = true;
+  rows[current].classList.remove('current');
+  tabs[current].setAttribute('aria-pressed', 'false');
+  current = index;
+  panels[current].classList.add('current');
+  panels[current].inert = false;
+  rows[current].classList.add('current');
+  tabs[current].setAttribute('aria-pressed', 'true');
+  clips[current].currentTime = 0;
+  start();
+};
+
+for (const clip of clips) {
+  clip.addEventListener('ended', () => show(held ? current : (current + 1) % panels.length));
+  if (!hovers) continue;
+  clip.addEventListener('mouseenter', stop);
+  clip.addEventListener('mouseleave', start);
 }
+
+tabs.forEach((tab, i) =>
+  tab.addEventListener('click', () => {
+    held = true;
+    show(i);
+  }),
+);
+
+new IntersectionObserver((entries) => {
+  seen = entries.at(-1).isIntersecting;
+  start();
+}).observe(clips[0]);

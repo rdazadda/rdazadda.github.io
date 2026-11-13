@@ -1,0 +1,376 @@
+---
+import katex from 'katex';
+import 'katex/dist/katex.min.css';
+import SiteLayout from './SiteLayout.astro';
+import Band from '../components/Band.astro';
+import Part from '../components/Part.astro';
+import Cite from '../components/Cite.astro';
+import Clip from '../components/Clip.astro';
+import More from '../components/More.astro';
+import { site } from '../data/site.js';
+import { kinds, entries } from '../data/visualizations.js';
+import { capital } from '../lib/text.js';
+
+const path = Astro.url.pathname;
+const here = path.endsWith('/') ? path : `${path}/`;
+const entry = entries.find((item) => item.link === here);
+const { title, about, intro, explanation, misreadings, references, citation, bibtex, image, video } = entry;
+const reported = Astro.slots.has('report');
+const misread = Array.isArray(misreadings);
+
+const math = (tex) => katex.renderToString(tex, { throwOnError: false });
+const dollars = new RegExp('[$]([^$]+)[$]', 'g');
+const withMath = (text) => text.replace(dollars, (all, tex) => math(tex));
+const paragraphs = (text) => [text].flat().filter(Boolean);
+const type = (item) => kinds.find((kind) => kind.id === item.kind).heading;
+
+const facts = [
+  { label: 'Type', value: type(entry) },
+  { label: 'Year', value: entry.year },
+];
+const parts = [
+  ['about', 'About'],
+  ['visualization', 'Visualization'],
+  ['explanation', 'Explanation'],
+  ...(misread ? [['misreadings', 'Common misreadings']] : []),
+  ...(reported ? [['report', 'What to report']] : []),
+  ['references', 'References'],
+  ['cite', 'Cite'],
+];
+const others = kinds.flatMap((kind) => entries.filter((item) => item.kind === kind.id && item !== entry).map((item) => ({ href: item.link, image: item.image, title: item.title, note: kind.heading })));
+---
+
+<SiteLayout title={`${title} by ${site.name}`} current="/visualizations/">
+  <main>
+    <article>
+      <Band where={{ label: 'Back to Interactive Visualizations', href: '/visualizations/' }} title={title} subtitle={capital(about)} facts={facts} />
+
+      <div class="opening">
+        <Part id="about" name="About" open>
+          {paragraphs(intro).map((text) => <p class="lead" set:html={withMath(text)} />)}
+        </Part>
+        <div class="contents">
+          <Part name="On this page" side open>
+            {
+              parts.map(([id, name]) => (
+                <a href={`#${id}`}>
+                  {name}
+                  <svg viewBox="0 0 16 10" width="13" height="8" aria-hidden="true"><path d="M2 2l6 6 6-6" /></svg>
+                </a>
+              ))
+            }
+          </Part>
+        </div>
+      </div>
+
+      <div class="showing">
+        <Part id="visualization" name="Visualization" open>
+          <div class="frame">
+            <div data-fit-width>
+              <div class="sheet">
+                <slot>
+                  <Clip src={video} poster={image} label={`A clip of the ${title} visualization`} />
+                </slot>
+              </div>
+            </div>
+          </div>
+        </Part>
+      </div>
+
+      <div class="columns">
+        <div class="main">
+          <div class="first">
+            <Part id="explanation" name="Explanation">
+              {paragraphs(explanation).map((text) => <p set:html={withMath(text)} />)}
+            </Part>
+          </div>
+          <div class="rest">
+            {
+              reported && (
+                <Part id="report" name="What to report">
+                  <slot name="report" />
+                </Part>
+              )
+            }
+            <Part id="references" name="References">
+              {references.map((reference) => <p class="reference" set:html={withMath(reference)} />)}
+            </Part>
+            {
+              citation ? (
+                <div class="cite" id="cite">
+                  <Cite reference={citation} bibtex={bibtex} />
+                </div>
+              ) : (
+                <Part id="cite" name="Cite" />
+              )
+            }
+          </div>
+        </div>
+        <aside class="side">
+          {
+            misread && (
+              <div class="second">
+                <Part id="misreadings" name="Common misreadings" side>
+                  {misreadings.map(({ misreading, truth }) => (
+                    <div class="misreading">
+                      <p class="said" set:html={withMath(misreading)} />
+                      <p set:html={withMath(truth)} />
+                    </div>
+                  ))}
+                </Part>
+              </div>
+            )
+          }
+          <div class="more">
+            <Part name="More Visualizations" side open>
+              <More others={others} shape="1920 / 1018" />
+            </Part>
+          </div>
+        </aside>
+      </div>
+    </article>
+  </main>
+</SiteLayout>
+
+<style>
+  .opening,
+  .showing,
+  .columns {
+    padding-right: var(--pad);
+    padding-left: var(--pad);
+  }
+
+  .opening {
+    padding-top: 30px;
+  }
+
+  .contents {
+    display: none;
+  }
+
+  .contents a {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    min-height: 46px;
+    border-bottom: 1px solid var(--line);
+    color: var(--black);
+    font-size: 16px;
+    line-height: 22px;
+  }
+
+  .contents a:hover {
+    color: var(--blue);
+  }
+
+  svg {
+    flex: none;
+    fill: none;
+    stroke: var(--blue);
+    stroke-width: 2.2;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+
+  .lead {
+    margin-top: 12px;
+    color: var(--black);
+    font: var(--lead);
+  }
+
+  .showing {
+    padding-top: 40px;
+    overflow: clip;
+  }
+
+  .frame {
+    padding: 14px 0 12px;
+    border-bottom: 1px solid var(--line);
+  }
+
+  .sheet {
+    --c-bg: #ffffff;
+    --c-text: #1f2933;
+    --c-muted: #46505c;
+    --c-brand: #1f5a88;
+    --c-on-brand: #ffffff;
+    --c-link: #1d5786;
+    --measure: 52em;
+    container: sheet / inline-size;
+    min-width: 940px;
+    color: var(--c-text);
+    font-size: 16px;
+    line-height: 1.35;
+    -webkit-text-size-adjust: 100%;
+    text-size-adjust: 100%;
+    transform-origin: 0 0;
+  }
+
+  .columns {
+    display: flex;
+    flex-direction: column;
+    padding-top: 40px;
+    padding-bottom: 50px;
+  }
+
+  .main,
+  .side {
+    display: contents;
+  }
+
+  .first {
+    border-top: 1px solid var(--ink);
+  }
+
+  .second {
+    order: 1;
+  }
+
+  .rest {
+    order: 2;
+  }
+
+  .more {
+    order: 3;
+    margin-top: 42px;
+  }
+
+  .columns p {
+    font: var(--text);
+  }
+
+  .columns p + p {
+    margin-top: 12px;
+  }
+
+  .columns .reference {
+    padding-left: 22px;
+    font-size: 16px;
+    line-height: 26px;
+    text-indent: -22px;
+    overflow-wrap: anywhere;
+  }
+
+  .columns .reference + .reference {
+    margin-top: 10px;
+  }
+
+  .misreading + .misreading {
+    margin-top: 20px;
+  }
+
+  .columns .said {
+    color: var(--black);
+    font-weight: 700;
+    line-height: 25px;
+    text-indent: -0.54em;
+  }
+
+  .said::before {
+    content: '“';
+  }
+
+  .said::after {
+    content: '”';
+  }
+
+  .columns .said + p {
+    margin-top: 6px;
+  }
+
+  @media (min-width: 1024px) {
+    .opening,
+    .columns {
+      display: grid;
+      grid-template-columns: minmax(0, 79fr) minmax(0, 40fr);
+      column-gap: clamp(32px, 4.8%, 60px);
+    }
+
+    .opening {
+      padding-top: 52px;
+    }
+
+    .contents {
+      display: block;
+    }
+
+    .lead {
+      margin-top: 14px;
+    }
+
+    .showing {
+      padding-top: 56px;
+    }
+
+    .frame {
+      padding: 32px 32px 28px;
+      border: 1px solid var(--line);
+      border-top: 0;
+    }
+
+    .columns {
+      padding-top: 56px;
+      padding-bottom: 80px;
+    }
+
+    .main,
+    .side {
+      display: block;
+      min-width: 0;
+    }
+
+    .first {
+      border-top: 0;
+    }
+
+    .rest > :global(section) {
+      margin-top: 52px;
+    }
+
+    .cite {
+      margin-top: 48px;
+      border-top: 1px solid var(--ink);
+    }
+
+    .more {
+      margin-top: 0;
+    }
+
+    .second + .more {
+      margin-top: 44px;
+    }
+
+    .main p:first-child,
+    .columns p + p {
+      margin-top: 14px;
+    }
+
+    .columns .side p {
+      font-size: 16px;
+      line-height: 25px;
+    }
+
+    .columns .reference {
+      padding-left: 28px;
+      text-indent: -28px;
+    }
+
+    .misreading {
+      padding: 16px 0 18px;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .misreading + .misreading {
+      margin-top: 0;
+    }
+
+    .columns .side .said {
+      line-height: 23px;
+    }
+  }
+</style>
+
+<script>
+  import '../scripts/fit.js';
+</script>

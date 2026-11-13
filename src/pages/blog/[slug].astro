@@ -1,0 +1,272 @@
+---
+import SiteLayout from '../../layouts/SiteLayout.astro';
+import { site } from '../../data/site.js';
+import { posts } from '../../lib/posts.js';
+
+export function getStaticPaths() {
+  return posts.map((post) => ({ params: { slug: post.slug }, props: { post } }));
+}
+
+const { post } = Astro.props;
+const when = [post.day, post.topic].filter(Boolean).join(' • ');
+---
+
+<SiteLayout title={`${post.title} by ${site.name}`} current="/blog/">
+  <main>
+    <article>
+      <header>
+        <a class="back" href="/blog/">
+          <svg viewBox="0 0 10 16" width="8" height="13" aria-hidden="true"><path d="M8 2 2 8l6 6" /></svg>
+          Back to Blog
+        </a>
+        <div class="head">
+          <p class="when">{when}</p>
+          <h1>{post.title}</h1>
+        </div>
+      </header>
+
+      {post.picture && <img class="picture" src={post.picture} alt="" />}
+
+      <div class="text" set:html={post.html} />
+    </article>
+  </main>
+</SiteLayout>
+
+<style>
+  article {
+    overflow-wrap: anywhere;
+  }
+
+  header {
+    padding: 10px var(--pad) 30px;
+    background: var(--stage);
+    color: var(--white);
+  }
+
+  .back {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    min-height: 44px;
+    font-size: 15px;
+    line-height: 22px;
+  }
+
+  .back:focus-visible {
+    outline-color: var(--gold);
+  }
+
+  svg {
+    flex: none;
+    fill: none;
+    stroke: var(--gold);
+    stroke-width: 2.2;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+
+  .when {
+    margin-top: 10px;
+    font-size: 15px;
+    line-height: 22px;
+  }
+
+  h1 {
+    margin-top: 8px;
+    font: var(--title);
+    letter-spacing: -0.02em;
+  }
+
+  .picture {
+    display: block;
+    width: 100%;
+    height: auto;
+    aspect-ratio: 3 / 2;
+    object-fit: cover;
+  }
+
+  .text {
+    padding: 26px max(16px, calc(50% - 360px)) 46px;
+    font: var(--text);
+  }
+
+  .text > :global(*) {
+    margin: 16px 0 0;
+  }
+
+  .text > :global(:first-child) {
+    margin-top: 0;
+  }
+
+  .text > :global(p:first-child) {
+    color: var(--black);
+    font: var(--lead);
+  }
+
+  .text > :global(p:first-child + p) {
+    margin-top: 18px;
+  }
+
+  .text :global(h2),
+  .text :global(h3) {
+    color: var(--black);
+  }
+
+  .text :global(h2) {
+    margin-top: 34px;
+    font: var(--heading);
+  }
+
+  .text :global(h3) {
+    margin-top: 28px;
+    font: var(--side);
+  }
+
+  .text > :global(h2 + *),
+  .text > :global(h3 + *) {
+    margin-top: 12px;
+  }
+
+  .text :global(ul),
+  .text :global(ol) {
+    padding-left: 24px;
+  }
+
+  .text :global(ul) {
+    list-style: disc;
+  }
+
+  .text :global(li) {
+    padding-left: 4px;
+  }
+
+  .text :global(li + li) {
+    margin-top: 6px;
+  }
+
+  .text :global(li > ul),
+  .text :global(li > ol) {
+    margin: 6px 0 0;
+  }
+
+  .text :global(a) {
+    border-bottom: 2px solid var(--blue);
+    color: var(--black);
+  }
+
+  .text :global(a:hover) {
+    color: var(--blue);
+  }
+
+  .text :global(blockquote) {
+    margin-top: 36px;
+    margin-bottom: 36px;
+    color: var(--black);
+    font: var(--heading);
+    text-align: center;
+  }
+
+  .text :global(img) {
+    display: block;
+    max-width: 100%;
+    height: auto;
+  }
+
+  .text :global(hr) {
+    margin-top: 34px;
+    margin-bottom: 34px;
+    border: 0;
+    border-top: 1px solid var(--line);
+  }
+
+  .text :global(pre) {
+    padding: 16px;
+    font-size: 15px;
+    line-height: 24px;
+  }
+
+  .text :global(table) {
+    display: block;
+    overflow-x: auto;
+    border-collapse: collapse;
+    font-size: 16px;
+    line-height: 24px;
+    overflow-wrap: normal;
+  }
+
+  .text :global(th),
+  .text :global(td) {
+    padding: 8px 14px 8px 0;
+    border-bottom: 1px solid var(--line);
+    text-align: left;
+    vertical-align: top;
+  }
+
+  @media (min-width: 1024px) {
+    header {
+      padding-top: 18px;
+      padding-bottom: 48px;
+    }
+
+    .head {
+      max-width: 880px;
+      margin: 14px auto 0;
+      text-align: center;
+    }
+
+    .when {
+      margin-top: 0;
+    }
+
+    h1 {
+      margin-top: 10px;
+      text-wrap: balance;
+    }
+
+    .picture {
+      width: min(992px, 100% - 2 * var(--pad));
+      margin: 48px auto 0;
+      aspect-ratio: 2 / 1;
+    }
+
+    .text {
+      padding-top: 44px;
+      padding-bottom: 72px;
+    }
+
+    .text > :global(*) {
+      margin-top: 20px;
+    }
+
+    .text > :global(p:first-child + p) {
+      margin-top: 22px;
+    }
+
+    .text :global(h2) {
+      margin-top: 44px;
+    }
+
+    .text :global(h3) {
+      margin-top: 34px;
+    }
+
+    .text > :global(h2 + *),
+    .text > :global(h3 + *) {
+      margin-top: 14px;
+    }
+
+    .text :global(ul),
+    .text :global(ol) {
+      padding-left: 28px;
+    }
+
+    .text :global(blockquote) {
+      margin: 44px -80px;
+    }
+
+    .text :global(hr) {
+      margin-top: 44px;
+      margin-bottom: 44px;
+    }
+  }
+</style>

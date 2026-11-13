@@ -195,7 +195,7 @@ const columns = [-4, -3, -2, -1, 0, 1, 2, 3, 4];
   .stage {
     display: grid;
     grid-template-columns: minmax(0, 560fr) minmax(0, 624fr);
-    gap: 0 clamp(32px, 4.5vw, 56px);
+    gap: 0 clamp(32px, 4.5cqw, 56px);
     align-items: start;
   }
 
@@ -671,13 +671,6 @@ const columns = [-4, -3, -2, -1, 0, 1, 2, 3, 4];
   .needed {
     margin: 4px 0 0;
     font-size: 0.875rem;
-  }
-
-  @media (max-width: 760px) {
-    .stage {
-      grid-template-columns: minmax(0, 1fr);
-      gap: 32px;
-    }
   }
 
   @media (prefers-reduced-motion: reduce) {

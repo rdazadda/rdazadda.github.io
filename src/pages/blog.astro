@@ -1,191 +1,378 @@
 ---
-import BaseLayout from '../layouts/BaseLayout.astro';
-import PageTitle from '../components/PageTitle.astro';
-import BlogEntry from '../components/BlogEntry.astro';
+import SiteLayout from '../layouts/SiteLayout.astro';
+import Band from '../components/Band.astro';
+import Part from '../components/Part.astro';
 import { site } from '../data/site.js';
-import { kinds, entries } from '../data/blog.js';
+import { boxes } from '../data/boxes.js';
+import { posts } from '../lib/posts.js';
 
-const count = (kind: string) => entries.filter((entry) => entry.kind === kind).length;
+const FIRST = 4;
+const box = boxes.find((item) => item.link === '/blog/');
+const years = [...new Set(posts.map((post) => post.year))];
+const topics = [...new Set(posts.map((post) => post.topic).filter(Boolean))]
+  .map((name) => ({ name, count: posts.filter((post) => post.topic === name).length }))
+  .sort((a, b) => b.count - a.count || a.name.localeCompare(b.name));
 ---
 
-<BaseLayout title={`Blog by ${site.name}`}>
-  <div data-blog>
-    <header>
-      <PageTitle what="Blog" />
-      <div class="views">
-        <div class="show" role="group" aria-label="Show">
-          <button type="button" data-show="all" aria-pressed="true" data-text={`All ${entries.length}`}><span class="words">All</span> <span class="count">{entries.length}</span></button>
-          {
-            kinds.map((kind) => (
-              <button type="button" data-show={kind.id} aria-pressed="false" data-text={`${kind.heading} ${count(kind.id)}`}>
-                <span class="words">{kind.heading}</span> <span class="count">{count(kind.id)}</span>
-              </button>
-            ))
-          }
-        </div>
-        <div class="arrange" role="group" aria-label="Arrange">
-          <span class="label">Arranged</span>
-          <button type="button" data-arrange="type" aria-pressed="true" data-text="by type"><span class="words">by type</span></button>
-          <button type="button" data-arrange="year" aria-pressed="false" data-text="by year"><span class="words">by year</span></button>
-        </div>
-      </div>
-    </header>
+<SiteLayout title={`${box.title} by ${site.name}`} current="/blog/">
+  <main>
+    <Band title={box.title} facts={[]} />
 
-    <div class="groups" data-groups>
-      {
-        kinds.map((kind) => {
-          const items = entries.filter((entry) => entry.kind === kind.id);
-          return (
-            <section id={kind.id}>
-              <h2>{kind.heading}</h2>
-              <ol>
-                {items.map((entry) => (
-                  <BlogEntry {...entry} />
-                ))}
-              </ol>
-            </section>
-          );
-        })
-      }
+    <div class="columns">
+      <div class="main">
+        <Part name="Most Recent" open>
+          <div data-posts>
+            {
+              posts.map((post, i) => {
+                const { shown, more } = post.open(i === 0 ? 2 : 1);
+                return (
+                  <article class:list={{ lead: i === 0 }} hidden={i >= FIRST}>
+                    <p class="when">
+                      {post.day}
+                      {post.topic && <> &bull; {post.topic}</>}
+                    </p>
+                    <h3>
+                      <a href={post.link}>{post.title}</a>
+                    </h3>
+                    {post.picture && (
+                      <a class="picture" href={post.link} aria-hidden="true" tabindex="-1">
+                        <img src={post.picture} alt="" width="790" height="444" loading={i > 0 ? 'lazy' : undefined} />
+                      </a>
+                    )}
+                    {shown.map((text) => <p class="text" set:html={text} />)}
+                    {more && (
+                      <a class="read" href={post.link}>
+                        <span>Read the post</span>
+                        <svg viewBox="0 0 10 16" width="8" height="13" aria-hidden="true"><path d="M2 2l6 6-6 6" /></svg>
+                      </a>
+                    )}
+                  </article>
+                );
+              })
+            }
+          </div>
+          {
+            posts.length > FIRST && (
+              <button type="button" class="older" data-older>
+                Older Posts
+                <svg viewBox="0 0 16 10" width="13" height="8" aria-hidden="true"><path d="M2 2l6 6 6-6" /></svg>
+              </button>
+            )
+          }
+        </Part>
+      </div>
+
+      <aside class="side">
+        <Part name="All Posts" side open>
+          <div class="list" data-list>
+            {
+              years.map((year) => (
+                <div>
+                  <p class="year">{year}</p>
+                  {posts
+                    .filter((post) => post.year === year)
+                    .map((post) => (
+                      <a href={post.link} data-topic={post.topic}>
+                        <span class="title">{post.title}</span>
+                        <span class="date">{post.short}</span>
+                      </a>
+                    ))}
+                </div>
+              ))
+            }
+          </div>
+        </Part>
+        <div class="topics">
+          <Part name="Topics" side open>
+            <div role="group" aria-label="Topics" data-topics>
+              {
+                topics.map((topic) => (
+                  <button type="button" aria-pressed="false" data-topic={topic.name}>
+                    <span>{topic.name}</span>
+                    <span class="count">{topic.count}</span>
+                  </button>
+                ))
+              }
+            </div>
+          </Part>
+        </div>
+      </aside>
     </div>
-    <p class="empty" data-empty hidden>Nothing here yet.</p>
-  </div>
-</BaseLayout>
+  </main>
+</SiteLayout>
 
 <style>
-  .views {
-    --band: clamp(12px, calc(1.47cqi - 1px), var(--size-lead));
-    container-type: inline-size;
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: space-between;
-    align-items: center;
-    gap: 8px 24px;
-    margin-top: 0.9em;
-    padding: 12px;
-    border-radius: 8px;
-    background-color: var(--c-name);
-    box-shadow: inset 0 0 0 5px var(--c-name), inset 0 0 0 calc(5px + var(--line)) rgb(255 205 0 / 0.8);
-    color: var(--c-on-brand);
+  .columns {
+    padding: 30px var(--pad) 46px;
+    overflow-wrap: anywhere;
   }
 
-  .show,
-  .arrange {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    gap: 4px;
+  .main,
+  .side {
+    min-width: 0;
   }
 
-  .show {
-    font-size: var(--band);
+  article {
+    padding: 22px 0;
+    border-bottom: 1px solid var(--line);
   }
 
-  .arrange {
-    font-size: calc(var(--band) * 8 / 9);
+  .when {
+    color: var(--black);
+    font-size: 15px;
+    line-height: 22px;
   }
 
-  .arrange .label {
-    margin-right: 6px;
-    font-style: italic;
+  h3 {
+    margin: 3px 0 0;
+    color: var(--black);
+    font: var(--heading);
   }
 
-  .views button {
-    min-height: 44px;
-    padding: 0 calc(1em * 7 / 9);
-    border: 0;
-    border-radius: 3px;
-    background: none;
-    color: inherit;
-    font: inherit;
-    cursor: pointer;
-    transition: background-color 0.25s ease;
-  }
-
-  .arrange button {
-    padding: 0 0.75em;
-  }
-
-  .views button[aria-pressed='false']:hover {
-    background-color: rgb(255 255 255 / 0.14);
-  }
-
-  .views button[aria-pressed='true'] {
-    color: #ffcd00;
-    cursor: default;
-  }
-
-  .views button[aria-pressed='true'] .words {
-    font-weight: 700;
-  }
-
-  .views button::after {
-    content: attr(data-text);
+  h3 a {
     display: block;
-    height: 0;
-    overflow: hidden;
-    visibility: hidden;
+    padding: 7px 0;
+  }
+
+  .lead h3 {
+    font: var(--featured);
+  }
+
+  .lead h3 a {
+    padding: 5px 0;
+  }
+
+  h3 a:hover,
+  .read:hover {
+    color: var(--blue);
+  }
+
+  .picture {
+    display: block;
+    margin: 4px calc(var(--pad) * -1) 0;
+  }
+
+  .picture img {
+    display: block;
+    width: 100%;
+    height: auto;
+    aspect-ratio: 16 / 9;
+    object-fit: cover;
+  }
+
+  .text {
+    margin-top: 5px;
+    font: var(--text);
+  }
+
+  .lead .text {
+    margin-top: 7px;
+  }
+
+  article .text + .text {
+    margin-top: 12px;
+  }
+
+  article .picture + .text {
+    margin-top: 16px;
+  }
+
+  .read {
+    display: inline-flex;
+    align-items: center;
+    gap: 9px;
+    min-height: 44px;
+    margin-top: 6px;
+    color: var(--black);
+    font-size: 16px;
     font-weight: 700;
+    line-height: 22px;
   }
 
-  .views button:focus-visible {
-    outline: 2px solid var(--c-on-brand);
-    outline-offset: 2px;
+  .read span {
+    border-bottom: 2px solid var(--blue);
   }
 
-  .count {
-    font-size: calc(1em * 8 / 9);
+  svg {
+    flex: none;
+    fill: none;
+    stroke: var(--blue);
+    stroke-width: 2.2;
+    stroke-linecap: round;
+    stroke-linejoin: round;
   }
 
-  @media (prefers-reduced-motion: reduce) {
-    .views button {
-      transition: none;
-    }
-  }
-
-  .groups {
+  .older {
     display: flex;
-    flex-direction: column;
-    gap: 44px;
-    padding-top: 36px;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+    min-height: 60px;
+    margin-top: -1px;
+    padding: 0;
+    border: 0;
+    border-top: 1px solid var(--ink);
+    border-bottom: 1px solid var(--line);
+    background: none;
+    color: var(--black);
+    font: var(--side);
+    text-align: left;
+    cursor: pointer;
   }
 
-  section {
-    display: flex;
-    flex-direction: column;
-    gap: 20px;
+  .older:hover {
+    color: var(--blue);
   }
 
-  section[hidden] {
+  .older[hidden],
+  .list [hidden] {
     display: none;
   }
 
-  h2 {
-    margin: 0;
-    padding-left: 50px;
-    font-size: var(--size-heading);
-    font-style: italic;
-    font-weight: 400;
+  .side {
+    margin-top: 40px;
   }
 
-  ol {
+  .list {
+    position: relative;
+    padding-right: 10px;
+    overflow-y: auto;
+    scrollbar-width: thin;
+    scrollbar-color: var(--rule) var(--band);
+  }
+
+  .year {
+    position: sticky;
+    top: 0;
+    padding: 14px 0 6px;
+    border-bottom: 1px solid var(--line);
+    background: var(--white);
+    color: var(--black);
+    font-size: 14px;
+    font-weight: 700;
+    line-height: 20px;
+  }
+
+  .list a {
+    display: block;
+    padding: 11px 0 12px;
+    border-bottom: 1px solid var(--line);
+  }
+
+  .title,
+  .date {
+    display: block;
+  }
+
+  .title {
+    color: var(--black);
+    font-size: 16px;
+    font-weight: 700;
+    line-height: 21px;
+  }
+
+  .date {
+    margin-top: 2px;
+    font-size: 14px;
+    line-height: 22px;
+  }
+
+  .list a:hover .title {
+    color: var(--blue);
+  }
+
+  .topics {
+    margin-top: 36px;
+  }
+
+  .topics button {
     display: flex;
-    flex-direction: column;
-    gap: 32px;
-    margin: 0;
-    padding: 0;
-    list-style: none;
-    counter-reset: entry;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    width: 100%;
+    min-height: 46px;
+    padding: 6px 0;
+    border: 0;
+    border-bottom: 1px solid var(--line);
+    background: none;
+    color: var(--black);
+    font: inherit;
+    font-size: 16px;
+    line-height: 22px;
+    text-align: left;
+    cursor: pointer;
   }
 
-  .empty {
-    margin: 40px 0 0;
-    padding-left: 50px;
-    color: var(--c-muted);
+  .topics button:hover {
+    color: var(--blue);
+  }
+
+  .topics [aria-pressed='true'] span:first-child {
+    border-bottom: 2px solid var(--blue);
+    font-weight: 700;
+  }
+
+  .count {
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+  }
+
+  @media (min-width: 1024px) {
+    .columns {
+      display: grid;
+      grid-template-columns: minmax(0, 79fr) minmax(0, 40fr);
+      column-gap: clamp(32px, 4.8%, 60px);
+      padding-top: 52px;
+      padding-bottom: 80px;
+    }
+
+    article {
+      padding: 28px 0 30px;
+    }
+
+    h3 a {
+      padding: 5px 0;
+    }
+
+    .picture {
+      margin: 13px 0 0;
+    }
+
+    .text {
+      margin-top: 9px;
+    }
+
+    .lead .text {
+      margin-top: 11px;
+    }
+
+    article .text + .text {
+      margin-top: 14px;
+    }
+
+    article .picture + .text {
+      margin-top: 18px;
+    }
+
+    .read {
+      margin-top: 8px;
+    }
+
+    .side {
+      margin-top: 0;
+    }
+
+    .list {
+      padding-right: 12px;
+    }
+
+    .topics {
+      margin-top: 30px;
+    }
   }
 </style>
 
 <script>
   import '../scripts/blog.js';
-  import '../scripts/clips.js';
 </script>

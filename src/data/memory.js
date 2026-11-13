@@ -1,6 +1,12 @@
-export const kinds = [
-  { id: 'strategies', heading: 'Strategies' },
-  { id: 'other', heading: 'Other' },
+export const kinds = [{ id: 'strategies', heading: 'Strategies' }];
+
+export const parts = [
+  { id: 'about', heading: 'About' },
+  { id: 'example', heading: 'Example' },
+  { id: 'how', heading: 'How to use' },
+  { id: 'practice', heading: 'Practice' },
+  { id: 'references', heading: 'References' },
+  { id: 'cite', heading: 'Cite' },
 ];
 
 export const entries = [
@@ -16,8 +22,8 @@ export const entries = [
     references: [],
     citation: '',
     bibtex: '',
-    image: '/images/memory/memory-1.png',
-    video: '/images/memory/memory-1.mp4',
+    image: '/images/home/memory-1.webp',
+    video: '/images/home/memory-1.mp4',
     link: '/memory/memory-palace/',
   },
   {
@@ -32,8 +38,8 @@ export const entries = [
     references: [],
     citation: '',
     bibtex: '',
-    image: '/images/memory/memory-2.png',
-    video: '/images/memory/memory-2.mp4',
+    image: '/images/home/memory-2.webp',
+    video: '/images/home/memory-2.mp4',
     link: '/memory/remembering-numbers/',
   },
   {
@@ -48,8 +54,8 @@ export const entries = [
     references: [],
     citation: '',
     bibtex: '',
-    image: '/images/memory/memory-3.png',
-    video: '/images/memory/memory-3.mp4',
+    image: '/images/home/memory-3.webp',
+    video: '/images/home/memory-3.mp4',
     link: '/memory/linking-thoughts/',
   },
   {
@@ -64,22 +70,8 @@ export const entries = [
     references: [],
     citation: '',
     bibtex: '',
-    image: '/images/memory/memory-4.png',
-    video: '/images/memory/memory-4.mp4',
+    image: '/images/home/memory-4.webp',
+    video: '/images/home/memory-4.mp4',
     link: '/memory/pegging-information/',
-  },
-  {
-    kind: 'other',
-    year: '2026',
-    title: 'Untitled Topic',
-    about: '',
-    intro: '',
-    pairs: [],
-    steps: [],
-    practice: '',
-    references: [],
-    citation: '',
-    bibtex: '',
-    link: '/memory/untitled-topic/',
   },
 ];

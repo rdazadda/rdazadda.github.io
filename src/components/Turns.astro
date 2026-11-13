@@ -1,0 +1,50 @@
+<div class="turns" data-turns>
+  <slot />
+</div>
+
+<style>
+  .turns {
+    position: relative;
+    overflow: hidden;
+  }
+
+  .turns > :global([data-turn]) {
+    position: relative;
+    z-index: 1;
+    background: var(--white);
+  }
+
+  .turns > :global([data-turn]:not(.current)) {
+    position: absolute;
+    top: 0;
+    right: 0;
+    left: 0;
+    z-index: 0;
+    visibility: hidden;
+    transition: visibility 0s 0.8s;
+  }
+
+  .turns > :global(.arriving) {
+    animation: arrive 0.8s ease-in-out;
+  }
+
+  @keyframes arrive {
+    from {
+      opacity: 0;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .turns > :global([data-turn]:not(.current)) {
+      transition: none;
+    }
+
+    .turns > :global(.arriving) {
+      animation: none;
+    }
+  }
+</style>
+
+<script>
+  import '../scripts/turns.js';
+</script>
