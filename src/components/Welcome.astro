@@ -18,7 +18,9 @@ import { site } from '../data/site.js';
       <p class="note" data-now="sky">&nbsp;</p>
     </div>
   </div>
-  <p class="text" set:html={site.welcome} />
+  <div class="text">
+    {site.welcome.map((paragraph) => <p set:html={paragraph} />)}
+  </div>
 </div>
 
 <style>
@@ -93,6 +95,10 @@ import { site } from '../data/site.js';
     text-wrap: pretty;
   }
 
+  .text p + p {
+    margin-top: 12px;
+  }
+
   .text :global(a) {
     border-bottom: 2px solid var(--blue);
     color: var(--black);
@@ -148,6 +154,10 @@ import { site } from '../data/site.js';
 
     .text {
       margin-top: 16px;
+    }
+
+    .text p + p {
+      margin-top: 14px;
     }
   }
 </style>

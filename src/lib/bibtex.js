@@ -1,6 +1,6 @@
 const words = (text) => text.normalize('NFD').toLowerCase().match(/[a-z]+/g) ?? [];
 
-const tex = (text) => text.replace(/[&%$#_]/g, '\\$&').replaceAll('\u2019', "'");
+const tex = (text) => text.replace(/[&%$#_]/g, '\\$&').replaceAll('’', "'");
 
 const verbatim = ['url', 'doi'];
 
