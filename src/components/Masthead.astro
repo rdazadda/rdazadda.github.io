@@ -12,10 +12,10 @@ const { links, sections, current } = Astro.props;
   {
     current ? (
       <a class="home" href="/" aria-label="Home">
-        <img class="logo" src="/favicon.svg" alt="" width="30" height="30" />
+        <img class="logo" src="/logo.svg" alt="" width="61" height="30" />
       </a>
     ) : (
-      <img class="logo" src="/favicon.svg" alt="" width="30" height="30" />
+      <img class="logo" src="/logo.svg" alt="" width="61" height="30" />
     )
   }
   <div class="links">
@@ -49,14 +49,13 @@ const { links, sections, current } = Astro.props;
 
   .logo {
     display: block;
-    width: 30px;
+    width: 61px;
     height: 30px;
   }
 
   .home {
     display: flex;
     align-items: center;
-    width: 44px;
     height: var(--top-bar);
   }
 
