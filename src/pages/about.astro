@@ -1,8 +1,9 @@
 ---
 import SiteLayout from '../layouts/SiteLayout.astro';
+import Band from '../components/Band.astro';
 import { site } from '../data/site.js';
 import { boxes } from '../data/boxes.js';
-import { sections } from '../data/about.js';
+import { pictures, sections } from '../data/about.js';
 
 const box = boxes.find((item) => item.link === '/about/');
 const paragraphs = (text) => [text].flat().filter(Boolean);
@@ -10,53 +11,47 @@ const paragraphs = (text) => [text].flat().filter(Boolean);
 
 <SiteLayout title={`${box.title} ${site.name}`} current="/about/">
   <main>
-    <header>
-      <div class="title">
-        <h1>{box.title}</h1>
-        <p class="caption" set:html={box.caption} />
-        <button class="all" type="button" aria-pressed="true" data-show="all"><span class="words">All</span></button>
-      </div>
-      <div class="windows">
-        {
-          sections.map((section) => {
-            const rotates = section.slides.length > 1;
-            return (
-              <button class="window" type="button" aria-pressed="false" data-show={section.id}>
-                <span class:list={['slides', { rotate: rotates }]} data-rotate={rotates ? '' : undefined}>
-                  {section.slides.map((slide, i) => (
-                    <picture class={rotates && i === 0 ? 'current' : undefined}>
-                      {slide.phone && <source media="(min-width: 640px)" srcset={slide.image} />}
-                      <img src={slide.phone ?? slide.image} alt="" style={slide.fill && `object-position: ${slide.fill}`} />
-                    </picture>
-                  ))}
-                </span>
-                <span class="name"><span class="words">{section.heading}</span></span>
-              </button>
-            );
-          })
-        }
-      </div>
-    </header>
-
-    <div class="parts" data-parts>
+    <Band title={box.title} subtitle={box.caption} facts={[]} />
+    <div class="about">
+      <figure data-album>
+        <div class="frame">
+          {pictures.map((picture, i) => <img class={i === 0 ? 'current' : undefined} src={picture} alt="" width="900" height="900" />)}
+        </div>
+        <figcaption>
+          <span class="count" data-count>1 / {pictures.length}</span>
+          <button type="button" aria-label="Previous picture" data-step="-1">
+            <svg viewBox="0 0 10 16" width="9" height="15" aria-hidden="true"><path d="M8 2 2 8l6 6" /></svg>
+          </button>
+          <button type="button" aria-label="Next picture" data-step="1">
+            <svg viewBox="0 0 10 16" width="9" height="15" aria-hidden="true"><path d="M2 2l6 6-6 6" /></svg>
+          </button>
+        </figcaption>
+      </figure>
       <div class="rows">
         {
-          sections.map((section) => (
-            <section id={section.id}>
-              <h2>{section.heading}</h2>
-              <div class="text">
-                {paragraphs(section.text).map((paragraph) => <p set:html={paragraph} />)}
-                {section.interests && (
-                  <dl>
-                    <div>
-                      <dt>Research interests</dt>
-                      <dd>{section.interests}</dd>
-                    </div>
-                  </dl>
+          sections.map((section) => {
+            const text = paragraphs(section.text);
+            return (
+              <section id={section.id}>
+                <h2>{section.heading}</h2>
+                {(text.length > 0 || section.interests) && (
+                  <div class="text">
+                    {text.map((paragraph) => (
+                      <p set:html={paragraph} />
+                    ))}
+                    {section.interests && (
+                      <dl>
+                        <div>
+                          <dt>Research interests</dt>
+                          <dd>{section.interests}</dd>
+                        </div>
+                      </dl>
+                    )}
+                  </div>
                 )}
-              </div>
-            </section>
-          ))
+              </section>
+            );
+          })
         }
       </div>
     </div>
@@ -64,168 +59,106 @@ const paragraphs = (text) => [text].flat().filter(Boolean);
 </SiteLayout>
 
 <style>
-  header {
-    container-type: inline-size;
-    padding-top: 22px;
-    background: var(--stage);
-    color: var(--white);
+  .about {
+    padding: 24px var(--pad) 40px;
+    color: var(--black);
   }
 
-  .title {
-    display: grid;
-    grid-template-columns: minmax(0, 1fr) auto;
-    column-gap: 16px;
-    padding: 0 var(--pad);
+  figure {
+    margin: 0;
   }
 
-  h1 {
-    grid-area: 1 / 1;
-    font: var(--title);
-    letter-spacing: -0.02em;
-  }
-
-  .caption {
-    grid-area: 2 / 1 / 3 / 3;
-    margin-top: 8px;
-    font: var(--text);
-  }
-
-  .all {
-    grid-area: 1 / 2;
-    align-self: center;
-    display: flex;
-    align-items: center;
-    justify-content: flex-end;
-    min-width: 44px;
-    height: 44px;
-    margin: -2px 0;
-    padding: 0;
-    border: 0;
-    background: none;
-    color: inherit;
-    font: inherit;
-    font-size: 16px;
-    font-weight: 700;
-    line-height: 22px;
-    cursor: pointer;
-  }
-
-  .all:focus-visible {
-    outline-color: var(--gold);
-  }
-
-  .words {
-    padding: 3px 0;
-    border-bottom: 3px solid transparent;
-  }
-
-  [aria-pressed='true'] .words {
-    border-color: var(--gold);
-  }
-
-  .windows {
-    --slant: 15.4cqw;
-    display: flex;
-    flex-direction: column;
-    margin-top: 4px;
-    padding-top: 3px;
-    background: var(--gold);
-    clip-path: polygon(0 var(--slant), 100% 0, 100% 100%, 0 100%);
-  }
-
-  .window {
+  .frame {
     position: relative;
-    height: 54cqw;
-    padding: 0;
-    border: 0;
-    background: var(--black);
-    color: inherit;
-    font: inherit;
-    text-align: left;
-    cursor: pointer;
-    clip-path: polygon(0 var(--slant), 100% 0, 100% calc(100% - var(--slant)), 0 100%);
+    aspect-ratio: 1;
+    overflow: hidden;
+    background: var(--band);
   }
 
-  .window + .window {
-    margin-top: calc(3px - var(--slant));
-  }
-
-  .window:last-child {
-    clip-path: polygon(0 var(--slant), 100% 0, 100% 100%, 0 100%);
-  }
-
-  .window:focus-visible {
-    outline: 0;
-  }
-
-  .slides {
+  .frame img {
     position: absolute;
     inset: 0;
-    transition: opacity 0.3s ease;
-  }
-
-  .windows:has([aria-pressed='true']) [aria-pressed='false'] .slides {
-    opacity: 0.35;
-  }
-
-  picture {
-    position: absolute;
-    inset: 0;
-  }
-
-  .rotate picture {
-    transition: opacity 0.9s ease-in-out;
-  }
-
-  .rotate picture:not(.current) {
-    opacity: 0;
-  }
-
-  img {
     display: block;
     width: 100%;
     height: 100%;
     object-fit: cover;
+    visibility: hidden;
+    transition: visibility 0s 0.8s;
   }
 
-  .name {
-    position: absolute;
-    bottom: 34px;
-    left: var(--pad);
+  .frame .current {
+    z-index: 1;
+    visibility: visible;
+    transition: none;
+  }
+
+  .frame .arriving {
+    animation: arrive 0.8s ease-in-out;
+  }
+
+  @keyframes arrive {
+    from {
+      opacity: 0;
+    }
+  }
+
+  figcaption {
     display: flex;
     align-items: center;
-    height: 36px;
-    padding: 0 12px;
-    background: var(--black);
-    font: var(--side);
+    height: 52px;
   }
 
-  .window:last-child .name {
-    bottom: 16px;
+  .count {
+    flex: 1;
+    font-size: 15px;
+    line-height: 22px;
+    font-variant-numeric: tabular-nums;
   }
 
-  .window:focus-visible .name {
-    outline: 2px solid var(--gold);
-    outline-offset: 2px;
+  button {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 44px;
+    height: 44px;
+    padding: 0;
+    border: 0;
+    background: none;
+    color: inherit;
+    cursor: pointer;
   }
 
-  .all:hover,
-  .window:hover .name {
-    color: var(--gold);
+  button:last-child {
+    margin-right: -14px;
   }
 
-  .parts {
-    padding: 24px var(--pad) 40px;
+  button:hover {
+    color: var(--blue);
+  }
+
+  svg {
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 2.2;
+    stroke-linecap: round;
+    stroke-linejoin: round;
   }
 
   .rows {
-    border-bottom: 1px solid var(--ink);
+    margin-top: 8px;
   }
 
   section {
-    padding: 18px 0 26px;
-    border-top: 1px solid var(--ink);
-    color: var(--black);
+    padding: 20px 0 26px;
+    border-top: 1px solid var(--line);
+  }
+
+  section:first-child {
+    border-color: var(--ink);
+  }
+
+  section:last-child {
+    padding-bottom: 0;
   }
 
   h2 {
@@ -233,15 +166,16 @@ const paragraphs = (text) => [text].flat().filter(Boolean);
   }
 
   .text {
+    margin-top: 10px;
     font: var(--text);
   }
 
-  .text > * {
-    margin-top: 14px;
+  .text > * + * {
+    margin-top: 10px;
   }
 
   .text > dl {
-    margin-top: 24px;
+    margin-top: 16px;
     border-top: 1px solid var(--line);
   }
 
@@ -261,120 +195,60 @@ const paragraphs = (text) => [text].flat().filter(Boolean);
   }
 
   @media (min-width: 640px) {
-    header {
-      padding-bottom: 30px;
+    .about {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) min(42%, 500px);
+      align-items: start;
+      column-gap: 32px;
+      padding-top: 32px;
+      padding-bottom: 56px;
     }
 
-    .windows {
-      --slant: 43px;
-      flex-direction: row;
-      height: 300px;
-      margin: 18px var(--pad) 0;
-      padding: 0 4px;
+    figure {
+      position: sticky;
+      top: 114px;
+      grid-area: 1 / 2;
     }
 
-    .windows,
-    .window,
-    .window:last-child {
-      clip-path: polygon(var(--slant) 0, 100% 0, calc(100% - var(--slant)) 100%, 0 100%);
+    figcaption {
+      border-bottom: 1px solid var(--line);
     }
 
-    .window {
-      flex: none;
-      width: calc((100% - 8px + 2 * var(--slant)) / 3);
-      height: auto;
-    }
-
-    .window + .window {
-      margin: 0 0 0 calc(4px - var(--slant));
-    }
-
-    .name {
-      right: 0;
-      left: 0;
-      height: 46px;
-      padding: 0 0 0 22px;
-    }
-
-    .name,
-    .window:last-child .name {
-      bottom: 0;
-    }
-
-    .window:focus-visible .name {
-      outline: 0;
-    }
-
-    .window:focus-visible .words {
-      outline: 2px solid var(--gold);
-      outline-offset: 5px;
+    .rows {
+      grid-area: 1 / 1;
+      margin-top: 0;
     }
   }
 
   @media (min-width: 1024px) {
-    header {
-      padding-top: 30px;
-      padding-bottom: 40px;
+    .about {
+      column-gap: 64px;
+      padding-top: 56px;
+      padding-bottom: 80px;
     }
 
-    .caption {
-      grid-area: 2 / 1;
-      max-width: 820px;
+    figure {
+      top: 137px;
     }
 
-    .all {
-      grid-area: 1 / 2 / 3 / 3;
-      align-self: end;
-      margin: 0;
-    }
-
-    .windows {
-      --slant: 50px;
-      height: 340px;
-      margin-top: 22px;
-    }
-
-    .name {
-      height: 50px;
-      padding-left: 26px;
-    }
-
-    .parts {
-      padding-top: 44px;
-      padding-bottom: 68px;
+    figcaption {
+      height: 56px;
     }
 
     section {
-      display: flex;
-      gap: 40px;
-      padding: 26px 0 38px;
-    }
-
-    section[hidden] {
-      display: none;
-    }
-
-    h2 {
-      flex: 0 0 250px;
+      padding: 26px 0 34px;
     }
 
     .text {
-      flex: 1;
-      min-width: 0;
-      max-width: 700px;
-      padding-top: 1px;
+      margin-top: 14px;
     }
 
-    .text > * {
-      margin-top: 16px;
+    .text > * + * {
+      margin-top: 12px;
     }
 
     .text > dl {
-      margin-top: 28px;
-    }
-
-    .text > :first-child {
-      margin-top: 0;
+      margin-top: 20px;
     }
 
     dl div {
@@ -397,9 +271,12 @@ const paragraphs = (text) => [text].flat().filter(Boolean);
   }
 
   @media (prefers-reduced-motion: reduce) {
-    .slides,
-    .rotate picture {
+    .frame img {
       transition: none;
+    }
+
+    .frame .arriving {
+      animation: none;
     }
   }
 </style>
