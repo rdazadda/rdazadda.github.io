@@ -1,6 +1,7 @@
 const ZONE = 'America/Anchorage';
 const MINUTE = 60 * 1000;
 const STALE = 120 * MINUTE;
+const TURN = 5000;
 const STATION = 'https://api.weather.gov/stations/PAFA/observations?limit=4';
 const BACKUP = 'https://api.open-meteo.com/v1/forecast?latitude=64.8378&longitude=-147.7164&current=temperature_2m,weather_code';
 
@@ -8,6 +9,10 @@ const clock = new Intl.DateTimeFormat('en-US', { timeZone: ZONE, hour: 'numeric'
 const day = new Intl.DateTimeFormat('en-US', { timeZone: ZONE, weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' });
 const find = (name) => document.querySelector(`[data-now="${name}"]`);
 const degrees = (value) => String(Math.round(value)).replace('-', '−');
+const frame = document.querySelector('[data-pictures]');
+const pictures = [...frame.querySelectorAll('img')];
+let shown = 0;
+let pointed = false;
 
 function words(code) {
   if (code === 0) return 'Clear';
@@ -59,6 +64,26 @@ async function showWeather() {
   find('celsius').textContent = degrees(weather.celsius);
   find('sky').textContent = weather.sky;
   row.classList.remove('waiting');
+}
+
+function turn() {
+  const next = (shown + 1) % pictures.length;
+  if (pointed || document.hidden || !pictures[next].complete) return;
+  pictures[shown].classList.remove('current', 'arriving');
+  pictures[next].classList.add('current', 'arriving');
+  shown = next;
+}
+
+if (pictures.length > 1 && !window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+  if (window.matchMedia('(hover: hover)').matches) {
+    frame.addEventListener('mouseenter', () => {
+      pointed = true;
+    });
+    frame.addEventListener('mouseleave', () => {
+      pointed = false;
+    });
+  }
+  setInterval(turn, TURN);
 }
 
 showTime();

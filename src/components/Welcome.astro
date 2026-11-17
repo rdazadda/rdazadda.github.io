@@ -4,7 +4,9 @@ import { site } from '../data/site.js';
 
 <div class="welcome">
   <div class="side">
-    <img src="/images/home/welcome.webp" alt="" width="1074" height="904" />
+    <div class="frame" data-pictures>
+      {site.pictures.map((picture, i) => <img class={i === 0 ? 'current' : undefined} src={picture} alt="" width="1600" height="1056" />)}
+    </div>
     <div class="now">
       <p class="place">Fairbanks, Alaska</p>
       <div class="row">
@@ -34,13 +36,38 @@ import { site } from '../data/site.js';
     overflow-wrap: anywhere;
   }
 
+  .frame {
+    position: relative;
+    aspect-ratio: 358 / 250;
+    overflow: hidden;
+    background: var(--band);
+  }
+
   img {
+    position: absolute;
+    inset: 0;
     display: block;
     width: 100%;
-    height: auto;
-    aspect-ratio: 358 / 250;
+    height: 100%;
     object-fit: cover;
-    background: var(--band);
+    visibility: hidden;
+    transition: visibility 0s 0.8s;
+  }
+
+  .current {
+    z-index: 1;
+    visibility: visible;
+    transition: none;
+  }
+
+  .arriving {
+    animation: arrive 0.8s ease-in-out;
+  }
+
+  @keyframes arrive {
+    from {
+      opacity: 0;
+    }
   }
 
   .now {
@@ -141,7 +168,7 @@ import { site } from '../data/site.js';
       align-items: center;
     }
 
-    img {
+    .frame {
       aspect-ratio: 400 / 264;
     }
 
@@ -167,7 +194,7 @@ import { site } from '../data/site.js';
       align-items: stretch;
     }
 
-    img {
+    .frame {
       flex: 1 0 auto;
     }
 
