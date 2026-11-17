@@ -3,41 +3,48 @@ import { site } from '../data/site.js';
 ---
 
 <div class="welcome">
-  <h1>{site.greeting}</h1>
-  <div class="now">
-    <p class="place">Fairbanks, Alaska</p>
-    <div class="row">
-      <p class="number"><span data-now="time">&nbsp;</span> <span class="unit" data-now="period"></span></p>
-      <p class="note" data-now="date">&nbsp;</p>
-    </div>
-    <div class="row waiting" data-now="weather">
-      <p class="number degrees">
-        <span><span data-now="fahrenheit"></span> <span class="unit">°F</span></span>
-        <span><span data-now="celsius"></span> <span class="unit">°C</span></span>
-      </p>
-      <p class="note" data-now="sky">&nbsp;</p>
+  <div class="side">
+    <img src="/images/home/welcome.webp" alt="" width="1074" height="904" />
+    <div class="now">
+      <p class="place">Fairbanks, Alaska</p>
+      <div class="row">
+        <p class="number"><span data-now="time">&nbsp;</span> <span class="unit" data-now="period"></span></p>
+        <p class="note" data-now="date">&nbsp;</p>
+      </div>
+      <div class="row waiting" data-now="weather">
+        <p class="number degrees">
+          <span><span data-now="fahrenheit"></span> <span class="unit">°F</span></span>
+          <span><span data-now="celsius"></span> <span class="unit">°C</span></span>
+        </p>
+        <p class="note" data-now="sky">&nbsp;</p>
+      </div>
     </div>
   </div>
-  <div class="text">
-    {site.welcome.map((paragraph) => <p set:html={paragraph} />)}
+  <div class="words">
+    <h1>{site.greeting}</h1>
+    <div class="text">
+      {site.welcome.map((paragraph) => <p set:html={paragraph} />)}
+    </div>
   </div>
 </div>
 
 <style>
   .welcome {
-    padding: 24px 20px 26px;
     background: var(--white);
     overflow-wrap: anywhere;
   }
 
-  h1 {
-    color: var(--black);
-    font: var(--title);
-    letter-spacing: -0.02em;
+  img {
+    display: block;
+    width: 100%;
+    height: auto;
+    aspect-ratio: 358 / 250;
+    object-fit: cover;
+    background: var(--band);
   }
 
   .now {
-    margin-top: 18px;
+    margin: 14px 20px 0;
   }
 
   .place {
@@ -50,8 +57,16 @@ import { site } from '../data/site.js';
   }
 
   .row {
-    padding: 12px 0 13px;
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 11px 0 12px;
     border-bottom: 1px solid var(--line);
+  }
+
+  .row[hidden] {
+    display: none;
   }
 
   .waiting {
@@ -59,16 +74,17 @@ import { site } from '../data/site.js';
   }
 
   .number {
+    flex: none;
     color: var(--black);
-    font-size: 28px;
+    font-size: 24px;
     font-weight: 700;
-    line-height: 34px;
+    line-height: 32px;
     letter-spacing: -0.02em;
     font-variant-numeric: tabular-nums;
   }
 
   .unit {
-    font-size: 16px;
+    font-size: 15px;
     letter-spacing: 0;
   }
 
@@ -78,19 +94,29 @@ import { site } from '../data/site.js';
   }
 
   .degrees > span + span {
-    margin-left: 16px;
-    padding-left: 16px;
+    margin-left: 14px;
+    padding-left: 14px;
     border-left: 1px solid var(--line);
   }
 
   .note {
-    margin-top: 2px;
     font-size: 14px;
     line-height: 20px;
+    text-align: right;
+  }
+
+  .words {
+    padding: 24px 20px 26px;
+  }
+
+  h1 {
+    color: var(--black);
+    font: var(--title);
+    letter-spacing: -0.02em;
   }
 
   .text {
-    margin-top: 18px;
+    margin-top: 14px;
     font: var(--text);
     text-wrap: pretty;
   }
@@ -108,48 +134,57 @@ import { site } from '../data/site.js';
     color: var(--blue);
   }
 
-  @media (min-width: 1024px) {
-    .welcome {
+  @media (min-width: 640px) {
+    .side {
       display: grid;
-      grid-template-columns: minmax(0, 1fr) 330px;
-      grid-template-rows: auto 1fr;
-      column-gap: 56px;
-      padding: 44px 48px 46px;
+      grid-template-columns: min(42%, 340px) minmax(0, 1fr);
+      align-items: center;
+    }
+
+    img {
+      aspect-ratio: 400 / 264;
     }
 
     .now {
-      grid-area: 1 / 2 / 3 / 3;
-      align-self: center;
-      margin-top: 0;
-      padding-left: 48px;
-      border-left: 1px solid var(--line);
+      max-width: 420px;
+      margin: 0 28px;
     }
 
-    .place {
-      padding-bottom: 10px;
+    .words {
+      padding: 24px 28px 30px;
+    }
+  }
+
+  @media (min-width: 1024px) {
+    .welcome {
+      display: flex;
     }
 
-    .row {
-      padding: 13px 0 14px;
+    .side {
+      display: flex;
+      flex: 0 0 clamp(350px, 32%, 400px);
+      flex-direction: column;
+      align-items: stretch;
+    }
+
+    img {
+      flex: 1 0 auto;
+    }
+
+    .now {
+      max-width: none;
+      margin: 14px 24px 6px;
     }
 
     .row:last-child {
-      padding-bottom: 0;
       border-bottom: 0;
     }
 
-    .number {
-      font-size: 32px;
-      line-height: 38px;
-    }
-
-    .unit {
-      font-size: 17px;
-    }
-
-    .degrees > span + span {
-      margin-left: 18px;
-      padding-left: 18px;
+    .words {
+      flex: 1;
+      min-width: 0;
+      align-self: center;
+      padding: 40px;
     }
 
     .text {
@@ -158,6 +193,12 @@ import { site } from '../data/site.js';
 
     .text p + p {
       margin-top: 14px;
+    }
+  }
+
+  @media (min-width: 1280px) {
+    .words {
+      padding: 40px 48px;
     }
   }
 </style>
