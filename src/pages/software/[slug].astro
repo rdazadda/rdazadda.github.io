@@ -11,7 +11,7 @@ export function getStaticPaths() {
 const { software } = Astro.props;
 ---
 
-<SiteLayout title={`${software.title} by ${site.name}`} current="/software/">
+<SiteLayout title={`${software.title} by ${site.name}`} description={software.about} current="/software/">
   <main>
     <Software software={software} />
   </main>

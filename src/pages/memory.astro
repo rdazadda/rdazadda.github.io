@@ -9,7 +9,7 @@ const box = boxes.find((item) => item.link === '/memory/');
 const type = (entry) => kinds.find((kind) => kind.id === entry.kind).heading;
 ---
 
-<SiteLayout title={`${box.title} by ${site.name}`} current="/memory/">
+<SiteLayout title={`${box.title} by ${site.name}`} description={box.caption} current="/memory/">
   <main>
     <header>
       <h1>{box.title}</h1>

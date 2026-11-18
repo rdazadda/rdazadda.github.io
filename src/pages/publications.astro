@@ -11,7 +11,7 @@ const count = (kind) => entries.filter((entry) => entry.kind === kind.id).length
 const facts = kinds.filter((kind) => count(kind) > 0).map((kind) => ({ label: kind.heading, value: String(count(kind)) }));
 ---
 
-<SiteLayout title={`${box.title} by ${site.name}`} current="/publications/">
+<SiteLayout title={`${box.title} by ${site.name}`} description={box.caption} current="/publications/">
   <main>
     <Band title={box.title} subtitle={box.caption} facts={facts} />
     <Publications />

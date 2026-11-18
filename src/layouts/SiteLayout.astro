@@ -3,14 +3,15 @@ import '../styles/site.css';
 import Masthead from '../components/Masthead.astro';
 import { site } from '../data/site.js';
 import { boxes } from '../data/boxes.js';
-import { DOT } from '../lib/text.js';
+import { DOT, plain } from '../lib/text.js';
 
 interface Props {
   title: string;
+  description?: string;
   current?: string;
 }
 
-const { title, current } = Astro.props;
+const { title, description, current } = Astro.props;
 const sections = boxes.map((box) => ({ title: box.title, link: box.link }));
 const built = new Date();
 const updated = built.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
@@ -24,10 +25,12 @@ const year = built.getFullYear();
     <meta name="theme-color" content="#1f5a88" />
     <meta name="google-site-verification" content="tKuXFyd_hUKtrixqL1q-UHuS2OuBVQDC_Yn6iaKslqo" />
     <title>{title}</title>
+    {description && <meta name="description" content={plain(description)} />}
     <link rel="icon" href="/favicon.ico" sizes="32x32" />
     <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
     <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
     <link rel="preload" href="/fonts/inter.woff2" as="font" type="font/woff2" crossorigin />
+    <slot name="head" />
   </head>
   <body>
     <Masthead links={site.links} sections={sections} current={current} />

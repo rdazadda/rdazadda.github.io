@@ -4,9 +4,25 @@ import Welcome from '../components/Welcome.astro';
 import Box from '../components/Box.astro';
 import { site } from '../data/site.js';
 import { boxes } from '../data/boxes.js';
+
+const person = {
+  '@context': 'https://schema.org',
+  '@type': 'Person',
+  name: site.name,
+  url: Astro.site,
+  jobTitle: site.job,
+  worksFor: {
+    '@type': 'Organization',
+    name: site.workplace.name,
+    url: site.workplace.href,
+    parentOrganization: { '@type': 'CollegeOrUniversity', name: site.workplace.university },
+  },
+  sameAs: site.links.map((link) => link.href).filter((href) => href.startsWith('https://')),
+};
 ---
 
-<SiteLayout title={site.name}>
+<SiteLayout title={site.name} description={site.welcome[0]}>
+  <script type="application/ld+json" slot="head" set:html={JSON.stringify(person)} />
   <main>
     <Welcome />
 

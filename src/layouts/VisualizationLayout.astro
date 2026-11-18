@@ -40,7 +40,7 @@ const parts = [
 const others = kinds.flatMap((kind) => entries.filter((item) => item.kind === kind.id && item !== entry).map((item) => ({ href: item.link, image: item.image, title: item.title, note: kind.heading })));
 ---
 
-<SiteLayout title={`${title} by ${site.name}`} current="/visualizations/">
+<SiteLayout title={`${title} by ${site.name}`} description={capital(about)} current="/visualizations/">
   <main>
     <article>
       <Band where={{ label: 'Back to Interactive Visualizations', href: '/visualizations/' }} title={title} subtitle={capital(about)} facts={facts} />

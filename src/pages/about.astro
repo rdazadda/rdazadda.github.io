@@ -9,7 +9,7 @@ const box = boxes.find((item) => item.link === '/about/');
 const paragraphs = (text) => [text].flat().filter(Boolean);
 ---
 
-<SiteLayout title={`${box.title} ${site.name}`} current="/about/">
+<SiteLayout title={`${box.title} ${site.name}`} description={paragraphs(sections[0].text)[0]} current="/about/">
   <main>
     <Band title={box.title} subtitle={box.caption} facts={[]} />
     <div class="about">

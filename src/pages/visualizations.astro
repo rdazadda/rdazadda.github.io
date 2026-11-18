@@ -10,7 +10,7 @@ const box = boxes.find((item) => item.link === '/visualizations/');
 const facts = kinds.map((kind) => ({ label: kind.heading, value: String(entries.filter((entry) => entry.kind === kind.id).length) }));
 ---
 
-<SiteLayout title={`${box.title} by ${site.name}`} current="/visualizations/">
+<SiteLayout title={`${box.title} by ${site.name}`} description={box.caption} current="/visualizations/">
   <main>
     <Band title={box.title} subtitle={box.caption} facts={facts} />
     <Viewer />

@@ -24,7 +24,7 @@ const facts = [
 const others = entries.filter((item) => item !== entry).map((item) => ({ href: item.link, image: item.image, title: item.title, note: type(item) }));
 ---
 
-<SiteLayout title={`${title} by ${site.name}`} current="/memory/">
+<SiteLayout title={`${title} by ${site.name}`} description={capital(about)} current="/memory/">
   <main>
     <article>
       <Band where={{ label: 'Back to The Art of Training Memory', href: '/memory/' }} title={title} subtitle={capital(about)} facts={facts} />

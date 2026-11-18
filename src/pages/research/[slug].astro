@@ -11,7 +11,7 @@ export function getStaticPaths() {
 const { project } = Astro.props;
 ---
 
-<SiteLayout title={`${project.title} by ${site.name}`} current="/research/">
+<SiteLayout title={`${project.title} by ${site.name}`} description={project.about} current="/research/">
   <main>
     <Project project={project} />
   </main>

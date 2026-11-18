@@ -1,5 +1,11 @@
 export const site = {
   name: 'Raymond Dacosta Azadda',
+  job: 'Biostatistician',
+  workplace: {
+    name: 'Center for Alaska Native Health Research',
+    href: 'https://www.uaf.edu/canhr/',
+    university: 'University of Alaska Fairbanks',
+  },
   greeting: 'Hi there, welcome. I’m Raymond.',
   welcome: [
     'I’m a biostatistician at the <a href="https://www.uaf.edu/canhr/">Center for Alaska Native Health Research (CANHR)</a>, where I work with Alaska Native and American Indian communities on health research. This site is where I share that work and the software I build along the way. You will also find interactive visuals that explain key concepts, my publications, The Art of Training Memory, and more.',
