@@ -10,7 +10,6 @@ export const boxes = [
   {
     title: 'About',
     link: '/about/',
-    caption: 'My work, my background and life in Alaska.',
     slides: [
       { image: '/images/home/about-1.webp', fill: 'center' },
       { image: '/images/home/about-2.webp', fill: 'center' },
