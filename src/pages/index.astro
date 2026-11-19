@@ -21,7 +21,7 @@ const person = {
 };
 ---
 
-<SiteLayout title={site.name} description={site.welcome[0]}>
+<SiteLayout title={site.name} description={site.about}>
   <script type="application/ld+json" slot="head" set:html={JSON.stringify(person)} />
   <main>
     <Welcome />
