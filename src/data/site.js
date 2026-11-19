@@ -12,6 +12,7 @@ export const site = {
     'My interests cover most areas of statistics and biostatistics, along with accelerometry, actigraphy, and psychometrics. I’m now also getting into qualitative research, which has been really interesting. If you see an overlap with your own work, I’d be glad to hear from you.',
   ],
   pictures: ['/images/home/welcome-1.webp', '/images/home/welcome-2.webp'],
+  share: { image: '/images/share.jpg', width: 1200, height: 630 },
   links: [
     { label: 'Email', href: 'mailto:rdazadda@alaska.edu', logo: 'email' },
     { label: 'Google Scholar', href: '#', logo: 'google-scholar' },

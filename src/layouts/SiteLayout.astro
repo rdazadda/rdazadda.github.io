@@ -12,6 +12,9 @@ interface Props {
 }
 
 const { title, description, current } = Astro.props;
+const summary = description && plain(description);
+const address = new URL(Astro.url.pathname, Astro.site).href;
+const picture = new URL(site.share.image, Astro.site).href;
 const sections = boxes.map((box) => ({ title: box.title, link: box.link }));
 const built = new Date();
 const updated = built.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
@@ -25,7 +28,15 @@ const year = built.getFullYear();
     <meta name="theme-color" content="#1f5a88" />
     <meta name="google-site-verification" content="tKuXFyd_hUKtrixqL1q-UHuS2OuBVQDC_Yn6iaKslqo" />
     <title>{title}</title>
-    {description && <meta name="description" content={plain(description)} />}
+    {summary && <meta name="description" content={summary} />}
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content={title} />
+    {summary && <meta property="og:description" content={summary} />}
+    <meta property="og:url" content={address} />
+    <meta property="og:image" content={picture} />
+    <meta property="og:image:width" content={site.share.width} />
+    <meta property="og:image:height" content={site.share.height} />
+    <meta name="twitter:card" content="summary_large_image" />
     <link rel="icon" href="/favicon.ico" sizes="32x32" />
     <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
     <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
