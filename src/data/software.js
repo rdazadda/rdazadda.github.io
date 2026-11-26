@@ -111,7 +111,7 @@ export const entries = [
     title: 'canhrcolors',
     slug: 'canhrcolors',
     subtitle: 'CANHR Colors for R and Stata',
-    about: 'An R package and Stata scheme that bring the Center for Alaska Native Health Research’s 12-color palette into both programs: canhrcolors(), a ggplot2 color scale and a theme in R, and set scheme canhr in Stata, so figures from R and Stata share the same CANHR look.',
+    about: 'An R package and Stata scheme that bring the Center for Alaska Native Health Research’s 18-color palette into both programs: canhrcolors(), a ggplot2 color scale and a theme in R, and set scheme canhr in Stata, so figures from R and Stata share the same CANHR look.',
     images: ['/images/software/canhrcolors.png'],
     links: [
       { label: 'GitHub', href: 'https://github.com/rdazadda/CANHR-color-schemes' },
